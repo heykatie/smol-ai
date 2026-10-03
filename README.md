@@ -1,0 +1,2 @@
+# smol-ai
+disney hackathon
