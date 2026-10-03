@@ -32,6 +32,17 @@ The North Star is simple: **Can an owner configure it once, then largely forget 
 
 The main interface is an **Action Inbox**: what needs attention, what has already been checked, the proposed resolution, and why a decision is required. Supporting evidence and background activity remain available without becoming another inbox to manage.
 
+### Inventory forecasting and reordering
+
+The core MVP will use **sales velocity and recent sales trends to predict when inventory needs replenishment**. Rolling or weighted sales averages will be combined with available store/warehouse stock, reservations, scheduled events, confirmed incoming orders, supplier lead times, and safety stock.
+
+```text
+Days of supply = available inventory / average daily demand
+Reorder point = expected demand during supplier lead time + safety stock
+```
+
+Recommendations will explain when to order and how much, accounting for minimum order quantities, pack sizes, cash limits, and excess-stock risk. New sales, inventory movements, and supplier updates will trigger recalculation. Seasonal forecasting can follow when sufficient history is available; sparse or unreliable data should produce explicit uncertainty.
+
 ## Planned hackathon demo
 
 **One supplier delay. One meaningful approval. One complete procurement cycle.**
