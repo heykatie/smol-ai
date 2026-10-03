@@ -1,0 +1,13 @@
+[project]
+name = "smol-ai"
+version = "0.1.0"
+description = "Deterministic core for the smol.ai operations demo."
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -2,193 +2,83 @@
 
 **An operations team for small businesses. From incoming signal to verified resolution.**
 
-smol.ai is a privacy-first autonomous operations agent designed to connect supplier email, inventory, and business policies, investigate what needs attention, and carry work through to completion. Owners set the boundaries once; the system handles routine work and asks for help when authority or judgment is needed.
+smol.ai is a privacy-first operations agent for very small businesses. The owner sets boundaries once. The system handles a routine reorder and asks for approval only when the purchase is outside that authority.
 
 > **Automate the work, not the authority.**
 
-**Status:** Planning stage for a solo AI commerce hackathon project. This repository currently contains the product specification and documentation. The application, integrations, and runnable demo have not been added; the workflows below describe the intended implementation.
+The broader product vision is in [project_context.md](project_context.md). The hackathon build is limited to [MVP_SCOPE.md](MVP_SCOPE.md).
 
-[Project specification](project_context.md) · [Getting started](#getting-started) · [Roadmap](#roadmap) · [License](LICENSE)
+## What runs today
 
-## Why smol.ai
+One simulated procurement workflow for one fictional product, the workshop supply pack.
 
-Big companies have operations teams. Small businesses have an inbox.
-
-A supplier changes a lead time. Sales keep moving. Inventory is split between a storefront and a warehouse. A customer asks for something that requires materials, staffing, and a deadline. The owner has to connect those facts, decide what to do, and follow through.
-
-smol.ai is designed to turn those scattered signals into completed operational workflows, with evidence for each decision and clear limits on what the agent can access or do.
-
-The North Star is simple: **Can an owner configure it once, then largely forget about it until a meaningful decision needs their attention?**
-
-## How it works
-
-1. **Detect:** Monitor permitted business signals automatically through configured sources and categories.
-2. **Understand:** Extract the minimum operational facts needed, retaining their source and timestamp.
-3. **Investigate:** Check inventory, reservations, open orders, supplier terms, and alternatives.
-4. **Decide:** Calculate feasibility, cost, cash impact, and expected contribution using deterministic code.
-5. **Authorize:** Apply owner-defined rules; request approval only when the proposed action exceeds existing authority or evidence needs review.
-6. **Execute and verify:** Carry out the authorized action and compare confirmation with the approved terms.
-7. **Reconcile and close:** Track delivery, record actual receipt, resolve discrepancies, and update business state.
-
-The main interface is an **Action Inbox**: what needs attention, what has already been checked, the proposed resolution, and why a decision is required. Supporting evidence and background activity remain available without becoming another inbox to manage.
-
-### Inventory forecasting and reordering
-
-The core MVP will use **sales velocity and recent sales trends to predict when inventory needs replenishment**. Rolling or weighted sales averages will be combined with available store/warehouse stock, reservations, scheduled events, confirmed incoming orders, supplier lead times, and safety stock.
-
-```text
-Days of supply = available inventory / average daily demand
-Reorder point = expected demand during supplier lead time + safety stock
-```
-
-Recommendations will explain when to order and how much, accounting for minimum order quantities, pack sizes, cash limits, and excess-stock risk. New sales, inventory movements, and supplier updates will trigger recalculation. Seasonal forecasting can follow when sufficient history is available; sparse or unreliable data should produce explicit uncertainty.
-
-## Planned hackathon demo
-
-**One supplier delay. One meaningful approval. One complete procurement cycle.**
-
-The demo uses a fictional retailer and synthetic records:
-
-| Signal or decision | Demo value |
+| Step | Behavior |
 | --- | --- |
-| Supplier lead time changes | 14 → 35 days |
-| Available inventory | 21 units |
-| Average daily demand | 1.1 units |
-| Estimated supply | About 19 days |
-| Projected gap without another solution | About 16 days |
-| Proposed alternative purchase | 100 units for an illustrative $61 total |
-| Standing purchase authority | Transactions below $40, subject to all other policy checks |
+| Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. |
+| Extraction | A parser returns the configured supplier and `DEMO-SKU-001`, plus lead times 14 and 35. Other sentences cannot change policy. |
+| Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
+| Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
+| Recommendation | Order 100 units from Supplier B because that is the minimum. $54 merchandise + $7 shipping = $61. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
+| Approval | Purchases auto-execute only under $40. Every other configured check passes, so the limit is the only reason this order waits. |
+| After approval | The saved workflow submits one simulated order and records a matching confirmation. Stock does not change. A second click does not create a second order. |
+| Receipt | **Simulate receiving 100 units** adds those units to the 21 already available. On hand becomes 121. No extra sales are subtracted. The workflow completes only after that receipt. |
+| Refresh | Each visitor's workflow is a separate SQLite file under `data/sessions/`. Reloading the page resumes that session. **Reset demo** deletes only that file. |
 
-A permitted supplier message arrives automatically. smol.ai extracts the lead-time change, calculates the risk, checks internal options, and investigates an alternative. The owner sees the evidence and one question: **“Approve this $61 purchase?”**
+Live integrations: none. Email intake, purchase submission, confirmation, and receipt run through local demo adapters. Their records are `simulated` or `replayed`. ZooWork, BAND, Moss, Tavily, Novita, and browser verification are not called. Entire is development provenance and is not part of the runtime feed.
 
-After approval, the workflow resumes, verifies the order confirmation, monitors fulfillment, and reconciles receipt. The demo will advance through clearly labeled simulated shipping events.
+Confirmation does not complete the workflow. Completion is the reconciled receipt.
 
-**An order confirmation does not complete the workflow.** If 97 of 100 units arrive, Inventory Detective investigates the evidence and keeps the remaining three units tracked until a replacement, credit, or other authorized resolution is verified.
+## Planned, not built
 
-The primary build target is this single reliable loop. All simulated events, seeded records, and replayed verification results must be distinguishable from live integrations.
+These stay in the product vision and are outside the current demo:
 
-## Planned architecture
+- Live mailbox, Shopify, or payment integrations
+- Model extraction, search, browser verification, or multi-agent coordination
+- Merchant negotiation, staffing forecasts, opportunity feasibility, and returns
+- Account onboarding, multiple privacy modes, and analytics dashboards
 
-```text
-Permitted email / inventory / calendar / receipt events
-                         |
-              Smart Gate + fact extraction
-                         |
-          Sourced facts + restricted evidence store
-                         |
-        Stateful workflow + specialized agent handoffs
-                         |
-            Deterministic calculations and policy
-                         |
-           Authorized action / approval pause
-                         |
-             Execute → verify → reconcile → close
-```
+The purchase store can record a short receipt without closing the workflow. That branch is not a button on the submitted demo. The demo receipt control receives the full order.
 
-The Smart Gate applies source and category boundaries before passing minimized data downstream. Specialized agents investigate and propose actions; ordinary application code controls arithmetic, permissions, and execution.
+## Demo
 
-Workflow state, approvals, orders, inventory movements, and audit events belong in a persistent canonical store. Retrieval supports investigation without replacing authoritative stock or policy records. Persisted state and idempotent actions allow approval pauses, restarts, and retries without duplicate purchases.
-
-Use two or three meaningful agents for the MVP. Select the application framework and database during implementation; no runtime stack is committed in this repository yet.
-
-### Planned sponsor-tool roles
-
-These are proposed integration responsibilities, pending implementation and verification against current vendor APIs.
-
-| Tool | Intended responsibility |
-| --- | --- |
-| ZooWork | Workflow orchestration and approval pause/resume where supported. |
-| BAND | Agent coordination, with one agent's findings changing another agent's next action. |
-| Moss | Retrieval over permitted catalog information, supplier terms, and business policies. |
-| Tavily | Discovery of alternative suppliers and relevant product pages. |
-| Browser verification tool | Inspect candidate pages for current product, price, availability, and fulfillment evidence. |
-| Novita | Model inference for extraction, interpretation, and explanation. |
-| Entire | Development provenance for the Claude/Cursor build process. |
-
-External search produces candidates. Verification establishes what the available evidence supports. A product page showing stock does not reserve the item or guarantee delivery.
-
-## Privacy and bounded autonomy
-
-**Set the rules once. Handle exceptions when they matter.**
-
-The planned privacy model combines automatic ingestion with persistent boundaries:
-
-- **Scoped access:** Configure permitted senders, categories, systems, and retention. Offer an operations mailbox or automatic provider routing for mixed personal/business inboxes.
-- **Data minimization:** Give downstream agents structured operational facts instead of unrestricted email bodies. Limit outbound disclosure to models, search tools, and merchant agents.
-- **Deterministic authorization:** Keep spending limits, approved counterparties, quantity limits, and approval requirements outside model control.
-- **Untrusted input:** Treat email, webpages, and agent messages as evidence. Their contents cannot grant permissions, change policy, or authorize a transaction.
-- **Traceable decisions:** Record accessed sources, policy results, exact approvals, execution, verification, and reconciliation. Show facts, inferences, and unknowns separately.
-
-| Autonomy mode | Intended behavior |
-| --- | --- |
-| Observe | Read permitted data, investigate, calculate, and explain. |
-| Prepare | Also draft resolutions, messages, orders, and internal tasks; execution requires approval. |
-| Guarded Auto | Execute explicitly authorized action classes when every applicable policy check passes. |
-
-Approvals bind to specific actions and material terms. Changes to price, quantity, recipient, or other approved terms require reevaluation. Learning may suggest new rules; it cannot silently expand authority.
-
-These are implementation requirements, not claims of audited security or regulatory certification. All public examples use fictional businesses and synthetic data.
-
-## Roadmap
-
-- [x] Document product requirements, trust boundaries, workflows, and MVP acceptance criteria.
-- [ ] Build the deterministic inventory, economics, and policy core.
-- [ ] Implement persisted workflow state, approval/resume, and duplicate-action prevention.
-- [ ] Add scoped ingestion, extraction, retrieval, and meaningful agent coordination.
-- [ ] Complete procurement through confirmation, receipt, reconciliation, and recovery.
-- [ ] Build the Action Inbox, evidence panel, and resettable demo.
-- [ ] Add the partial-receipt Inventory Detective branch.
-
-The broader product extends the same engine to:
-
-| Capability | Intended outcome |
-| --- | --- |
-| Local sale rescue | Query participating merchant agents, negotiate a bounded transaction, verify fulfillment, and reconcile contribution. |
-| Opportunity feasibility | Check materials, calendar, staffing, costs, and deadlines before an owner commits to a workshop or custom order. |
-| Staffing forecasting | Recommend required coverage from expected workload; leave individual scheduling to the owner. |
-| Returns and supplier learning | Reconcile returns/refunds and compare promised supplier performance with actual outcomes. |
-
-Economics applies across workflows: a saved sale or replenishment order must make sense after acquisition cost, delivery, fees, labor where applicable, and cash constraints.
-
-## Getting started
-
-To explore the current documentation, install Git and clone the repository:
+Requirements: Python 3.9+.
 
 ```bash
 git clone https://github.com/heykatie/smol-ai.git
 cd smol-ai
+python3 -m venv .venv
+.venv/bin/pip install pytest
+PYTHONPATH=src .venv/bin/python -m smol_ai.inbox
 ```
 
-Open the folder in your editor, then read [project_context.md](project_context.md) for the full scope, data model, policy rules, and implementation priorities.
+Open http://127.0.0.1:8765
+
+1. Click **Start interactive demo**.
+2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $54 + $7 shipping = $61, and **Approve simulated $61 order**.
+3. Click **Approve simulated $61 order** once. The page should say the order is confirmed and awaiting receipt. Available inventory stays 21.
+4. Refresh the browser. The same awaiting-receipt state should still be there.
+5. Click **Simulate receiving 100 units**. Available inventory becomes 121 and the workflow is complete.
+6. Click **Reset demo** to run it again. **Decline** on the approval card submits no order. **Review evidence** opens the calculations, the seeded Supplier B offer, and the tool records.
+
+```bash
+.venv/bin/pytest -q
+```
+
+## Repository
 
 ```text
 smol-ai/
-├── README.md           # Project overview and entry point
-├── project_context.md  # Master product and implementation specification
-└── LICENSE             # MIT license
+├── README.md
+├── MVP_SCOPE.md          # What this hackathon build includes
+├── DEMO_SPEC.md          # Numbers and copy for this demo
+├── project_context.md    # Broader product vision
+├── render.yaml           # Render web service settings
+├── src/smol_ai/          # Python core and local inbox
+├── tests/
+└── data/sessions/        # Created at runtime, one SQLite file per visitor. Not committed.
 ```
 
-There are no application dependencies, environment variables, build commands, or test commands to run yet. Setup instructions will be added alongside the executable implementation. Claude/Cursor contributors should use the project specification as the source of truth.
-
-## Validation plan
-
-Before the MVP is marked complete, verify that:
-
-- Permitted signals trigger automatically, and unrelated private content stays outside downstream agent context.
-- Inventory and money calculations are deterministic; policy denies actions outside granted authority.
-- Approval survives a restart, while changed terms, denial, or revocation prevent unauthorized execution.
-- Duplicate events and retries do not create duplicate orders or inventory movements.
-- Untrusted content cannot change policy or obtain secrets.
-- Confirmation mismatches, missing receipts, and shortages remain visible until resolved.
-- Completion is supported by actual verification and reconciliation evidence.
-
-The full acceptance criteria are in [the project specification](project_context.md#23-acceptance-criteria).
-
-## Contributing and feedback
-
-Questions, suggestions, and implementation proposals are welcome through [GitHub Issues](https://github.com/heykatie/smol-ai/issues). Keep contributions focused on the primary workflow, explain how behavior was verified, and update documentation when implementation status changes.
-
-Use synthetic business records in examples and fixtures. Keep credentials, private correspondence, and identifying merchant or customer information out of commits, screenshots, and public reports.
+Examples use fictional businesses and synthetic numbers. Do not commit credentials or real merchant data.
 
 ## License
 
