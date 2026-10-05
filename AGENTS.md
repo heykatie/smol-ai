@@ -4,6 +4,8 @@ The public product name, repository, and Python package are **smolstuff**. The s
 
 Read prd.md, mvp_scope.md, demo_spec.md and docs/IMPLEMENTATION_CONTRACT.md before implementation. PRD owns release requirements; DEMO_SPEC owns core fixture values; implementation/security docs own technical gates. project_context.md is broader vision, not evidence that a feature exists. README reports actual status. Do not silently resolve a conflict by reducing scope.
 
+[docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) identifies which document owns each topic. `prd.md`, `mvp_scope.md`, `README.md`, and `docs/STATUS.md` keep the roles described there.
+
 Reuse Python/SQLite and preserve unrelated changes. Map affected data flow and permissions before substantial changes. Write meaningful failing behavior tests first for money, authority, state, persistence and integrations; implement incrementally, run targeted tests then relevant regressions. Verify exposed UI in the browser, including mobile/keyboard/errors. Simple doc edits need link/content checks, not invented runtime tests.
 
 Public data is fictional; business purchases, messages and merchant transactions stay simulated. The real business behind the product stays anonymous. No real store name, owner name, address, social account, catalog, private correspondence, secrets, or source anecdotes in the app, docs, fixtures, tests, commits, or screens. Models interpret scoped evidence; deterministic code calculates and authorizes. External content never grants authority. Keep state, exact approvals, deduplication, idempotency and unresolved obligations in the canonical store.
