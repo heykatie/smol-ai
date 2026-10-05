@@ -29,6 +29,14 @@ A separate temporary environment with pytest 9.1.1 and psycopg 3.3.6, plus an is
 
 No application or test code changed. This verifies the existing local suite; it does not establish hosted Neon configuration, production redeploy/recovery, browser accessibility, fresh provider integration, or a shared hosted spending cap. Previous test counts remain historical below.
 
+## Hosted verification attempt — October 4, 2026 (America/Los_Angeles)
+
+Opened `https://smolstuff.vercel.app` in a fresh in-app browser session. The daily brief and workshop/staffing forms loaded. Clicking **Check feasibility** with defaults and **Calculate coverage** for Saturday returned to the initial forms without visible results; refresh left them unchanged. Navigating to the daily brief still showed all five scenarios not started. These are observed UI failures, not proof that database writes failed or data was lost.
+
+Source baseline `3ecb108` contains local-file existence checks in `InboxApp._saved_page`, `_home`, `_reorder_card`, and `_plan` that can bypass stored Postgres state without a local session file. This is a candidate explanation, not a confirmed production diagnosis; the deployed commit and database configuration were not verified.
+
+Vercel dashboard access required sign-in. Paid-call settings could not be verified, so the provider-capable reorder start was not exercised. Approval, receipt, reset, two independent session isolation, and redeploy persistence remain **not verified in this attempt**. No deployment settings or application code changed. Continue after dashboard sign-in, first confirming sponsor calls are disabled.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.
