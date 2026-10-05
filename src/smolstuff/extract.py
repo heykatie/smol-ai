@@ -59,7 +59,14 @@ class ExtractionAttempt:
     fallback: bool
 
 
-def resolve_lead_time(message: str, supplier_id: str, sku: str, model_result=None, model_error: bool = False) -> ExtractionAttempt:
+def resolve_lead_time(
+    message: str,
+    supplier_id: str,
+    sku: str,
+    model_result=None,
+    model_error: bool = False,
+    calls_off: bool = False,
+) -> ExtractionAttempt:
     """Use a validated model payload when it is usable. Otherwise use the parser.
 
     The model may only supply the two lead times. SKU, supplier, prices, and
@@ -104,8 +111,14 @@ def resolve_lead_time(message: str, supplier_id: str, sku: str, model_result=Non
         fact=fact,
         provider="Lead-time parser",
         status="simulated",
-        result="No live model key is configured. Parser read lead time {0} to {1} days.".format(
-            fact.previous_lead_time_days, fact.lead_time_days
+        result=(
+            "Sponsor calls are off. Parser read lead time {0} to {1} days.".format(
+                fact.previous_lead_time_days, fact.lead_time_days
+            )
+            if calls_off
+            else "No live model key is configured. Parser read lead time {0} to {1} days.".format(
+                fact.previous_lead_time_days, fact.lead_time_days
+            )
         ),
         fallback=True,
     )

@@ -313,28 +313,45 @@ def _money(value: Decimal) -> str:
 class ScenarioStore:
     """Persisted mini-demo state in the visitor's SQLite file."""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, session_id: str = "local") -> None:
         self.path = path
+        self.session_id = session_id or "local"
         self._conn = sqlite3.connect(path)
         self._conn.row_factory = sqlite3.Row
         self._conn.isolation_level = None
-        self._conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS scenario_state (
-                scenario TEXT PRIMARY KEY,
-                phase TEXT NOT NULL,
-                payload TEXT NOT NULL
+        existing = self._conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='scenario_state'"
+        ).fetchone()
+        if existing is None:
+            self._conn.execute(
+                """
+                CREATE TABLE scenario_state (
+                    session_id TEXT NOT NULL,
+                    scenario TEXT NOT NULL,
+                    phase TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    PRIMARY KEY (session_id, scenario)
+                )
+                """
             )
-            """
-        )
+            self._scoped = True
+        else:
+            columns = {row[1] for row in self._conn.execute("PRAGMA table_info(scenario_state)")}
+            self._scoped = "session_id" in columns
 
     def close(self) -> None:
         self._conn.close()
 
     def get(self, scenario: str) -> Optional[dict]:
-        row = self._conn.execute(
-            "SELECT phase, payload FROM scenario_state WHERE scenario = ?", (scenario,)
-        ).fetchone()
+        if self._scoped:
+            row = self._conn.execute(
+                "SELECT phase, payload FROM scenario_state WHERE session_id = ? AND scenario = ?",
+                (self.session_id, scenario),
+            ).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT phase, payload FROM scenario_state WHERE scenario = ?", (scenario,)
+            ).fetchone()
         if row is None:
             return None
         payload = json.loads(row["payload"])
@@ -343,13 +360,30 @@ class ScenarioStore:
 
     def save(self, scenario: str, payload: dict) -> None:
         phase = payload.get("phase", "saved")
-        self._conn.execute(
-            """
-            INSERT INTO scenario_state (scenario, phase, payload) VALUES (?, ?, ?)
-            ON CONFLICT(scenario) DO UPDATE SET phase = excluded.phase, payload = excluded.payload
-            """,
-            (scenario, phase, json.dumps(payload)),
-        )
+        if self._scoped:
+            self._conn.execute(
+                """
+                INSERT INTO scenario_state (session_id, scenario, phase, payload)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(session_id, scenario) DO UPDATE SET
+                    phase = excluded.phase, payload = excluded.payload
+                """,
+                (self.session_id, scenario, phase, json.dumps(payload)),
+            )
+        else:
+            self._conn.execute(
+                """
+                INSERT INTO scenario_state (scenario, phase, payload) VALUES (?, ?, ?)
+                ON CONFLICT(scenario) DO UPDATE SET phase = excluded.phase, payload = excluded.payload
+                """,
+                (scenario, phase, json.dumps(payload)),
+            )
 
     def reset(self, scenario: str) -> None:
-        self._conn.execute("DELETE FROM scenario_state WHERE scenario = ?", (scenario,))
+        if self._scoped:
+            self._conn.execute(
+                "DELETE FROM scenario_state WHERE session_id = ? AND scenario = ?",
+                (self.session_id, scenario),
+            )
+        else:
+            self._conn.execute("DELETE FROM scenario_state WHERE scenario = ?", (scenario,))

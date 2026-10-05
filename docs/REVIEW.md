@@ -2,7 +2,9 @@
 
 # smolstuff documentation review
 
-Reviewed October 4, 2026 against live GitHub `heykatie/smolstuff`, main commit `2dc9093610c874179bc14a870ae3b9ad8f0f72b0`. The former repo URL redirects to the renamed repository. This review covers every tracked documentation/configuration file, the Python component structure and relevant behavior/tests. It compares them with the project PRD and the user's stated product intent. Separate local work is not assumed to be on GitHub.
+Historical review of commit `2dc9093`. Current behavior is in [README.md](../README.md). Hosting direction is in [ARCHITECTURE.md](ARCHITECTURE.md). Render is no longer the plan, and the package is `smolstuff`.
+
+Reviewed October 4, 2026 against GitHub `heykatie/smolstuff` at that older commit. The notes below describe that checkout, not the current tree.
 
 ## Verdict
 

@@ -33,7 +33,17 @@ class ResearchAttempt:
 def research_supplier(
     query: str = SUPPLIER_QUERY,
     transport: Optional[Callable[[str], dict]] = None,
+    allow_network: bool = True,
 ) -> ResearchAttempt:
+    if not allow_network:
+        return ResearchAttempt(
+            provider="Tavily",
+            status="simulated",
+            task=_TASK,
+            result="Sponsor calls are off. No supplier sources were retrieved.",
+            effect=_UNCHANGED,
+            fallback=True,
+        )
     key = os.environ.get("TAVILY_API_KEY", "").strip()
     if not key:
         return ResearchAttempt(

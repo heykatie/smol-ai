@@ -19,6 +19,8 @@ import uuid
 from urllib.parse import parse_qs, urlparse
 
 from smolstuff.fixtures import EXAMPLE_POLICY, WORKSHOP_SUPPLY_PACK
+from smolstuff.http_guard import RequestRejected, read_form
+from smolstuff.session_files import creation_allowed, expire_demo_sessions
 from smolstuff.inventory import SupplyAssessment, assess_supply
 from smolstuff.lifecycle import WorkflowState
 from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
@@ -65,11 +67,13 @@ _PAGE = Template("""<h1>$headline</h1><p class="lede">$summary</p>
 
 
 class InboxApp:
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, session_id: str = "local", budget_path: str = None) -> None:
         self.path = path
+        self.session_id = session_id
+        self.budget_path = budget_path or str(Path(path).with_suffix(".budget.sqlite3"))
 
     def page(self) -> str:
-        store = WorkflowStore(self.path)
+        store = WorkflowStore(self.path, session_id=self.session_id)
         try:
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
             if workflow is None:
@@ -91,11 +95,11 @@ class InboxApp:
         if action not in _ACTIONS:
             raise ValueError("Unknown inbox action.")
         baseline = WORKSHOP_SUPPLY_PACK.sellable_on_hand
-        store = WorkflowStore(self.path)
+        store = WorkflowStore(self.path, session_id=self.session_id)
         try:
             if action == "reset":
                 store.reset_signal(DEMO_SIGNAL_KEY)
-                ScenarioStore(self.path).reset("supplier_fact")
+                ScenarioStore(self.path, self.session_id).reset("supplier_fact")
                 return
             if action == "simulate_email":
                 attempt = self._extract_supplier_fact()
@@ -238,7 +242,7 @@ class InboxApp:
 
     def route(self, action: str, fields: dict) -> str:
         if action.startswith(("workshop_", "detective_", "rescue_", "staffing_")):
-            apply_ops(self.path, action, fields)
+            apply_ops(self.path, action, fields, self.session_id)
             return fields.get("scenario", ["home"])[0]
         self.apply(action)
         return fields.get("scenario", ["reorder"])[0]
@@ -246,7 +250,7 @@ class InboxApp:
     def _saved_page(self, name: str, renderer):
         if not os.path.exists(self.path):
             return renderer(None)
-        store = ScenarioStore(self.path)
+        store = ScenarioStore(self.path, self.session_id)
         try:
             return renderer(store.get(name))
         finally:
@@ -255,8 +259,8 @@ class InboxApp:
     def _home(self) -> str:
         status, bucket, action = self._reorder_card()
         if os.path.exists(self.path):
-            cards = load_cards(self.path, status, bucket, action)
-            event_store = WorkflowStore(self.path)
+            cards = load_cards(self.path, status, bucket, action, self.session_id)
+            event_store = WorkflowStore(self.path, session_id=self.session_id)
             try:
                 events = event_store.list_integration_events()
             finally:
@@ -274,7 +278,7 @@ class InboxApp:
         )
         if not os.path.exists(self.path):
             return "Not started", "Not started", start
-        store = WorkflowStore(self.path)
+        store = WorkflowStore(self.path, session_id=self.session_id)
         try:
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
         finally:
@@ -299,7 +303,7 @@ class InboxApp:
     def _plan(self):
         saved = None
         if os.path.exists(self.path):
-            store = ScenarioStore(self.path)
+            store = ScenarioStore(self.path, self.session_id)
             try:
                 saved = store.get("supplier_fact")
             finally:
@@ -313,10 +317,22 @@ class InboxApp:
             return plan_reorder(fact)
         return build_demo_plan()
 
+    def _claim_sponsor_call(self) -> bool:
+        from smolstuff.sponsor_budget import SponsorBudget
+
+        budget = SponsorBudget(self.budget_path)
+        try:
+            return budget.claim(self.session_id)
+        finally:
+            budget.close()
+
     def _record_supplier_research(self, store) -> None:
         from smolstuff.research import research_supplier
 
-        attempt = research_supplier()
+        if os.environ.get("TAVILY_API_KEY"):
+            attempt = research_supplier(allow_network=self._claim_sponsor_call())
+        else:
+            attempt = research_supplier()
         store.record_integration(
             attempt.provider,
             attempt.task,
@@ -331,15 +347,26 @@ class InboxApp:
 
         model_result = None
         model_error = False
-        if os.environ.get("NOVITA_API_KEY"):
-            try:
-                model_result = call_novita(SUPPLIER_EMAIL)
-            except Exception:
-                model_error = True
-        return resolve_lead_time(SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU, model_result, model_error)
+        calls_off = False
+        if os.environ.get("NOVITA_API_KEY", "").strip():
+            if self._claim_sponsor_call():
+                try:
+                    model_result = call_novita(SUPPLIER_EMAIL)
+                except Exception:
+                    model_error = True
+            else:
+                calls_off = True
+        return resolve_lead_time(
+            SUPPLIER_EMAIL,
+            SUPPLIER_A_ID,
+            WORKSHOP_SKU,
+            model_result,
+            model_error,
+            calls_off=calls_off,
+        )
 
     def _save_supplier_fact(self, attempt) -> None:
-        ScenarioStore(self.path).save("supplier_fact", {
+        ScenarioStore(self.path, self.session_id).save("supplier_fact", {
             "phase": "extracted",
             "previous": attempt.fact.previous_lead_time_days,
             "current": attempt.fact.lead_time_days,
@@ -688,8 +715,11 @@ def make_handler(app: InboxApp):
             if urlparse(self.path).path != "/":
                 self._send(404, error_page("This page could not be found."))
                 return
-            length = int(self.headers.get("Content-Length", "0"))
-            fields = parse_qs(self.rfile.read(length).decode("utf-8"))
+            try:
+                fields = read_form(self.headers.get, self.rfile.read, self.headers.get("Host", ""))
+            except RequestRejected as rejected:
+                self._send(rejected.status, error_page(rejected.message))
+                return
             action = fields.get("action", [""])[0]
             try:
                 scenario = app.route(action, fields)
@@ -730,29 +760,37 @@ def make_session_handler(directory: str):
             if urlparse(self.path).path != "/":
                 self._send(404, error_page("This page could not be found."))
                 return
+            expire_demo_sessions(str(root))
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
             path = None if session_id is None else root / "{0}.sqlite3".format(session_id)
             if path is None or not path.exists():
                 self._send(200, _blank_scenario(scenario))
                 return
-            self._send(200, InboxApp(str(path)).view(scenario))
+            self._send(200, InboxApp(str(path), session_id=session_id).view(scenario))
 
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/":
                 self._send(404, error_page("This page could not be found."))
                 return
-            length = int(self.headers.get("Content-Length", "0"))
-            fields = parse_qs(self.rfile.read(length).decode("utf-8"))
+            expire_demo_sessions(str(root))
+            try:
+                fields = read_form(self.headers.get, self.rfile.read, self.headers.get("Host", ""))
+            except RequestRejected as rejected:
+                self._send(rejected.status, error_page(rejected.message))
+                return
             action = fields.get("action", [""])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
             new_cookie = False
             if session_id is None:
+                if not creation_allowed(str(root)):
+                    self._send(429, error_page("Too many new demos. Try again later."))
+                    return
                 session_id = uuid.uuid4().hex
                 new_cookie = True
             path = root / "{0}.sqlite3".format(session_id)
             try:
-                scenario = InboxApp(str(path)).route(action, fields)
+                scenario = InboxApp(str(path), session_id=session_id).route(action, fields)
             except (ValueError, InvalidOperation):
                 self._send(400, error_page())
                 return
@@ -840,7 +878,7 @@ def _read_session(cookie_header: str) -> Optional[str]:
 
 def _session_cookie(session_id: str) -> str:
     cookie = "smol_session={0}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400".format(session_id)
-    if os.environ.get("DEMO_COOKIE_SECURE") == "1":
+    if os.environ.get("DEMO_COOKIE_SECURE") == "1" or os.environ.get("VERCEL") == "1":
         cookie += "; Secure"
     return cookie
 

@@ -15,7 +15,7 @@ A dark, responsive Daily brief with one simulated procurement workflow and four 
 | Step | Behavior |
 | --- | --- |
 | Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. This is a demonstration trigger, not a live mailbox subscription. |
-| Extraction | Optional Novita extraction is wired. Without a usable configured key/result, a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
+| Extraction | Novita is wired. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are set. Otherwise a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
 | Recommendation | Order 100 units from Supplier B because that is the minimum. $54 merchandise + $7 shipping = $61. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
@@ -28,7 +28,7 @@ Integration status: application wiring verified by this inspection; previous acc
 
 | Tool | Observed status |
 | --- | --- |
-| Tavily | Wired in the reorder demo; a previous repository report records a successful call. With a configured key, **Start interactive demo** attempts a basic search and records live only for usable returned links. Missing key/error is labeled simulated fallback. This inspection verified code/tests, not a fresh provider call. Links do not change the seeded $61 offer. |
+| Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $61 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
 | ZooWork | A models read and an empty agent create succeeded, and that agent was deleted. No operations task has run. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
@@ -54,7 +54,7 @@ Collaboration inquiries and custom orders are not separate workflows. They would
 
 These remain requirements or later work. They are not available in the demo:
 
-- A public URL
+- A verified deployment of this dark UI
 - Live mailbox, Shopify, payment, or browser-verification integrations
 - A verified Novita extraction, ZooWork operations task, BAND handoff, or Moss retrieval inside the Action Inbox
 - Returns, account onboarding, multiple privacy modes, and analytics dashboards
@@ -63,7 +63,7 @@ The purchase store can record a short receipt without closing the workflow. That
 
 ## Stack
 
-Python 3.9 or newer, using the standard library for the HTTP server and SQLite. Money is `Decimal`, not floating point. Tests use pytest. `render.yaml` is a prepared Render web service and is not a live deployment. A separate `.venv-moss` directory can query Moss with Python 3.12. It is gitignored and is not required to run the demo.
+Python 3.9 or newer, using the standard library for the local HTTP server and SQLite. Money is `Decimal`, not floating point. Tests use pytest. Vercel is the host and Render is retired. Local sessions are still SQLite files. A separate `.venv-moss` directory can query Moss with Python 3.12. It is gitignored and is not required to run the demo.
 
 ## Run locally
 
@@ -75,7 +75,7 @@ python3 -m venv .venv
 PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the server binds `0.0.0.0` on that port so a host such as Render can reach it.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the server binds `0.0.0.0` on that port.
 
 1. Click **Start interactive demo**.
 2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $54 + $7 shipping = $61, and **Approve simulated $61 order**.
@@ -90,7 +90,7 @@ Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the serve
 
 ## Configuration
 
-Copy `.env.example` to `.env`. The server reads that file on startup and does not print the values. `.env` is gitignored. Put the same names in the Render Environment tab when the site is deployed. Do not put secrets in source, Git, or chat.
+Copy `.env.example` to `.env`. The server reads that file on startup and does not print the values. `.env` is gitignored. When a Vercel project exists, set the same names in that project's environment, not in source. Do not put secrets in source, Git, or chat.
 
 | Name | Role |
 | --- | --- |
@@ -109,8 +109,9 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | --- | --- |
 | [prd.md](prd.md) | Requirements and acceptance criteria |
 | [demo_spec.md](demo_spec.md) | Reorder numbers and screen copy |
-| [mvp_scope.md](mvp_scope.md) | Hackathon boundary |
-| [project_context.md](project_context.md) | Product philosophy, architecture, and [engineering rules](project_context.md#25-engineering-rules) |
+| [mvp_scope.md](mvp_scope.md) | Current product boundary |
+| [project_context.md](project_context.md) | Product philosophy, architecture intent, and [engineering rules](project_context.md#25-engineering-rules) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting direction. A hosted session is not durable until a redeploy keeps it |
 
 If a reorder number disagrees, `demo_spec.md` wins. If the documents disagree about what is built, this README, the code, and the tests win. If they disagree about what is required, `prd.md` wins.
 
@@ -123,9 +124,8 @@ smolstuff/
 ├── prd.md
 ├── mvp_scope.md
 ├── demo_spec.md
-├── docs/
 ├── project_context.md
-├── render.yaml
+├── docs/
 ├── .env.example
 ├── src/smolstuff/
 ├── tests/

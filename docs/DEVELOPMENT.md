@@ -6,7 +6,7 @@ Read PRD → MVP_SCOPE → DEMO_SPEC → IMPLEMENTATION_CONTRACT → SECURITY_AN
 
 ## Local setup
 
-Python 3.9+ is declared. The October 4 review ran the 64-test suite (62 existing tests plus two numeric-error regression tests) on Python 3.14; the Render manifest pins Python 3.11.11, which was not exercised by this review. Application runtime uses only the standard library. Python imports are `smolstuff`.
+Python 3.9+ is declared. Application runtime uses the standard library. Python imports are `smolstuff`. The local server reads `.env` on startup and does not print values. `.env` is gitignored.
 
 ```bash
 git clone https://github.com/heykatie/smolstuff.git
@@ -32,17 +32,17 @@ Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at 
 | DEMO_COOKIE_SECURE | `1` adds Secure to the cookie; use on HTTPS host, not local plain HTTP |
 | Storage | `data/sessions/` beneath repository root, one SQLite file per cookie |
 | Cookie | `smol_session`, HttpOnly, SameSite=Lax, one-day Max-Age |
-| Provider credentials | Optional NOVITA_API_KEY/NOVITA_MODEL and TAVILY_API_KEY are read by the app; other .env.example sponsor fields are placeholders for future adapters |
+| Provider credentials | `NOVITA_API_KEY` and `TAVILY_API_KEY` are read only when sponsor calls are enabled and both limits are set. A key is not proof of a verified workflow. |
 
-Startup loads `.env` without overriding already-set process variables. `.env`/`.env.*` are ignored except the placeholder `.env.example`. There is no configurable storage-directory setting, automated expiry cleanup or paid-call budget. These are engineering work, not working settings. Keep private configuration out of commits; the proposed security rules require ignoring it before any credential is entered.
+Startup loads `.env` without overriding already-set process variables. `.env` and `.env.*` are ignored except `.env.example`. Demo files older than `SMOL_DEMO_TTL_SECONDS` (default one day) are removed when a request arrives. Paid calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are positive integers. Keep private configuration out of commits.
 
-Reset demo on reorder clears its workflow, supplier fact and integration records; it preserves the session file and other previews. Each preview has its own reset. Cookie expiry alone leaves a file behind. Deleted/unavailable file means the initial screen on refresh. Do not delete another visitor's state. Stop the process with Ctrl-C; restarting with the same surviving disk and cookie resumes saved progress.
+Reset demo on reorder clears its workflow, supplier fact, and integration records. It preserves the session file and the other previews. Cookie expiry alone leaves a file behind. A missing file means the initial screen on refresh. Do not delete another visitor's state. Stop the process with Ctrl-C. Restarting with the same surviving disk and cookie resumes saved progress.
 
 ## Deploy and verify
 
-`render.yaml` defines a free Python web service, compile-only build and the same inbox entry point; service identifier is `smolstuff`. There is no configured persistent disk/database URL. A manifest is not evidence of a deployed site, and compileall is not a regression suite.
+Vercel is the host. Render is retired. This dark UI is the local app. A previous upload is not proof that this checkout is deployed, and it is not proof that a session survives a redeploy. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Before release, select/verify hosting persistence and quotas (decision D4), configure HTTPS/secure cookies, run tests, deploy the reviewed revision, and record URL/commit/time. On the host verify: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, restart and redeploy behavior. Record data-loss limitations if storage is ephemeral. Check narrow mobile layout, keyboard focus/forms/evidence, malformed input and recoverable errors. Do not claim the hosted build passed from a local test run.
+After a database is connected, verify on the host: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, and a new deployment that still has the earlier session. Do not claim that passed until those calls succeed. Check narrow mobile layout, keyboard focus, and displayed totals.
 
 ## Implementation sequence
 

@@ -1,6 +1,6 @@
 # Coding guidance for smolstuff
 
-The public product name, repository, and Python package are **smolstuff**. The session cookie is `smol_session`.
+The public product name, repository, and Python package are **smolstuff**. The session cookie is `smol_session`. smolstuff is an ongoing product with no deadline. Vercel is the host. Render is not the plan. Do not create a database until the storage choice in docs/ARCHITECTURE.md is confirmed, and do not claim a hosted session survives a redeploy.
 
 Read prd.md, mvp_scope.md, demo_spec.md and docs/IMPLEMENTATION_CONTRACT.md before implementation. PRD owns release requirements; DEMO_SPEC owns core fixture values; implementation/security docs own technical gates. project_context.md is broader vision, not evidence that a feature exists. README reports actual status. Do not silently resolve a conflict by reducing scope.
 

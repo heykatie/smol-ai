@@ -1,8 +1,8 @@
 # MVP scope
 
-This file is the hackathon build boundary. Requirements are in [prd.md](prd.md). The reorder fixture is in [demo_spec.md](demo_spec.md). Philosophy and engineering rules are in [project_context.md](project_context.md). What the code does today is in [README.md](README.md).
+This file is the current product boundary, not a deadline. Requirements are in [prd.md](prd.md). The reorder fixture is in [demo_spec.md](demo_spec.md). Philosophy and engineering rules are in [project_context.md](project_context.md). What the code does today is in [README.md](README.md). Hosting direction is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-The P0 loop is the reorder below. The four P1 previews are in the local demo and must stay functional. Production email, commerce, payments, and a real merchant network stay future work.
+The reorder loop below is the core. The four previews are in the local demo and must stay functional. Production email, commerce, payments, and a real merchant network stay later releases. Vercel is the host. This dark UI is not a verified hosted deployment.
 
 ## One workflow
 

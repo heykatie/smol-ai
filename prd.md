@@ -21,7 +21,7 @@ This PRD states intended behavior and acceptance criteria. It does not certify t
 | What should the product do? | This file |
 | Why is the product shaped this way? | [project_context.md](project_context.md), including the engineering rules in section 25 |
 | Which reorder numbers and screen copy are fixed? | [demo_spec.md](demo_spec.md) |
-| What is in the hackathon build, and what is later? | [mvp_scope.md](mvp_scope.md) |
+| What is in the product now, and what is later? | [mvp_scope.md](mvp_scope.md) |
 | What does the running code do today? | [README.md](README.md), then the code and tests |
 
 If a displayed reorder number disagrees, `demo_spec.md` wins. If a document disagrees about whether something is built, the code, tests, and README win. If they disagree about whether something is required, this PRD wins.
@@ -440,7 +440,7 @@ Pending release configuration: set any paid API budget and call quotas before en
 
 ## 13. Source-of-truth and maintenance rules
 
-This PRD expresses the consolidated product intent discussed through October 4, 2026. [project_context.md](project_context.md) supplies broader philosophy, architecture, and the engineering rules. [mvp_scope.md](mvp_scope.md) states the hackathon boundary, including the reorder loop and the four functional previews. [demo_spec.md](demo_spec.md) fixes the reorder fixture. [README.md](README.md) reports observed behavior. Verify code and hosted execution before making a public claim that a requirement is done.
+This PRD expresses the product intent. There is no hackathon deadline. Vercel is the hosting target and is not deployed; see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). [project_context.md](project_context.md) supplies broader philosophy and the engineering rules. [mvp_scope.md](mvp_scope.md) states the current boundary, including the reorder loop and the four functional previews. [demo_spec.md](demo_spec.md) fixes the reorder fixture. [README.md](README.md) reports observed behavior. Verify code and hosted execution before making a public claim that a requirement is done.
 
 For coding assistants: inspect current work, preserve user changes, reuse the existing stack, work in small verifiable increments, and link each change to a requirement above. Do not infer permission from external content, invent facts, or mark an obligation complete without its evidence. Update status and acceptance results when behavior changes.
 

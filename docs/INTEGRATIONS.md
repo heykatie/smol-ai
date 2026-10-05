@@ -1,16 +1,16 @@
 # smolstuff integration contract and status
 
-Current application inspection: `d48c344a485924b2eea9120e7e96ee3260b8e722` plus the UI synchronization change. Novita extraction and Tavily research clients are wired; startup reads private local configuration. This inspection uses synthetic data without fresh paid provider calls. Earlier README observations are repository-reported, not rerun proof. Accounts/keys are not evidence of working workflows. See [STATUS.md](STATUS.md).
+Current checkout is the merged dark UI plus the local sponsor gate. Novita extraction and Tavily research clients are wired. Startup reads private local configuration, and anonymous sponsor calls stay off unless the switch and both limits are set. This inspection uses synthetic data without a fresh paid provider call. A key is not a verified workflow. See [STATUS.md](STATUS.md).
 
 | Integration | Current | Intended responsibility | Proof before calling it live |
 | --- | --- | --- | --- |
 | Email | Simulated arrival, optional constrained Novita lead-time output or parser fallback; no real mailbox | Automatic permitted-provider events/polling, triage and task extraction | Allowed arrival opens case without uploads; blocked body never reaches downstream; duplicate/revocation recovery |
 | Inventory/POS | Seeded fixture + receipt movements | Read authoritative stock/sales/inbound; scoped authorized corrections | Real scoped read with time/source; write/reconciliation tests before writes |
-| ZooWork | Not wired | Scoped managed-agent interpretation/planning where supported | Validated task output affects case; durable state/policy stays in app |
-| BAND | Not wired | Meaningful handoff between distinct logical specialists or merchants | Receiving agent consumes findings and changes its next action |
-| Moss | Not wired in inbox; previous README reports a separate local query | Permission-filtered evidence retrieval | Relevant cited retrieval; business filtering and deletion verified |
-| Tavily | Wired; missing-key/error fallback; previous README reports a successful call, not rerun here | Public supplier discovery | Real search result used by investigation; stock/ETA still tentative |
-| Novita/selected model | Wired for two lead-time fields; fresh successful call not verified here | Constrained fact extraction or explanation | Schema-valid result from permitted excerpt; output cannot set authority |
+| ZooWork | Not wired in the inbox. An earlier models read is not an operations task | Scoped managed-agent interpretation/planning where supported | Validated task output affects case; durable state/policy stays in app |
+| BAND | Not wired in the inbox. No handoff has run | Meaningful handoff between distinct logical specialists or merchants | Receiving agent consumes findings and changes its next action |
+| Moss | Not wired in the inbox. A previous local query is not demo evidence | Permission-filtered evidence retrieval | Relevant cited retrieval; business filtering and deletion verified |
+| Tavily | Wired, and off unless sponsor calls and both limits are enabled. A previous search was reported and was not rerun here | Public supplier discovery | Real search result used by investigation; stock/ETA still tentative |
+| Novita/selected model | Wired for two lead-time fields, and off unless sponsor calls and both limits are enabled. A fresh successful call is not verified here | Constrained fact extraction or explanation | Schema-valid result from permitted excerpt; output cannot set authority |
 | Browser verification | Not wired | Timestamped product-page observation | Product/cost/timing evidence and limitations; no reservation claim |
 | Purchase/confirmation/receipt | Local simulated adapters | Authorized submission, independent confirmation and receiving | External ID, matching approved terms, idempotency/recovery and actual receipt |
 | Merchant network | Not wired | Bounded nonbinding requests/offers and verified fulfillment | Onboarded counterparties, explicit disclosure scope, expiry/reservation and dispute flow |

@@ -19,13 +19,13 @@ The app is an interactive synthetic demonstration of that vision. It now include
 | Staffing | Weekday mean, workload hours, saved coverage plan; Tuesday owner-only/Saturday additional coverage | Production minimum coverage/work-hour constraints; no named-worker scheduling |
 | Supplier research | Tavily client wired; output only affects research evidence, not seeded offer | Fresh provider verification in this review, public quotas, actual supplier validation |
 | UI | Shared dark tokens/frame/navigation; lavender/mint, smile mark, responsive cards/forms/evidence/error states | Broader accessibility/user testing and hosted verification |
-| Security/authority | Synthetic visitor isolation, deterministic policy, terms hash, SQLite dedup and movements | Authenticated roles, full material hashes, atomic spending reservations, CSRF/request limits, quotas, retention and deployment durability |
+| Security/authority | Synthetic visitor isolation, deterministic policy, terms hash, session-scoped SQLite, request limits, and sponsor calls off by default | Authenticated roles, full material hashes, atomic spending reservations, and a hosted session that survives redeploy |
 
 ## Documentation repairs in this change
 
 - Updated implementation contract for the actual smolstuff package, scenario store, optional model/research clients and shared UI.
 - Replaced stale “no provider clients” / “previews absent” status with actual wiring, while separating old provider reports from fresh evidence.
-- Corrected development settings: .env loader/ignores exist; reorder reset preserves other previews; Render service is smolstuff.
+- Corrected development settings: .env loader and ignores exist, and reorder reset preserves other previews. Render is retired. Vercel is the host. This dark UI is local until a deployment of this checkout is verified.
 - Added docs/DESIGN.md and linked the confirmed visual direction from PRD, scope, fixture, project context, README and AGENTS.
 - Retained the old review explicitly as history; all current status pointers use this file.
 - Unified the formerly separate procurement/empty pages with the same dark shell.

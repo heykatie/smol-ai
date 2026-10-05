@@ -23,7 +23,7 @@ Sender allowlisting is permission to process, not proof of identity or factual c
 
 ## Public demo launch gates
 
-Current cookie is an unguessable 32-hex identifier with HttpOnly, SameSite=Lax and a one-day Max-Age; Secure is optional via DEMO_COOKIE_SECURE. This is not login. Session files have no automatic expiry cleanup. The HTTP handler lacks an explicit CSRF token/origin check, request-size bound, rate limiting and comprehensive malformed-request errors. A cookie expiry does not delete a database. `.gitignore` excludes data and private `.env`/`.env.*` files; `.env.example` is the public placeholder. Styled 400 errors handle invalid numeric input; comprehensive request validation remains open.
+The cookie is an unguessable 32-hex identifier with HttpOnly, SameSite=Lax, and a one-day Max-Age. Secure is set when `DEMO_COOKIE_SECURE=1` or `VERCEL=1`. This is not login. A request removes demo files older than `SMOL_DEMO_TTL_SECONDS`. Posts are size-limited, content-type checked, and refused when the Origin host does not match Host. New session creation is rate-limited. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are positive integers. `.gitignore` excludes `data/` and private `.env` files; `.env.example` is the public placeholder. Styled 400 pages handle invalid numeric input.
 
 Before public paid calls or broader exposure, require:
 
@@ -51,7 +51,7 @@ These are missing consequential choices, not permissions the coding assistant ma
 | D1 | Real mailbox onboarding | First provider, operations mailbox/routing vs mixed inbox, exact scopes, permitted categories and consent wording | Synthetic event source only; no routine uploads as intended production UX |
 | D2 | Real inventory/POS integration | Authoritative system, SKU/location mapping, conflict priority, observation cadence, read/write scopes | Fixture ledger; never overwrite remote quantities |
 | D3 | Public sponsor/model execution | Runtime/provider, specific model, approved total and session cost budget, quota window | Paid calls disabled; deterministic fallback labeled simulated |
-| D4 | Deployment with durability claims | Hosting provider/storage, restart/redeploy guarantees, cleanup/backups and recovery objective | Local persistence while disk survives; no verified hosted durability claim |
+| D4 | Hosted durability | Vercel is the host. The remaining choice is the database: Neon Postgres is recommended and is not provisioned. Backups and cleanup are still unset | Local SQLite while the disk survives; no hosted durability claim |
 | D5 | Real approvals or purchases | Auth/roles, allowed action classes, approval TTL, hard cash limits vs overrideable rules, budget window and reservation semantics | Synthetic approval only; block real executor |
 | D6 | Real data ingestion | Raw-content/fact/audit/vector retention, storage location, third-party handling, erasure and backup exceptions | No private records; public fixtures only |
 | D7 | Live merchant outreach | Participating counterparties, discovery/geo scope, nonbinding message authority, offer expiry/reservation protocol, transfer/dispute responsibility | Two fictional participants; simulated negotiation only |

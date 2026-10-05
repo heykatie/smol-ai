@@ -304,8 +304,8 @@ def staffing_page(saved: Optional[dict], message: str = "") -> str:
     return shell("Staffing coverage", "".join(body))
 
 
-def apply_ops(path: str, action: str, fields: dict) -> None:
-    store = ScenarioStore(path)
+def apply_ops(path: str, action: str, fields: dict, session_id: str = "local") -> None:
+    store = ScenarioStore(path, session_id)
     try:
         if action == "workshop_check":
             result = assess_workshop(_int_field(fields, "attendees", 20), _int_field(fields, "days_until", 7))
@@ -472,8 +472,8 @@ def _start_form() -> str:
     )
 
 
-def load_cards(path: str, reorder_status: str, reorder_bucket: str, reorder_action: str = "") -> list:
-    store = ScenarioStore(path)
+def load_cards(path: str, reorder_status: str, reorder_bucket: str, reorder_action: str = "", session_id: str = "local") -> list:
+    store = ScenarioStore(path, session_id)
     try:
         return load_cards_from(
             store.get("workshop"), store.get("detective"), store.get("rescue"), store.get("staffing"),

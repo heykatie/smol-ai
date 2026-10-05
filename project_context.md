@@ -2,7 +2,7 @@
 
 > Philosophy, architecture, and engineering rules for Claude, Cursor, and other coding assistants.
 > Updated October 4, 2026. All business examples are fictional and use synthetic data.
-> Requirements and acceptance criteria are in [prd.md](prd.md). Reorder fixture numbers are in [demo_spec.md](demo_spec.md). The hackathon boundary is in [mvp_scope.md](mvp_scope.md). Observed behavior is in [README.md](README.md).
+> Requirements and acceptance criteria are in [prd.md](prd.md). Reorder fixture numbers are in [demo_spec.md](demo_spec.md). The current product boundary is in [mvp_scope.md](mvp_scope.md). Observed behavior is in [README.md](README.md). Hosting direction is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 > This document does not claim that a feature is already built. Older suggestions requiring routine manual email selection or approval at every step are superseded.
 
 ## 1. Product summary and vision
@@ -62,11 +62,11 @@ The same engine checks ingredients, packaging, production capacity, existing ord
 
 Do not introduce real store or owner names, addresses, locations, contact details, identifiable correspondence, source-conversation links, or distinctive real-business anecdotes into code fixtures, screenshots, documentation, or presentations. Use generic products, invented counterparties, and synthetic records throughout the demo.
 
-### Hackathon strategy
+### Product direction
 
-This is a solo-developer AI commerce hackathon project, built with substantial help from Claude and Cursor. Optimize for a reliable working demo, clear story, technical credibility, design, meaningful sponsor integrations, and a memorable trust proposition. The conversation's judging categories were Approach/Idea, Technical Execution, Presentation, Design, and X-Factor.
+smolstuff is an ongoing product. There is no submission deadline. Vercel is the hosting target. The earlier Render plan is retired. The public demo still uses fictional business actions.
 
-Build one excellent closed loop before adding breadth. The product addresses common small-business needs. Event logistics, tool availability, and submission requirements must be confirmed separately if needed during implementation; do not imply unverified sponsorship, endorsement, or adoption.
+The original build was shaped as a solo hackathon demo. That history explains the one-loop-first sequence. It does not limit later releases. Do not imply unverified sponsorship, endorsement, or adoption.
 
 ## 3. Zero-chores product principle
 

@@ -1,0 +1,10 @@
+.venv
+.venv-moss
+data
+tests
+.env
+.env.local
+.git
+*.sqlite3
+__pycache__
+.pytest_cache

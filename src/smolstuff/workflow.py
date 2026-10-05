@@ -108,13 +108,25 @@ def _iso(value: datetime) -> str:
 
 
 class WorkflowStore:
-    def __init__(self, path: str, now: Callable[[], datetime] = _utc_now) -> None:
+    def __init__(
+        self,
+        path: str,
+        now: Callable[[], datetime] = _utc_now,
+        session_id: str = "local",
+        connection=None,
+    ) -> None:
         self.path = path
         self.now = now
-        self._conn = sqlite3.connect(path)
-        self._conn.row_factory = sqlite3.Row
-        self._conn.isolation_level = None
-        self._conn.execute("PRAGMA foreign_keys = ON")
+        self.session_id = session_id or "local"
+        self._session_scoped = False
+        self.dialect = "postgres" if connection is not None else "sqlite"
+        if connection is None:
+            self._conn = sqlite3.connect(path)
+            self._conn.row_factory = sqlite3.Row
+            self._conn.isolation_level = None
+            self._conn.execute("PRAGMA foreign_keys = ON")
+        else:
+            self._conn = connection
         self._migrate()
 
     def close(self) -> None:
@@ -137,9 +149,7 @@ class WorkflowStore:
             raise ValueError("A supplier signal needs a deduplication key.")
         self._begin()
         try:
-            existing = self._conn.execute(
-                "SELECT id FROM workflows WHERE dedup_key = ?", (dedup_key,)
-            ).fetchone()
+            existing = self._dedup_row(dedup_key)
             if existing is not None:
                 view = self._view(existing["id"], replayed=True)
                 self._conn.commit()
@@ -150,10 +160,18 @@ class WorkflowStore:
             self._conn.execute(
                 """
                 INSERT INTO workflows (
-                    id, dedup_key, state, origin, action_id, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, NULL, ?, ?)
+                    id, session_id, dedup_key, state, origin, action_id, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
                 """,
-                (workflow_id, dedup_key, WorkflowState.DETECTED.value, RecordOrigin, timestamp, timestamp),
+                (
+                    workflow_id,
+                    self.session_id,
+                    dedup_key,
+                    WorkflowState.DETECTED.value,
+                    RecordOrigin,
+                    timestamp,
+                    timestamp,
+                ),
             )
             self._transition(workflow_id, WorkflowState.INVESTIGATING, "Permitted supplier signal accepted.")
             self._transition(workflow_id, WorkflowState.PLAN_READY, "Purchase drafted from current evidence.")
@@ -372,9 +390,7 @@ class WorkflowStore:
         return (row["order_id"], row["idempotency_key"])
 
     def find_by_dedup(self, dedup_key: str) -> Optional[WorkflowView]:
-        row = self._conn.execute(
-            "SELECT id FROM workflows WHERE dedup_key = ?", (dedup_key,)
-        ).fetchone()
+        row = self._dedup_row(dedup_key)
         if row is None:
             return None
         return self._view(row["id"], replayed=False)
@@ -440,10 +456,10 @@ class WorkflowStore:
             self._conn.execute(
                 """
                 INSERT INTO integration_events (
-                    provider, task, result, effect, recorded_at, status
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    session_id, provider, task, result, effect, recorded_at, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                fields + (_iso(self.now()), status),
+                (self.session_id,) + fields + (_iso(self.now()), status),
             )
             self._conn.commit()
         except Exception:
@@ -454,8 +470,11 @@ class WorkflowStore:
         rows = self._conn.execute(
             """
             SELECT provider, task, result, effect, recorded_at, status
-            FROM integration_events ORDER BY id
-            """
+            FROM integration_events
+            WHERE session_id = ?
+            ORDER BY id
+            """,
+            (self.session_id,),
         ).fetchall()
         return tuple(
             IntegrationEvent(
@@ -473,9 +492,7 @@ class WorkflowStore:
         """Delete one signal's workflow so the local demo can be replayed."""
         self._begin()
         try:
-            row = self._conn.execute(
-                "SELECT id FROM workflows WHERE dedup_key = ?", (dedup_key,)
-            ).fetchone()
+            row = self._dedup_row(dedup_key)
             if row is None:
                 self._conn.commit()
                 return False
@@ -524,7 +541,12 @@ class WorkflowStore:
             )
             self._conn.execute("DELETE FROM actions WHERE workflow_id = ?", (workflow_id,))
             self._conn.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
-            self._conn.execute("DELETE FROM integration_events")
+            if self._session_scoped:
+                self._conn.execute(
+                    "DELETE FROM integration_events WHERE session_id = ?", (self.session_id,)
+                )
+            else:
+                self._conn.execute("DELETE FROM integration_events")
             self._conn.commit()
             return True
         except Exception:
@@ -618,10 +640,16 @@ class WorkflowStore:
         workflow = self._require(workflow_id)
         action = self._current_action(workflow)
         state = WorkflowState(workflow["state"])
-        existing = self._conn.execute(
-            "SELECT action_id FROM receipts WHERE receipt_key = ?",
-            (receipt_key,),
-        ).fetchone()
+        if self._session_scoped:
+            existing = self._conn.execute(
+                "SELECT action_id FROM receipts WHERE session_id = ? AND receipt_key = ?",
+                (self.session_id, receipt_key),
+            ).fetchone()
+        else:
+            existing = self._conn.execute(
+                "SELECT action_id FROM receipts WHERE receipt_key = ?",
+                (receipt_key,),
+            ).fetchone()
         if existing is not None:
             return self._fulfillment(
                 workflow,
@@ -656,10 +684,19 @@ class WorkflowStore:
         receipt_id = uuid.uuid4().hex
         self._conn.execute(
             """
-            INSERT INTO receipts (id, action_id, receipt_key, quantity, origin, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO receipts (
+                id, session_id, action_id, receipt_key, quantity, origin, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (receipt_id, action["id"], receipt_key, quantity, RecordOrigin, _iso(self.now())),
+            (
+                receipt_id,
+                self.session_id,
+                action["id"],
+                receipt_key,
+                quantity,
+                RecordOrigin,
+                _iso(self.now()),
+            ),
         )
         self._conn.execute(
             """
@@ -979,9 +1016,15 @@ class WorkflowStore:
             )
 
     def _require(self, workflow_id: str) -> sqlite3.Row:
-        workflow = self._conn.execute(
-            "SELECT * FROM workflows WHERE id = ?", (workflow_id,)
-        ).fetchone()
+        if self._session_scoped:
+            workflow = self._conn.execute(
+                "SELECT * FROM workflows WHERE id = ? AND session_id = ?",
+                (workflow_id, self.session_id),
+            ).fetchone()
+        else:
+            workflow = self._conn.execute(
+                "SELECT * FROM workflows WHERE id = ?", (workflow_id,)
+            ).fetchone()
         if workflow is None:
             raise WorkflowError("Unknown workflow.")
         return workflow
@@ -1006,23 +1049,90 @@ class WorkflowStore:
             "inventory_movements",
         ):
             raise ValueError("Unknown table.")
+        if self._session_scoped and table == "workflows":
+            row = self._conn.execute(
+                "SELECT COUNT(*) AS n FROM workflows WHERE session_id = ?",
+                (self.session_id,),
+            ).fetchone()
+            return int(row["n"])
+        if self._session_scoped and table == "receipts":
+            row = self._conn.execute(
+                "SELECT COUNT(*) AS n FROM receipts WHERE session_id = ?",
+                (self.session_id,),
+            ).fetchone()
+            return int(row["n"])
+        if self._session_scoped and table == "inventory_movements":
+            row = self._conn.execute(
+                """
+                SELECT COUNT(*) AS n FROM inventory_movements AS movement
+                JOIN receipts ON receipts.id = movement.receipt_id
+                WHERE receipts.session_id = ?
+                """,
+                (self.session_id,),
+            ).fetchone()
+            return int(row["n"])
         row = self._conn.execute("SELECT COUNT(*) AS n FROM {0}".format(table)).fetchone()
         return int(row["n"])
 
     def _begin(self) -> None:
         self._conn.execute("BEGIN IMMEDIATE")
 
+    def _dedup_row(self, dedup_key: str):
+        if self._session_scoped:
+            return self._conn.execute(
+                "SELECT id FROM workflows WHERE session_id = ? AND dedup_key = ?",
+                (self.session_id, dedup_key),
+            ).fetchone()
+        return self._conn.execute(
+            "SELECT id FROM workflows WHERE dedup_key = ?", (dedup_key,)
+        ).fetchone()
+
     def _migrate(self) -> None:
-        self._conn.executescript(
-            """
+        if self.dialect == "postgres":
+            self._conn.executescript(
+                _SCOPED_SCHEMA.replace(
+                    "INTEGER PRIMARY KEY AUTOINCREMENT",
+                    "BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY",
+                )
+            )
+            self._session_scoped = True
+            return
+        existing = self._conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='workflows'"
+        ).fetchone()
+        if existing is None:
+            self._conn.executescript(_SCOPED_SCHEMA)
+            self._session_scoped = True
+            return
+        columns = {
+            row[1] for row in self._conn.execute("PRAGMA table_info(workflows)").fetchall()
+        }
+        self._session_scoped = "session_id" in columns
+        if self._session_scoped:
+            return
+        self._conn.execute(
+            "ALTER TABLE workflows ADD COLUMN session_id TEXT NOT NULL DEFAULT 'local'"
+        )
+        self._conn.execute(
+            "ALTER TABLE receipts ADD COLUMN session_id TEXT NOT NULL DEFAULT 'local'"
+        )
+        self._conn.execute(
+            "ALTER TABLE integration_events ADD COLUMN session_id TEXT NOT NULL DEFAULT 'local'"
+        )
+        self._session_scoped = True
+
+
+_SCOPED_SCHEMA = """
             CREATE TABLE IF NOT EXISTS workflows (
                 id TEXT PRIMARY KEY,
-                dedup_key TEXT NOT NULL UNIQUE,
+                session_id TEXT NOT NULL,
+                dedup_key TEXT NOT NULL,
                 state TEXT NOT NULL,
                 origin TEXT NOT NULL,
                 action_id TEXT,
                 created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
+                updated_at TEXT NOT NULL,
+                UNIQUE (session_id, dedup_key)
             );
 
             CREATE TABLE IF NOT EXISTS actions (
@@ -1080,11 +1190,13 @@ class WorkflowStore:
 
             CREATE TABLE IF NOT EXISTS receipts (
                 id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL,
                 action_id TEXT NOT NULL REFERENCES actions(id),
-                receipt_key TEXT NOT NULL UNIQUE,
+                receipt_key TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
                 origin TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                UNIQUE (session_id, receipt_key)
             );
 
             CREATE TABLE IF NOT EXISTS inventory_movements (
@@ -1099,6 +1211,7 @@ class WorkflowStore:
 
             CREATE TABLE IF NOT EXISTS integration_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
                 provider TEXT NOT NULL,
                 task TEXT NOT NULL,
                 result TEXT NOT NULL,
@@ -1115,8 +1228,7 @@ class WorkflowStore:
                 reason TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
-            """
-        )
+"""
 
 
 def _actor(actor: str) -> str:

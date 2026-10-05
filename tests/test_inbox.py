@@ -235,6 +235,16 @@ def test_server_runs_the_demo_path(tmp_path):
         thread.join(timeout=2)
 
 
+def test_configured_model_stays_on_parser_when_sponsor_calls_are_off(tmp_path, monkeypatch):
+    monkeypatch.setenv("NOVITA_API_KEY", "present")
+    monkeypatch.delenv("SMOL_SPONSOR_CALLS", raising=False)
+    app = InboxApp(str(tmp_path / "inbox.sqlite3"))
+    app.apply("simulate_email")
+    page = app.page()
+    assert "Sponsor calls are off. Parser read lead time 14 to 35 days." in page
+    assert "No live model key is configured" not in page
+
+
 def _get(port: int) -> str:
     with urlopen("http://127.0.0.1:{0}/".format(port)) as response:
         return response.read().decode("utf-8")
