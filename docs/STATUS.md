@@ -21,6 +21,14 @@ Remaining production gates include authenticated identity/roles, real connectors
 
 At source baseline `e7d65bb`, corrected storage and sponsor-limit docstrings in `app.py`, `workflow.py`, `ops_demos.py`, `inbox.py`, `sponsor_budget.py`, and `database.py`. All six edited files parsed successfully; syntax trees were identical after removing docstrings, confirming no executable code changed. Sponsor limits count task attempts; one ZooWork task can issue multiple provider requests. Diff whitespace and local Markdown links were checked. No runtime tests, paid calls, hosted state changes, or deployment were performed.
 
+## Local regression verification — October 4, 2026 (America/Los_Angeles)
+
+Tested source commit `d7df032` on Python 3.14.7. The existing environment ran **92 passed, 1 skipped**; the Postgres module skipped because `psycopg` was absent. Seven initial failures were sandbox restrictions on localhost socket binding, and passed with local-server access.
+
+A separate temporary environment with pytest 9.1.1 and psycopg 3.3.6, plus an isolated local Postgres cluster, then ran the complete suite: **97 passed, no failures or skips**. Command: `python -m pytest -q -ra`, with `PGHOST`/`PGPORT` pointing only to that test cluster, `DATABASE_URL` and provider keys removed from the test environment, and `SMOL_SPONSOR_CALLS=0`. Tests use mocked provider transports and synthetic records. Coverage includes existing session-isolation, duplicate approval/receipt, workflow, sponsor-limit, WSGI, and Postgres behavior tests. The temporary database server was stopped afterward.
+
+No application or test code changed. This verifies the existing local suite; it does not establish hosted Neon configuration, production redeploy/recovery, browser accessibility, fresh provider integration, or a shared hosted spending cap. Previous test counts remain historical below.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.
