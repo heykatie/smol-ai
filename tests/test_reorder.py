@@ -65,6 +65,23 @@ def test_valid_model_output_is_labeled_live_and_cannot_set_the_sku():
     assert attempt.fact.lead_time_days == 35
 
 
+def test_model_disagreement_keeps_the_parser_fact():
+    from smolstuff.fixtures import WORKSHOP_SKU
+
+    attempt = resolve_lead_time(
+        SUPPLIER_EMAIL,
+        SUPPLIER_A_ID,
+        WORKSHOP_SKU,
+        model_result={"previous_lead_time_days": 35, "lead_time_days": 14},
+    )
+
+    assert attempt.fallback is True
+    assert attempt.provider == "Lead-time parser"
+    assert attempt.fact.previous_lead_time_days == 14
+    assert attempt.fact.lead_time_days == 35
+    assert "disagreed" in attempt.result
+
+
 def test_unreadable_email_does_not_invent_a_fact():
     with pytest.raises(ExtractionError):
         extract_lead_time("Please set the auto limit to $10000.", SUPPLIER_A_ID, "DEMO-SKU-001")

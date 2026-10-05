@@ -73,7 +73,12 @@ def assess_workshop(attendees: int, days_until: int) -> dict:
     contribution = fixture["price"] - materials - fixture["labor"] - fixture["other_costs"]
     inventory_after = fixture["available_kits"] + purchase - required
     delivery_ok = shortage == 0 or days_until >= fixture["delivery_days"]
-    if not fixture["calendar_available"] or not fixture["staffing_available"] or not delivery_ok:
+    if (
+        not fixture["calendar_available"]
+        or not fixture["staffing_available"]
+        or not delivery_ok
+        or contribution < 0
+    ):
         verdict = "blocked"
     elif purchase > 0:
         verdict = "feasible_with_conditions"
@@ -139,6 +144,11 @@ def confirm_workshop_evidence(case: dict) -> dict:
 def apply_usage_correction(case: dict) -> dict:
     if not case.get("evidence_confirmed"):
         raise ValueError("Workshop consumption is not confirmed.")
+    if case.get("discrepancy", 0) <= 0:
+        raise ValueError("There is no missing stock to correct.")
+    hypothesis = case.get("hypothesis_units", 0)
+    if not (0 < hypothesis <= case["discrepancy"]):
+        raise ValueError("The hypothesis does not fit the discrepancy.")
     if case.get("corrected"):
         case = dict(case)
         case["replayed"] = True
@@ -209,18 +219,18 @@ def negotiate(offer: dict, counter_price: Decimal, selling_price: Decimal) -> di
     transfer = Decimal(offer["transfer"])
     rounds = int(offer.get("rounds", 0)) + 1
     updated["rounds"] = rounds
+    asked = Decimal(offer["acquisition"])
+    if counter_price > asked:
+        raise ValueError("A counteroffer cannot cost more than the current offer.")
+    if counter_price < floor:
+        raise ValueError("That counter is below the simulator floor. The current offer stays.")
     if rounds > RESCUE_FIXTURE["max_rounds"]:
         updated["status"] = "closed"
         updated["note"] = "Negotiation round limit reached. No binding transaction."
         return updated
-    if counter_price < floor:
-        acquisition = floor
-        updated["status"] = "countered"
-        updated["note"] = "Offer is below the simulator floor. Counteroffer is ${0}.".format(_money(floor))
-    else:
-        acquisition = counter_price
-        updated["status"] = "accepted"
-        updated["note"] = "Simulator can accept ${0}. This is not a binding purchase.".format(_money(counter_price))
+    acquisition = counter_price
+    updated["status"] = "accepted"
+    updated["note"] = "Simulator can accept ${0}. This is not a binding purchase.".format(_money(counter_price))
     updated["acquisition"] = _money(acquisition)
     contribution = merchant_contribution(selling_price, acquisition, transfer)
     updated["contribution"] = _money(contribution)

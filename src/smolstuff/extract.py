@@ -97,6 +97,23 @@ def resolve_lead_time(
                 ),
                 fallback=True,
             )
+        try:
+            parsed = extract_lead_time(message, supplier_id, sku)
+        except ExtractionError:
+            parsed = None
+        if parsed is not None and (previous, current) != (
+            parsed.previous_lead_time_days,
+            parsed.lead_time_days,
+        ):
+            return ExtractionAttempt(
+                fact=parsed,
+                provider="Lead-time parser",
+                status="simulated",
+                result="Model lead times disagreed with the message. Parser kept {0} to {1} days.".format(
+                    parsed.previous_lead_time_days, parsed.lead_time_days
+                ),
+                fallback=True,
+            )
         return ExtractionAttempt(
             fact=LeadTimeFact(supplier_id, sku, previous, current),
             provider="Novita",
@@ -127,11 +144,17 @@ def resolve_lead_time(
 def _validated_model_days(payload: dict):
     if not isinstance(payload, dict):
         raise ExtractionError("Model output was not an object.")
-    previous = int(payload["previous_lead_time_days"])
-    current = int(payload["lead_time_days"])
+    previous = _strict_day(payload["previous_lead_time_days"])
+    current = _strict_day(payload["lead_time_days"])
     if previous < 0 or current < 1 or previous == current or current > 365:
         raise ExtractionError("Model lead times are not usable.")
     return previous, current
+
+
+def _strict_day(value) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ExtractionError("Model lead times must be integers.")
+    return value
 
 
 def call_novita(message: str) -> dict:

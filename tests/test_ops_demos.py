@@ -92,13 +92,39 @@ def test_sale_rescue_rejects_a_low_selling_price():
     assert offers[1]["contribution"] == "27.00"
     low = default_offers(Decimal("90"))
     assert all(item["acceptable"] is False for item in low)
-    countered = negotiate(offers[1], Decimal("70"), Decimal("119"))
-    assert countered["status"] == "countered"
-    assert countered["acquisition"] == "76.00"
     accepted = negotiate(offers[1], Decimal("76"), Decimal("119"))
     assert accepted["status"] == "accepted"
     assert accepted["contribution"] == "27.00"
     assert merchant_contribution(Decimal("119"), Decimal("76"), Decimal("7")) == Decimal("27")
+
+
+def test_losing_workshop_is_blocked():
+    result = assess_workshop(100, 7)
+
+    assert Decimal(result["contribution"]) < 0
+    assert result["verdict"] == "blocked"
+    with pytest.raises(ValueError, match="blocked"):
+        workshop_approve(result)
+
+
+def test_detective_does_not_correct_a_matching_count():
+    case = investigate_stock(20)
+    confirmed = confirm_workshop_evidence(case)
+
+    assert case["closed"] is True
+    with pytest.raises(ValueError, match="no missing stock"):
+        apply_usage_correction(confirmed)
+
+
+def test_counteroffer_cannot_worsen_or_exceed_the_quote():
+    offers = default_offers(Decimal("119"))
+    original = offers[1]
+    with pytest.raises(ValueError, match="below the simulator floor"):
+        negotiate(original, Decimal("70"), Decimal("119"))
+    with pytest.raises(ValueError, match="cannot cost more"):
+        negotiate(original, Decimal("85"), Decimal("119"))
+    assert original["acquisition"] == "76.00"
+    assert original["acceptable"] is True
 
 
 def test_staffing_uses_history_not_the_day_name_alone():

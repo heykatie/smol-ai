@@ -203,12 +203,24 @@ def detective_page(saved: Optional[dict], message: str = "") -> str:
             saved["system_inventory"], saved["unresolved"], saved.get("days_of_supply", "")
         ))
         body.append("</ul>")
-        if not saved.get("evidence_confirmed"):
+        if saved.get("discrepancy", 0) <= 0 and not saved.get("corrected"):
+            body.append("<p>The count matches system inventory. No correction is offered.</p>")
+        elif not saved.get("evidence_confirmed"):
             body.append(_button("detective", "detective_confirm", "Simulate confirming workshop consumption"))
         elif not saved.get("corrected"):
-            body.append(_button("detective", "detective_correct", "Approve 3-unit workshop-usage correction"))
+            body.append(_button(
+                "detective",
+                "detective_correct",
+                "Approve {0}-unit workshop-usage correction".format(saved["hypothesis_units"]),
+            ))
         elif not saved.get("closed"):
-            body.append(_button("detective", "detective_recount", "Simulate recount of 17"))
+            body.append(
+                "<form method=\"post\" action=\"/\">{0}".format(_hidden("detective"))
+                + "<label>Recount <input name=\"recount\" type=\"number\" min=\"0\" value=\"{0}\"></label>".format(
+                    saved["system_inventory"]
+                )
+                + "<button class=\"primary\" name=\"action\" value=\"detective_recount\">Record recount</button></form>"
+            )
         else:
             body.append("<p>Discrepancy closed. The earlier count and the correction stay in the history.</p>")
         if saved.get("history"):
@@ -354,7 +366,8 @@ def apply_ops(path: str, action: str, fields: dict, session_id: str = "local") -
             store.save("detective", updated)
             return
         if action == "detective_recount":
-            updated = apply_recount(_require(store, "detective"), 17)
+            current = _require(store, "detective")
+            updated = apply_recount(current, _int_field(fields, "recount", current["system_inventory"]))
             updated["days_of_supply"] = str(detective_days_of_supply(updated["system_inventory"]))
             if updated.get("closed"):
                 updated["phase"] = "completed"
@@ -370,6 +383,8 @@ def apply_ops(path: str, action: str, fields: dict, session_id: str = "local") -
             return
         if action == "rescue_counter":
             current = _require(store, "rescue")
+            if current.get("phase") in ("authorized", "transferred", "completed"):
+                raise ValueError("This sale is already past negotiation.")
             merchant_id = fields.get("merchant_id", [""])[0]
             counter = Decimal(fields.get("counter_price", ["0"])[0])
             offers = []
