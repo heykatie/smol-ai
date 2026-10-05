@@ -14,7 +14,7 @@ Inspected at commit `d48c344`. This describes the running code and the hosting d
 
 ## What cannot stay on Vercel as it is
 
-The app is a long-running `http.server` process. Each visitor's state is a SQLite file under `data/sessions/`. Vercel Functions are stateless and do not keep that disk. A redeploy or a different instance would lose or split those files.
+Locally, the app is a long-running `http.server` process and each visitor's state is a SQLite file under `data/sessions/`. On Vercel, `DATABASE_URL` points at Neon, so the workflow and preview rows are in Postgres instead of that temporary disk.
 
 | Piece | Today | Hosted direction |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ The app is a long-running `http.server` process. Each visitor's state is a SQLit
 
 ## Hosting decision
 
-Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production serves the dark daily brief at `https://smolstuff.vercel.app`. Neon Free is connected to the Vercel project in the Washington, D.C. region. The app uses it when `DATABASE_URL` is set. Local development stays on SQLite when that variable is empty. A hosted session is not durable until an approval is still present after a redeploy.
+Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production serves the dark daily brief at `https://smolstuff.vercel.app`. Neon Free is connected to the Vercel project in the Washington, D.C. region. The app uses it when `DATABASE_URL` is set. Local development stays on SQLite when that variable is empty. One production check on 2026-10-05 approved a reorder, redeployed, and the same session was still awaiting receipt with stock at 21.
 
 ## Database
 
