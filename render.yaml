@@ -1,10 +1,10 @@
 services:
   - type: web
-    name: smol-ai
+    name: smolstuff
     runtime: python
     plan: free
     buildCommand: "python -m compileall src"
-    startCommand: "PYTHONPATH=src python -m smol_ai.inbox"
+    startCommand: "PYTHONPATH=src python -m smolstuff.inbox"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.11"

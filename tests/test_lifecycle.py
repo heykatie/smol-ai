@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from smol_ai.lifecycle import (
+from smolstuff.lifecycle import (
     WorkflowSnapshot,
     WorkflowState,
     can_transition,

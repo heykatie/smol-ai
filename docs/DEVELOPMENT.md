@@ -6,14 +6,14 @@ Read PRD → MVP_SCOPE → DEMO_SPEC → IMPLEMENTATION_CONTRACT → SECURITY_AN
 
 ## Local setup
 
-Python 3.9+ is declared. The October 4 review ran the 50-test baseline on Python 3.14; the Render manifest pins Python 3.11.11, which was not exercised by this review. Application runtime uses only the standard library. Python imports remain `smol_ai` pending a separate technical-name migration.
+Python 3.9+ is declared. The October 4 review ran the 50-test baseline on Python 3.14; the Render manifest pins Python 3.11.11, which was not exercised by this review. Application runtime uses only the standard library. Python imports are `smolstuff`.
 
 ```bash
 git clone https://github.com/heykatie/smolstuff.git
 cd smolstuff
 python3 -m venv .venv
 .venv/bin/python -m pip install "pytest>=8.0"
-PYTHONPATH=src .venv/bin/python -m smol_ai.inbox
+PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
 Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at awaiting receipt (stock 21), simulate full receipt (stock 121), then reset. Decline creates no order. This process reads no private mailbox and sends no external message/purchase.

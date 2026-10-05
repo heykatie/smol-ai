@@ -2,11 +2,11 @@ from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
-from smol_ai.fixtures import AUTO_ELIGIBLE_PURCHASE, EXAMPLE_POLICY, NEEDS_APPROVAL_PURCHASE
-from smol_ai.lifecycle import WorkflowState
-from smol_ai.money import Money
-from smol_ai.policy import PolicyDecision
-from smol_ai.workflow import WorkflowStore
+from smolstuff.fixtures import AUTO_ELIGIBLE_PURCHASE, EXAMPLE_POLICY, NEEDS_APPROVAL_PURCHASE
+from smolstuff.lifecycle import WorkflowState
+from smolstuff.money import Money
+from smolstuff.policy import PolicyDecision
+from smolstuff.workflow import WorkflowStore
 
 
 def _open(tmp_path, name="demo.sqlite3"):

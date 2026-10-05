@@ -1,9 +1,9 @@
 from dataclasses import replace
 from decimal import Decimal
 
-from smol_ai.fixtures import EXAMPLE_POLICY, NEEDS_APPROVAL_PURCHASE
-from smol_ai.lifecycle import WorkflowSnapshot, WorkflowState, is_complete
-from smol_ai.workflow import WorkflowStore
+from smolstuff.fixtures import EXAMPLE_POLICY, NEEDS_APPROVAL_PURCHASE
+from smolstuff.lifecycle import WorkflowSnapshot, WorkflowState, is_complete
+from smolstuff.workflow import WorkflowStore
 
 BASELINE = Decimal("21")
 

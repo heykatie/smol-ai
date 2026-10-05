@@ -2,8 +2,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 import pytest
 
-from smol_ai.fixtures import WORKSHOP_SUPPLY_PACK
-from smol_ai.inventory import InventoryInputs, assess_supply
+from smolstuff.fixtures import WORKSHOP_SUPPLY_PACK
+from smolstuff.inventory import InventoryInputs, assess_supply
 
 
 def _cents(value):

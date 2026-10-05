@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-from smol_ai.money import Money, transaction_total
+from smolstuff.money import Money, transaction_total
 
 
 def purchase_terms_hash(

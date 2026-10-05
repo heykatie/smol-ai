@@ -15,11 +15,11 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Callable, Optional
 
-from smol_ai.fixtures import RecordOrigin
-from smol_ai.lifecycle import WorkflowState, can_transition
-from smol_ai.money import Money, transaction_total
-from smol_ai.policy import GuardedPurchasePolicy, PolicyDecision, PurchaseProposal, evaluate_purchase
-from smol_ai.terms import purchase_terms_hash
+from smolstuff.fixtures import RecordOrigin
+from smolstuff.lifecycle import WorkflowState, can_transition
+from smolstuff.money import Money, transaction_total
+from smolstuff.policy import GuardedPurchasePolicy, PolicyDecision, PurchaseProposal, evaluate_purchase
+from smolstuff.terms import purchase_terms_hash
 
 
 class WorkflowError(Exception):
@@ -93,7 +93,10 @@ class IntegrationEvent:
 
 
 _INTEGRATION_STATUSES = frozenset({"live", "simulated", "replayed"})
-_SECRET_TEXT = re.compile(r"(api[_-]?key|secret|token|password|zwp_|sk-|bearer\s)", re.IGNORECASE)
+_SECRET_TEXT = re.compile(
+    r"(api[_-]?key|secret|token|password|zwp_|sk-|sk_|tvly-|band_|bearer\s)",
+    re.IGNORECASE,
+)
 
 
 def _utc_now() -> datetime:

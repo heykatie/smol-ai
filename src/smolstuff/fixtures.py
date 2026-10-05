@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from smol_ai.inventory import InventoryInputs
-from smol_ai.money import Money
-from smol_ai.policy import GuardedPurchasePolicy, PurchaseProposal
+from smolstuff.inventory import InventoryInputs
+from smolstuff.money import Money
+from smolstuff.policy import GuardedPurchasePolicy, PurchaseProposal
 
 RecordOrigin = "simulated"
 

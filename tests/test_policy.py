@@ -3,14 +3,14 @@ from decimal import Decimal
 
 import pytest
 
-from smol_ai.fixtures import (
+from smolstuff.fixtures import (
     AUTO_ELIGIBLE_PURCHASE,
     EXAMPLE_POLICY,
     NEEDS_APPROVAL_PURCHASE,
     UNTRUSTED_OVERRIDE_ATTEMPT,
 )
-from smol_ai.money import Money
-from smol_ai.policy import PolicyDecision, evaluate_purchase, proposal_from_mapping
+from smolstuff.money import Money
+from smolstuff.policy import PolicyDecision, evaluate_purchase, proposal_from_mapping
 
 
 def test_sixty_one_dollar_order_needs_approval_under_forty_dollar_limit():

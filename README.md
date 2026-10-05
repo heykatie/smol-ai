@@ -2,11 +2,11 @@
 
 **An operations team for small businesses. From incoming signal to verified resolution.**
 
-smolstuff is a privacy-first AI operations system for small local businesses. The intended product automatically triages permitted email, extracts actionable work, investigates inventory discrepancies, plans replenishment using sales velocity and supplier facts, identifies days needing less coverage, and can coordinate a sale rescue with participating merchants. Owners set access and authority once; routine analysis runs in the background and sensitive commitments wait for approval. The working demo today covers one simulated reorder loop.
+smolstuff is a privacy-first operations agent for very small businesses. The owner sets boundaries once. The system handles a routine reorder and asks for approval only when the purchase is outside that authority.
 
 > **Automate the work, not the authority.**
 
-Read [PRD.md](PRD.md) for release requirements, [MVP_SCOPE.md](MVP_SCOPE.md) for staged scope, and [project_context.md](project_context.md) for the broader vision. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) maps requirements to the existing code; [the review](docs/REVIEW.md) records gaps against the inspected live commit. These documents describe targets separately from current behavior.
+This README describes what the code does now. Requirements, fixtures, scope, and engineering rules are linked under Documents. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [the review](docs/REVIEW.md) record an earlier check of the code against those requirements.
 
 ## What runs today
 
@@ -15,73 +15,124 @@ One simulated procurement workflow for one fictional product, the workshop suppl
 | Step | Behavior |
 | --- | --- |
 | Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. This is a demonstration trigger, not a live mailbox subscription. |
-| Extraction | A parser returns the configured supplier and `DEMO-SKU-001`, plus lead times 14 and 35. Other sentences cannot change policy. |
+| Extraction | Waiting on a Novita key. Until then a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
 | Recommendation | Order 100 units from Supplier B because that is the minimum. $54 merchandise + $7 shipping = $61. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
 | Approval | Purchases auto-execute only under $40. Every other configured check passes, so the limit is the only reason this order waits. |
 | After approval | The saved workflow submits one simulated order and records a matching confirmation. Stock does not change. A second click does not create a second order. |
 | Receipt | **Simulate receiving 100 units** adds those units to the 21 already available. On hand becomes 121. No extra sales are subtracted. The workflow completes only after that receipt. |
-| Refresh | Each visitor's workflow is a separate SQLite file under `data/sessions/`. Reloading the page resumes that session. **Reset demo** deletes only that file. This persists while the host retains its disk; the current hosting configuration does not establish durable storage across redeploys. |
+| Refresh | Each visitor has one SQLite file under `data/sessions/`. Reloading the page resumes that file. **Reset demo** clears the reorder workflow and its tool records. It does not delete the file, so the other previews in that session remain. This persists while the host retains its disk; the current hosting configuration does not establish durable storage across redeploys. |
 
-Live integrations: none. Email intake, purchase submission, confirmation, and receipt run through local demo adapters. Their records are `simulated` or `replayed`. ZooWork, BAND, Moss, Tavily, Novita, and browser verification are not called. Entire is development provenance and is not part of the runtime feed.
+Sponsor status, from observed calls rather than from the presence of a key:
+
+| Tool | Observed status |
+| --- | --- |
+| Tavily | Verified in the reorder demo. **Start interactive demo** runs one basic search and records provider Tavily, status live, and public source links. Those links do not change the seeded $61 offer. |
+| Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
+| ZooWork | A models read and an empty agent create succeeded, and that agent was deleted. No operations task has run. |
+| BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
+| Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
+| Entire | Development provenance only. This repository is not capturing sessions. |
+
+The public site is not deployed. No per-session paid-call budget is configured.
 
 Confirmation does not complete the workflow. Completion is the reconciled receipt.
 
-## Planned, not built
+The same session can open four more synthetic workflows from the daily brief. They do not change the reorder product's 21 units.
 
-These are not implemented at the inspected commit. The next release targets are defined in PRD.md; absence today does not remove them from the product:
+| Workflow | What it does |
+| --- | --- |
+| Can we take this on? | Workshop feasibility. Default: 20 attendees, 18 kits, buy the minimum 10, contribution $700, 8 kits left. A two-day event with missing kits is blocked. |
+| Where did the missing stock go? | Inventory Detective for a separate 20-unit count. It does not invent a cause. Confirming workshop use can correct 3 units and leave 1 unresolved until a matching recount. |
+| Save the sale | Two merchant simulators. Default contributions are $21 and $27. A $90 selling price recommends neither. |
+| Plan the right coverage | Historical averages and a 15-minute workload model. Saving a plan does not schedule a person. |
 
-- Live mailbox, Shopify, or payment integrations
-- Model extraction, search, browser verification, or multi-agent coordination
-- Merchant negotiation, staffing forecasts, opportunity feasibility, and returns
-- Account onboarding, multiple privacy modes, and analytics dashboards
+Collaboration inquiries and custom orders are not separate workflows. They would use the same feasibility engine later.
+
+## Not running
+
+These remain requirements or later work. They are not available in the demo:
+
+- A public URL
+- Live mailbox, Shopify, payment, or browser-verification integrations
+- A verified Novita extraction, ZooWork operations task, BAND handoff, or Moss retrieval inside the Action Inbox
+- Returns, account onboarding, multiple privacy modes, and analytics dashboards
 
 The purchase store can record a short receipt without closing the workflow. That branch is not a button on the submitted demo. The demo receipt control receives the full order.
 
-## Demo
+## Stack
 
-Requirements: Python 3.9+.
+Python 3.9 or newer, using the standard library for the HTTP server and SQLite. Money is `Decimal`, not floating point. Tests use pytest. `render.yaml` is a prepared Render web service and is not a live deployment. A separate `.venv-moss` directory can query Moss with Python 3.12. It is gitignored and is not required to run the demo.
+
+## Run locally
 
 ```bash
 git clone https://github.com/heykatie/smolstuff.git
 cd smolstuff
 python3 -m venv .venv
 .venv/bin/python -m pip install "pytest>=8.0"
-PYTHONPATH=src .venv/bin/python -m smol_ai.inbox
+PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
-Open http://127.0.0.1:8765
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the server binds `0.0.0.0` on that port so a host such as Render can reach it.
 
 1. Click **Start interactive demo**.
 2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $54 + $7 shipping = $61, and **Approve simulated $61 order**.
 3. Click **Approve simulated $61 order** once. The page should say the order is confirmed and awaiting receipt. Available inventory stays 21.
 4. Refresh the browser. The same awaiting-receipt state should still be there.
 5. Click **Simulate receiving 100 units**. Available inventory becomes 121 and the workflow is complete.
-6. Click **Reset demo** to run it again. **Decline** on the approval card submits no order. **Review evidence** opens the calculations, the seeded Supplier B offer, and the tool records.
+6. Click **Reset demo** to run the reorder again. **Decline** submits no order. **Review evidence** opens the calculations, the seeded Supplier B offer, and the tool records.
 
 ```bash
 .venv/bin/python -m pytest -q
 ```
+
+## Configuration
+
+Copy `.env.example` to `.env`. The server reads that file on startup and does not print the values. `.env` is gitignored. Put the same names in the Render Environment tab when the site is deployed. Do not put secrets in source, Git, or chat.
+
+| Name | Role |
+| --- | --- |
+| `NOVITA_API_KEY` | Optional supplier-email extraction. Missing key uses the labeled parser. |
+| `NOVITA_MODEL` | Optional model name. |
+| `TAVILY_API_KEY` | Public supplier-research links for the reorder demo. |
+| `ZOOWORK_API_KEY` | Operations agent. A funded balance is required before a paid task. |
+| `ZOOWORK_PROJECT_ID` | Local label. Requests use the API key’s project, not this field. |
+| `MOSS_PROJECT_ID`, `MOSS_PROJECT_KEY` | Policy retrieval. Both are required. The inbox does not call Moss. |
+| `BAND_USER_KEY` | Lists and can register agents. |
+| `BAND_RESEARCH_AGENT_KEY`, `BAND_CLERK_AGENT_KEY` | One-time agent keys for a future handoff. Not created yet. |
+
+## Documents
+
+| File | Role |
+| --- | --- |
+| [prd.md](prd.md) | Requirements and acceptance criteria |
+| [demo_spec.md](demo_spec.md) | Reorder numbers and screen copy |
+| [mvp_scope.md](mvp_scope.md) | Hackathon boundary |
+| [project_context.md](project_context.md) | Product philosophy, architecture, and [engineering rules](project_context.md#25-engineering-rules) |
+
+If a reorder number disagrees, `demo_spec.md` wins. If the documents disagree about what is built, this README, the code, and the tests win. If they disagree about what is required, `prd.md` wins.
 
 ## Repository
 
 ```text
 smolstuff/
 ├── README.md
-├── AGENTS.md             # Cursor working instructions
-├── PRD.md                # Product/release requirements
-├── docs/                 # Technical contracts, security, decisions, setup, review
-├── MVP_SCOPE.md          # What this hackathon build includes
-├── DEMO_SPEC.md          # Numbers and copy for this demo
-├── project_context.md    # Broader product vision
-├── render.yaml           # Render web service settings
-├── src/smol_ai/          # Python core and local inbox
+├── AGENTS.md
+├── prd.md
+├── mvp_scope.md
+├── demo_spec.md
+├── docs/
+├── project_context.md
+├── render.yaml
+├── .env.example
+├── src/smolstuff/
 ├── tests/
-└── data/sessions/        # Created at runtime, one SQLite file per visitor. Not committed.
+└── data/sessions/        # Created at runtime. Not committed.
 ```
 
-See [development and deployment](docs/DEVELOPMENT.md), [security and pending decisions](docs/SECURITY_AND_DECISIONS.md), and [integration contracts](docs/INTEGRATIONS.md). The product name and GitHub repo are smolstuff. The existing Python import path `smol_ai`, package metadata, cookie name, and hosting service identifier remain legacy technical names pending a separate migration.
+See [development and deployment](docs/DEVELOPMENT.md), [security and pending decisions](docs/SECURITY_AND_DECISIONS.md), and [integration contracts](docs/INTEGRATIONS.md). The product name, GitHub repo, and Python package are smolstuff.
 
 Examples use fictional businesses and synthetic numbers. Do not commit credentials or real merchant data.
 

@@ -1,7 +1,8 @@
 """Local Action Inbox.
 
 A browser page over the saved purchase workflow. The numbers and the approval
-come from the deterministic core. This server does not call a model or a sponsor.
+come from the deterministic core. A configured sponsor may add a labeled record.
+It cannot change quantity, price, or approval.
 """
 
 from __future__ import annotations
@@ -17,11 +18,22 @@ from typing import Optional
 import uuid
 from urllib.parse import parse_qs, urlparse
 
-from smol_ai.fixtures import EXAMPLE_POLICY, WORKSHOP_SUPPLY_PACK
-from smol_ai.inventory import SupplyAssessment, assess_supply
-from smol_ai.lifecycle import WorkflowState
-from smol_ai.reorder import ReorderPlan, build_demo_plan
-from smol_ai.workflow import FulfillmentView, WorkflowStore, WorkflowView
+from smolstuff.fixtures import EXAMPLE_POLICY, WORKSHOP_SUPPLY_PACK
+from smolstuff.inventory import SupplyAssessment, assess_supply
+from smolstuff.lifecycle import WorkflowState
+from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
+from smolstuff.demo_ui import (
+    apply_ops,
+    dashboard_page,
+    detective_page,
+    empty_cards,
+    load_cards,
+    rescue_page,
+    staffing_page,
+    workshop_page,
+)
+from smolstuff.ops_demos import ScenarioStore
+from smolstuff.workflow import FulfillmentView, WorkflowStore, WorkflowView
 
 DEMO_SIGNAL_KEY = "demo-supplier-lead-time-35"
 MAIL_ADAPTER = "Mail demo adapter"
@@ -50,7 +62,7 @@ _PAGE = Template(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>smol.ai — Action Inbox</title>
+  <title>smolstuff — Action Inbox</title>
   <style>
     :root { color-scheme: light; }
     body {
@@ -74,7 +86,10 @@ _PAGE = Template(
     form { display: inline; }
     button { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; border-radius: 999px; padding: 0.55rem 0.95rem; margin: 0 0.4rem 0.4rem 0; cursor: pointer; }
     button.primary { background: #1c1915; color: #fffdf8; border: 1px solid #1c1915; }
-    button.secondary { background: transparent; border: 1px solid #c9bfb2; }
+    button.secondary, summary.evidence { background: transparent; border: 1px solid #c9bfb2; }
+    summary.evidence { display: inline-block; border-radius: 999px; padding: 0.55rem 0.95rem; margin: 0 0.4rem 0.4rem 0; cursor: pointer; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; }
+    summary.evidence::-webkit-details-marker { display: none; }
+    button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid #1c1915; outline-offset: 3px; }
     h2 { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; margin: 1.25rem 0 0.4rem; }
     ol { margin: 0; padding-left: 1.2rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.92rem; }
     li { margin: 0.25rem 0; }
@@ -93,7 +108,7 @@ _PAGE = Template(
       <p class="note">$note</p>
       $actions
       <details id="evidence">
-        <summary>Review evidence</summary>
+        <summary class="evidence">Review evidence</summary>
         $evidence
       </details>
       <p class="built-with"><strong>Built with</strong> $built_with</p>
@@ -115,7 +130,7 @@ class InboxApp:
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
             if workflow is None:
                 return _EMPTY_PAGE
-            plan = build_demo_plan()
+            plan = self._plan()
             baseline = WORKSHOP_SUPPLY_PACK.sellable_on_hand
             progress = store.progress(workflow.workflow_id, baseline)
             order = store.current_order(workflow.workflow_id)
@@ -132,22 +147,28 @@ class InboxApp:
         if action not in _ACTIONS:
             raise ValueError("Unknown inbox action.")
         baseline = WORKSHOP_SUPPLY_PACK.sellable_on_hand
-        plan = build_demo_plan()
         store = WorkflowStore(self.path)
         try:
             if action == "reset":
                 store.reset_signal(DEMO_SIGNAL_KEY)
+                ScenarioStore(self.path).reset("supplier_fact")
                 return
             if action == "simulate_email":
+                attempt = self._extract_supplier_fact()
+                plan = plan_reorder(attempt.fact)
+                self._save_supplier_fact(attempt)
                 started = store.start_purchase(DEMO_SIGNAL_KEY, plan.proposal, EXAMPLE_POLICY)
                 store.record_integration(
-                    MAIL_ADAPTER,
-                    "Ingest a permitted supplier email",
-                    "Configured monitoring rule accepted a simulated Supplier A message. Lead time increased from 14 days to 35 days.",
-                    "Returned the existing decision." if started.replayed else "Opened the reorder decision.",
-                    "replayed" if started.replayed else "simulated",
+                    attempt.provider,
+                    "Extract supplier lead time from a synthetic email",
+                    attempt.result,
+                    "Returned the existing decision." if started.replayed else "Planning uses these lead times. Prices and approval stay in application code.",
+                    "replayed" if started.replayed else attempt.status,
                 )
+                if not started.replayed:
+                    self._record_supplier_research(store)
                 return
+            plan = self._plan()
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
             if workflow is None:
                 return
@@ -258,6 +279,130 @@ class InboxApp:
             "replayed" if receipt.replayed else "simulated",
         )
 
+    def view(self, scenario: str = "home") -> str:
+        if scenario == "reorder":
+            return self.page()
+        if scenario == "workshop":
+            return self._saved_page("workshop", workshop_page)
+        if scenario == "detective":
+            return self._saved_page("detective", detective_page)
+        if scenario == "rescue":
+            return self._saved_page("rescue", rescue_page)
+        if scenario == "staffing":
+            return self._saved_page("staffing", staffing_page)
+        return self._home()
+
+    def route(self, action: str, fields: dict) -> str:
+        if action.startswith(("workshop_", "detective_", "rescue_", "staffing_")):
+            apply_ops(self.path, action, fields)
+            return fields.get("scenario", ["home"])[0]
+        self.apply(action)
+        return fields.get("scenario", ["reorder"])[0]
+
+    def _saved_page(self, name: str, renderer):
+        if not os.path.exists(self.path):
+            return renderer(None)
+        store = ScenarioStore(self.path)
+        try:
+            return renderer(store.get(name))
+        finally:
+            store.close()
+
+    def _home(self) -> str:
+        status, bucket, action = self._reorder_card()
+        if os.path.exists(self.path):
+            cards = load_cards(self.path, status, bucket, action)
+            event_store = WorkflowStore(self.path)
+            try:
+                events = event_store.list_integration_events()
+            finally:
+                event_store.close()
+        else:
+            cards = empty_cards()
+            events = ()
+        return dashboard_page(cards, events)
+
+    def _reorder_card(self):
+        start = (
+            '<form method="post" action="/"><input type="hidden" name="scenario" value="reorder">'
+            '<input type="hidden" name="action" value="simulate_email">'
+            '<button class="primary" type="submit">Start interactive demo</button></form>'
+        )
+        if not os.path.exists(self.path):
+            return "Not started", "Not started", start
+        store = WorkflowStore(self.path)
+        try:
+            workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
+        finally:
+            store.close()
+        if workflow is None:
+            return "Not started", "Not started", start
+        if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
+            approve = (
+                '<form method="post" action="/"><input type="hidden" name="scenario" value="reorder">'
+                '<input type="hidden" name="action" value="approve">'
+                '<button class="primary" type="submit">Approve simulated $61 order</button></form>'
+            )
+            return "Decision needed", "Needs your decision", approve
+        if workflow.state == WorkflowState.AWAITING_RECEIPT:
+            return "Awaiting receipt", "In progress", ""
+        if workflow.state == WorkflowState.COMPLETED:
+            return "Replenishment workflow completed", "Completed", ""
+        if workflow.state == WorkflowState.DECLINED:
+            return "Declined", "Completed", ""
+        return workflow.state.value, "In progress", ""
+
+    def _plan(self):
+        saved = None
+        if os.path.exists(self.path):
+            store = ScenarioStore(self.path)
+            try:
+                saved = store.get("supplier_fact")
+            finally:
+                store.close()
+        if saved and saved.get("current"):
+            from smolstuff.extract import LeadTimeFact
+            from smolstuff.fixtures import SUPPLIER_A_ID, WORKSHOP_SKU
+            fact = LeadTimeFact(
+                SUPPLIER_A_ID, WORKSHOP_SKU, int(saved["previous"]), int(saved["current"])
+            )
+            return plan_reorder(fact)
+        return build_demo_plan()
+
+    def _record_supplier_research(self, store) -> None:
+        from smolstuff.research import research_supplier
+
+        attempt = research_supplier()
+        store.record_integration(
+            attempt.provider,
+            attempt.task,
+            attempt.result,
+            attempt.effect,
+            attempt.status,
+        )
+
+    def _extract_supplier_fact(self):
+        from smolstuff.extract import call_novita, resolve_lead_time
+        from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL, WORKSHOP_SKU
+
+        model_result = None
+        model_error = False
+        if os.environ.get("NOVITA_API_KEY"):
+            try:
+                model_result = call_novita(SUPPLIER_EMAIL)
+            except Exception:
+                model_error = True
+        return resolve_lead_time(SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU, model_result, model_error)
+
+    def _save_supplier_fact(self, attempt) -> None:
+        ScenarioStore(self.path).save("supplier_fact", {
+            "phase": "extracted",
+            "previous": attempt.fact.previous_lead_time_days,
+            "current": attempt.fact.lead_time_days,
+            "provider": attempt.provider,
+            "status": attempt.status,
+        })
+
 
 def render_inbox(
     workflow: WorkflowView,
@@ -294,8 +439,8 @@ def _status_copy(progress, order, plan: ReorderPlan):
             "You have about {0} days of stock. Your supplier now needs {1} days to replenish it.".format(
                 _whole_days(plan.days_of_supply), plan.lead_time_days
             ),
-            "Warehouse stock and existing orders cannot cover the gap. Supplier B offers an alternative with an estimated {0}-day delivery.".format(
-                plan.delivery_days
+            "There is about a {0}-day gap. Warehouse stock and existing orders cannot cover the gap. Supplier B offers an alternative with an estimated {1}-day delivery.".format(
+                _whole_days(plan.projected_gap_days), plan.delivery_days
             ),
             "Order {0} units from Supplier B".format(plan.quantity),
             "{0}. Minimum order: {1} units. This buys more than the immediate shortage. This purchase exceeds your below-$40 automatic spending limit. The other configured checks pass.".format(
@@ -419,14 +564,14 @@ def _status_copy(progress, order, plan: ReorderPlan):
 
 
 def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tuple], events) -> str:
-    from smol_ai.fixtures import RECENT_UNIT_SALES, SUPPLIER_EMAIL
+    from smolstuff.fixtures import RECENT_UNIT_SALES, SUPPLIER_EMAIL
 
     days = plan.days_of_supply.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
     gap = plan.projected_gap_days.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
     sales = ", ".join(format(day, "f") for day in RECENT_UNIT_SALES)
     sections = [
         "<h2>Supplier message</h2><pre>{0}</pre>".format(escape(SUPPLIER_EMAIL)),
-        "<p>Arrived through the configured monitoring rule. Parsed locally. Not a live model call.</p>",
+        _extraction_note(events),
         "<h2>Sales and calculations</h2>",
         "<p>Last {0} days: {1}. Total {2}. Velocity {2} / {0} = {3} units/day.</p>".format(
             plan.sample_days,
@@ -484,6 +629,13 @@ def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tupl
     return "".join(sections)
 
 
+def _extraction_note(events) -> str:
+    extraction = next((event for event in events if event.task.startswith("Extract")), None)
+    if extraction is not None and extraction.status == "live":
+        return "<p>Arrived through the configured monitoring rule. Lead times came from a verified Novita call. Prices and the spending limit did not.</p>"
+    return "<p>Arrived through the configured monitoring rule. Read by the local parser fallback. Not a verified live model call.</p>"
+
+
 def _cash(amount: Decimal) -> str:
     quantized = amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     if quantized == quantized.to_integral_value():
@@ -514,7 +666,7 @@ _EMPTY_PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>smol.ai — Action Inbox</title>
+  <title>smolstuff — Action Inbox</title>
   <style>
     body { margin: 0; font-family: Georgia, serif; background: #f6f3ec; color: #1c1915; }
     main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1.25rem; }
@@ -526,7 +678,7 @@ _EMPTY_PAGE = """<!DOCTYPE html>
   <main>
     <p>Fictional business data. Purchases and deliveries are simulated.</p>
     <h1>Your operations, followed through.</h1>
-    <p>smol.ai connects business signals, investigates what needs attention, and completes routine workflows within rules you control.</p>
+    <p>smolstuff connects business signals, investigates what needs attention, and completes routine workflows within rules you control.</p>
     <form method="post" action="/">
       <input type="hidden" name="action" value="simulate_email">
       <button type="submit">Start interactive demo</button>
@@ -540,7 +692,6 @@ _EMPTY_PAGE = """<!DOCTYPE html>
 def _decision_buttons(total: str) -> str:
     return "".join(
         [
-            '<button type="button" class="secondary" onclick="var panel=document.getElementById(\'evidence\'); panel.open=true; panel.scrollIntoView();">Review evidence</button>',
             _form("approve", "Approve simulated ${0} order".format(total), "primary"),
             _form("decline", "Decline", "secondary"),
             _form("reset", "Reset demo", "secondary"),
@@ -604,7 +755,8 @@ def make_handler(app: InboxApp):
             if urlparse(self.path).path != "/":
                 self._send(404, "Not found")
                 return
-            self._send(200, app.page())
+            scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
+            self._send(200, app.view(scenario))
 
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/":
@@ -614,12 +766,12 @@ def make_handler(app: InboxApp):
             fields = parse_qs(self.rfile.read(length).decode("utf-8"))
             action = fields.get("action", [""])[0]
             try:
-                app.apply(action)
+                scenario = app.route(action, fields)
             except ValueError:
                 self._send(400, "Unknown action")
                 return
             self.send_response(303)
-            self.send_header("Location", "/")
+            self.send_header("Location", _scenario_location(scenario))
             self.end_headers()
 
         def log_message(self, fmt: str, *args) -> None:
@@ -652,11 +804,13 @@ def make_session_handler(directory: str):
             if urlparse(self.path).path != "/":
                 self._send(404, "Not found")
                 return
+            scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
-            if session_id is None or not (root / "{0}.sqlite3".format(session_id)).exists():
-                self._send(200, _EMPTY_PAGE)
+            path = None if session_id is None else root / "{0}.sqlite3".format(session_id)
+            if path is None or not path.exists():
+                self._send(200, _blank_scenario(scenario))
                 return
-            self._send(200, InboxApp(str(root / "{0}.sqlite3".format(session_id))).page())
+            self._send(200, InboxApp(str(path)).view(scenario))
 
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/":
@@ -671,24 +825,19 @@ def make_session_handler(directory: str):
                 session_id = uuid.uuid4().hex
                 new_cookie = True
             path = root / "{0}.sqlite3".format(session_id)
-            if action == "reset":
-                if path.exists():
-                    path.unlink()
-                self._redirect(session_id if new_cookie else None)
-                return
             try:
-                InboxApp(str(path)).apply(action)
+                scenario = InboxApp(str(path)).route(action, fields)
             except ValueError:
                 self._send(400, "Unknown action")
                 return
-            self._redirect(session_id if new_cookie else None)
+            self._redirect(session_id if new_cookie else None, scenario)
 
         def log_message(self, fmt: str, *args) -> None:
             return
 
-        def _redirect(self, session_id: Optional[str]) -> None:
+        def _redirect(self, session_id: Optional[str], scenario: str = "home") -> None:
             self.send_response(303)
-            self.send_header("Location", "/")
+            self.send_header("Location", _scenario_location(scenario))
             if session_id:
                 self.send_header("Set-Cookie", _session_cookie(session_id))
             self.end_headers()
@@ -711,11 +860,48 @@ def serve_sessions(directory: str, host: str = HOST, port: int = PORT) -> None:
 
 
 def main() -> None:
+    _load_local_env()
     root = Path(__file__).resolve().parents[2]
     directory = root / "data" / "sessions"
     port = int(os.environ.get("PORT", str(PORT)))
     host = "0.0.0.0" if "PORT" in os.environ else HOST
     serve_sessions(str(directory), host, port)
+
+
+def _blank_scenario(scenario: str) -> str:
+    if scenario == "workshop":
+        return workshop_page(None)
+    if scenario == "detective":
+        return detective_page(None)
+    if scenario == "rescue":
+        return rescue_page(None)
+    if scenario == "staffing":
+        return staffing_page(None)
+    if scenario == "reorder":
+        return _EMPTY_PAGE
+    return dashboard_page(empty_cards())
+
+
+def _load_local_env() -> None:
+    """Read .env into the process. Never print the values."""
+    path = Path(__file__).resolve().parents[2] / ".env"
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        name, value = stripped.split("=", 1)
+        name = name.strip()
+        value = value.strip().strip('"').strip("'")
+        if name and name not in os.environ:
+            os.environ[name] = value
+
+
+def _scenario_location(scenario: str) -> str:
+    if not scenario or scenario == "home":
+        return "/"
+    return "/?scenario={0}".format(scenario)
 
 
 def _read_session(cookie_header: str) -> Optional[str]:

@@ -1,8 +1,8 @@
 from decimal import Decimal
 
-from smol_ai.fixtures import NEEDS_APPROVAL_PURCHASE
-from smol_ai.money import Money
-from smol_ai.terms import purchase_terms_hash
+from smolstuff.fixtures import NEEDS_APPROVAL_PURCHASE
+from smolstuff.money import Money
+from smolstuff.terms import purchase_terms_hash
 
 
 def test_terms_hash_binds_price_quantity_and_supplier():

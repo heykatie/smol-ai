@@ -2,8 +2,8 @@ from http.server import HTTPServer
 from threading import Thread
 from urllib.request import Request, urlopen
 
-from smol_ai.inbox import InboxApp, make_handler
-from smol_ai.workflow import WorkflowStore
+from smolstuff.inbox import InboxApp, make_handler
+from smolstuff.workflow import WorkflowStore
 
 
 def test_email_opens_one_explained_reorder(tmp_path):
@@ -15,6 +15,7 @@ def test_email_opens_one_explained_reorder(tmp_path):
     page = app.page()
 
     assert "about 19 days" in page
+    assert "about a 16-day gap" in page
     assert "about 16 days" in page
     assert "19.1" in page
     assert "15.9" in page
@@ -126,7 +127,8 @@ def test_execution_records_do_not_include_secrets_or_sponsor_claims(tmp_path):
     page = app.page()
 
     assert "Review evidence" in page
-    assert "Mail demo adapter" in page
+    assert "Lead-time parser" in page
+    assert "Not a verified live model call" in page
     assert "Purchase demo adapter" in page
     assert "simulated" in page
     assert "replayed" in page
@@ -144,7 +146,7 @@ def test_execution_records_do_not_include_secrets_or_sponsor_claims(tmp_path):
 
 
 def test_visitor_sessions_do_not_share_a_workflow(tmp_path):
-    from smol_ai.inbox import make_session_handler
+    from smolstuff.inbox import make_session_handler
 
     server = HTTPServer(("127.0.0.1", 0), make_session_handler(str(tmp_path / "sessions")))
     thread = Thread(target=server.serve_forever)

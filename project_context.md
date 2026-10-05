@@ -1,8 +1,9 @@
-# smolstuff — Product Vision and Context
+# smolstuff — Master Project Context
 
-> Product vision for Claude, Cursor, and other coding assistants. Read [PRD.md](PRD.md) and [MVP_SCOPE.md](MVP_SCOPE.md) first for current release requirements.
+> Philosophy, architecture, and engineering rules for Claude, Cursor, and other coding assistants.
 > Updated October 4, 2026. All business examples are fictional and use synthetic data.
-> This document defines product intent, architecture, scope, and implementation guidance; it does not claim the features are already built. It incorporates the latest zero-chores and automatic-ingestion decisions. Older suggestions requiring routine manual email selection or approval at every step are superseded.
+> Requirements and acceptance criteria are in [prd.md](prd.md). Reorder fixture numbers are in [demo_spec.md](demo_spec.md). The hackathon boundary is in [mvp_scope.md](mvp_scope.md). Observed behavior is in [README.md](README.md).
+> This document does not claim that a feature is already built. Older suggestions requiring routine manual email selection or approval at every step are superseded.
 
 ## 1. Product summary and vision
 
@@ -561,6 +562,10 @@ After P0 is reliable, implement workshop feasibility, Inventory Detective usage 
 
 Keep full mailbox production integration, broad Shopify write coverage, live payments, a real merchant network, advanced forecasting, and complete returns/accounting integrations outside the initial MVP unless the core loop is already reliable. Unimplemented roadmap cards must be visibly identified as planned; working previews must meet their acceptance criteria.
 
+The local demo now includes the four functional previews named in [prd.md](prd.md): workshop feasibility, Inventory Detective, sale rescue, and staffing coverage. They are simulated workflows, not production integrations. Current sponsor-call status belongs in the README, not in this vision.
+
+The steps below are the intended judging story. They are not a claim that every step is live. Current execution status is in [README.md](README.md).
+
 ### Approximately 90-second demo
 
 1. **Opening:** “Big companies have operations teams. Small businesses have an inbox.” Show the one-time boundaries already configured.
@@ -658,3 +663,17 @@ The longer-term product connects inventory, procurement, opportunities, local sa
 **Pitch:** “Small businesses don't need another AI assistant. They need the operations team they can't afford to hire.”
 
 **Trust promise:** “Most AI products ask small-business owners for more trust. smolstuff is designed to require less.”
+
+## 25. Engineering rules
+
+These rules apply to new work. Do not rewrite a working feature only to claim that it was built test-first. Skip a new test when the change is only copy or styling.
+
+1. Before implementing a feature, identify its PRD requirement and acceptance criteria. Map the affected UI, application functions, storage, integrations, state transitions, and permission boundaries. Reuse the existing architecture. Create or update a compact diagram when it helps.
+
+2. For business logic, workflow transitions, permissions, inventory or money calculations, persistence, and integrations, write or extend a meaningful behavior test before changing the implementation. Run it and confirm that any new failing test fails for the intended reason.
+
+3. Implement the smallest change that satisfies the requirement. Run the targeted tests, inspect the actual result, fix failures, and repeat until the applicable checks pass. Keep existing regression tests intact. Do not weaken an expectation merely to get a pass.
+
+4. Inspect UI changes in the browser, including mobile layout, keyboard use, errors, and displayed calculations. Passing unit tests alone does not establish that the demo works.
+
+5. Before marking work complete, run the relevant regression checks and report what passed, what was inspected, and any remaining blocker. Missing credentials or unavailable services must be reported honestly.

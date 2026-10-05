@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Tuple
 
-from smol_ai.extract import LeadTimeFact
-from smol_ai.fixtures import (
+from smolstuff.extract import LeadTimeFact
+from smolstuff.fixtures import (
     ALTERNATIVE_UNIT_PRICE,
     DELIVERY_DAYS,
     EXAMPLE_POLICY,
@@ -24,9 +24,9 @@ from smol_ai.fixtures import (
     WAREHOUSE_ON_HAND,
     WORKSHOP_SKU,
 )
-from smol_ai.inventory import InventoryInputs, assess_supply
-from smol_ai.money import transaction_total
-from smol_ai.policy import PolicyDecision, PolicyResult, PurchaseProposal, evaluate_purchase
+from smolstuff.inventory import InventoryInputs, assess_supply
+from smolstuff.money import transaction_total
+from smolstuff.policy import PolicyDecision, PolicyResult, PurchaseProposal, evaluate_purchase
 
 
 @dataclass(frozen=True)
@@ -159,8 +159,8 @@ def plan_reorder(fact: LeadTimeFact) -> ReorderPlan:
 
 
 def build_demo_plan() -> ReorderPlan:
-    from smol_ai.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL
-    from smol_ai.extract import extract_lead_time
+    from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL
+    from smolstuff.extract import extract_lead_time
 
     return plan_reorder(extract_lead_time(SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU))
 

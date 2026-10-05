@@ -11,7 +11,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Mapping, Optional, Tuple
 
-from smol_ai.money import Money, transaction_total
+from smolstuff.money import Money, transaction_total
 
 
 class PolicyDecision(Enum):
