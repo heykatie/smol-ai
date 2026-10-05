@@ -1,6 +1,6 @@
 # smolstuff integration contract and status
 
-Current checkout is the merged dark UI plus the local sponsor gate. Novita extraction and Tavily research clients are wired. Startup reads private local configuration, and anonymous sponsor calls stay off unless the switch and both limits are set. This inspection uses synthetic data without a fresh paid provider call. A key is not a verified workflow. See [STATUS.md](STATUS.md).
+Source inspected at `7cd4647` includes the dark UI, Postgres storage option, and local sponsor gate. Novita extraction, Tavily research, and ZooWork explanation clients are wired. Startup reads private local configuration, and anonymous sponsor calls stay off unless the switch and both limits are set. This inspection uses synthetic data without a fresh paid provider call. A key is not a verified workflow. See [STATUS.md](STATUS.md).
 
 | Integration | Current | Intended responsibility | Proof before calling it live |
 | --- | --- | --- | --- |
@@ -32,4 +32,4 @@ Transport status and business validity are separate: HTTP success with malformed
 4. Run one permitted synthetic workflow task; validate response and demonstrate effect on the persisted case. Record sanitized evidence. Test unavailable credentials, timeout, invalid output and quota exhaustion.
 5. Enable public calls only after approved budget, rate limits, privacy controls and fallback are verified. Keep real purchases/messages disabled for this demo.
 
-Current app settings are NOVITA_API_KEY, optional NOVITA_MODEL, and TAVILY_API_KEY. `.env.example` also lists ZooWork, Moss and BAND placeholders; they do not wire those adapters into the app. No actual secret values belong in documentation. Exact additional IDs/key names are not invented in this doc. Retrieve them from selected providers' official documentation during implementation. Do not add redundant providers solely to increase sponsor logos.
+Current app provider settings are `NOVITA_API_KEY`, optional `NOVITA_MODEL`, `TAVILY_API_KEY`, and `ZOOWORK_API_KEY`. ZooWork is wired behind the same sponsor gate; Moss and BAND remain placeholders without inbox adapters. Sponsor counters remain local SQLite call-count limits, not a shared hosted monetary cap. No actual secret values belong in documentation. Exact additional IDs/key names are not invented in this doc. Retrieve them from selected providers' official documentation during implementation. Do not add redundant providers solely to increase sponsor logos.

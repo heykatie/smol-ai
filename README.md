@@ -6,7 +6,7 @@ smolstuff is a privacy-first AI operations system for small local businesses. Th
 
 > **Automate the work, not the authority.**
 
-This README describes what the code does now. Requirements, fixtures, scope, and engineering rules are linked under Documents. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) record technical behavior and remaining requirements. [Current synchronization review](docs/STATUS.md) supersedes [the historical review](docs/REVIEW.md). [Design specification](docs/DESIGN.md) defines the shared dark UI.
+This README describes what the code does now. Requirements, fixtures, scope, and engineering rules are linked under Documents. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) records technical behavior and remaining requirements. [Current synchronization review](docs/STATUS.md) supersedes [the historical review](docs/REVIEW.md). [Design specification](docs/DESIGN.md) defines the shared dark UI.
 
 ## What runs today
 
@@ -22,7 +22,7 @@ A dark, responsive Daily brief with one simulated procurement workflow and four 
 | Approval | Purchases auto-execute only under $40. Every other configured check passes, so the limit is the only reason this order waits. |
 | After approval | The saved workflow submits one simulated order and records a matching confirmation. Stock does not change. A second click does not create a second order. |
 | Receipt | **Simulate receiving 100 units** adds those units to the 21 already available. On hand becomes 121. No extra sales are subtracted. The workflow completes only after that receipt. |
-| Refresh | Each visitor has one SQLite file under `data/sessions/`. Reloading the page resumes that file. **Reset demo** clears the reorder workflow and its tool records. It does not delete the file, so the other previews in that session remain. This persists while the host retains its disk; the current hosting configuration does not establish durable storage across redeploys. |
+| Refresh | Without `DATABASE_URL`, each visitor uses a SQLite file under `data/sessions/`. With it, workflow and preview rows use session-scoped Postgres. **Reset demo** clears the reorder workflow and its tool records while preserving the other previews. Commit `0847325` records one hosted approval surviving a redeploy; see [STATUS.md](docs/STATUS.md) for limits. |
 
 Integration status: application wiring verified by this inspection; previous account/probe observations are repository-reported and were not rerun here:
 
@@ -30,12 +30,12 @@ Integration status: application wiring verified by this inspection; previous acc
 | --- | --- |
 | Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $189 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
-| ZooWork | Wired. One local task explained the synthetic supplier delay and did not change the order. Public calls stay off unless the sponsor switch and both limits are set. The key is on Vercel and is not in the repo. |
+| ZooWork | Wired. One local task explained the synthetic supplier delay and did not change the order. Public calls stay off unless the sponsor switch and both limits are set. Credential placement on Vercel was not verified by this cleanup; no secret belongs in the repo. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |
 
-The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app). A normal browser does not need a Vercel login. Hosted session files are temporary and do not survive a redeploy. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. Those limits share one budget file on each server instance. They are not a provider-wide spend cap.
+The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. Those limits share one budget file on each server instance. They are not a provider-wide spend cap.
 
 Confirmation does not complete the workflow. Completion is the reconciled receipt.
 
@@ -54,7 +54,7 @@ Collaboration inquiries and custom orders are not separate workflows. They would
 
 These remain requirements or later work. They are not available in the demo:
 
-- A hosted session that survives a redeploy
+- Broad hosted persistence/recovery verification beyond the single recorded reorder approval
 - Live mailbox, Shopify, payment, or browser-verification integrations
 - A verified Novita extraction, a public ZooWork task, a BAND handoff, or Moss retrieval inside the Action Inbox
 - Returns, account onboarding, multiple privacy modes, and analytics dashboards
@@ -111,7 +111,7 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | [demo_spec.md](demo_spec.md) | Reorder numbers and screen copy |
 | [mvp_scope.md](mvp_scope.md) | Current product boundary |
 | [project_context.md](project_context.md) | Product philosophy, architecture intent, examples, and long-form reference |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting direction. A hosted session is not durable until a redeploy keeps it |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting/storage direction and the recorded single-session redeploy check |
 | [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) | Which document owns each topic |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Future and post-MVP work, not current evidence |
 | [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md) | Historical hackathon, sponsor, and demo-script context |

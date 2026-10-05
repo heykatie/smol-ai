@@ -1,8 +1,29 @@
-# smolstuff current synchronization review
+# smolstuff implementation status and verification evidence
+
+## Documentation/source inspection — October 4, 2026 (America/Los_Angeles)
+
+Inspected source and tracked evidence at `7cd4647` on live main. This is a documentation/source review, not a fresh runtime, provider, dashboard, database, or deployment test. No private configuration was loaded; no permissions, budgets, connectors, or runtime behavior were changed. The earlier synchronization review below retains its recorded evidence and does not certify later commits.
+
+| Topic | Evidence inspected in this cleanup | Limit / remaining work |
+| --- | --- | --- |
+| Document authority | PRD owns requirements; AGENTS owns engineering instructions; project context is supporting philosophy/architecture/examples; this file owns verification evidence | Reference material does not override governing requirements or decisions |
+| Storage wiring | `database.py`, `WorkflowStore`, and `ScenarioStore` select Postgres when `DATABASE_URL` is set, otherwise SQLite. `app.py` and `inbox.py` recognize persisted Postgres sessions without a surviving local file | Source inspection does not verify current hosted configuration, every preview, or backup/restore |
+| Hosted persistence | Architecture and commit `0847325` report Neon connected and the same approved reorder awaiting receipt with stock 21 after redeploy. Commit authored October 4 Pacific / October 5 UTC | Repository-recorded single-session result; not rerun here. Backup/restore, database retention/cleanup, and broader hosted recovery remain unresolved |
+| Sponsor limits | `SponsorBudget.claim` requires the enable switch and two positive call limits and reserves counts atomically in local SQLite. Inbox checks this gate before Novita, Tavily, and ZooWork calls | Counters cover sessions sharing that file. They are not a shared multi-instance/redeploy cap or a monetary budget; D3 remains open |
+| Provider wiring | Novita extraction, Tavily research, and ZooWork explanation are wired; ZooWork cannot set the calculated order or approval | Commit `4e704e3` reports one local explanation; no fresh provider call or hosted credential verification here. BAND and Moss remain outside the inbox |
+| Tests | Inspected existing sponsor-budget, Postgres-store, WSGI, and ZooWork tests as supporting source | No tests executed for this documentation cleanup. Earlier counts below are historical reports, not current-suite results |
+
+Documentation verification for this cleanup: 78 local Markdown link targets across 11 edited documents resolved; code fences were balanced; targeted stale-wording searches and diff whitespace checks passed. Runtime tests and hosted/provider checks were not run.
+
+Remaining production gates include authenticated identity/roles, real connectors, exact authority and reservation semantics, approved paid-call budgets with hosted enforcement, retention/erasure and backup/restore. A single recorded redeploy check does not close those gates.
+
+## Earlier synchronization review — historical evidence
+
+The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.
 
 Reviewed October 4, 2026 against live main `d48c344` (the merged documentation review plus the subsequent local-demo/package update), then the dark UI synchronization branch. This file supersedes docs/REVIEW.md for the status recorded here; that first review is historical. Later commits are not re-certified by this page until a new inspection is written. Document ownership is in [DOCUMENT_AUTHORITY.md](DOCUMENT_AUTHORITY.md). Current docs use lowercase prd.md, mvp_scope.md and demo_spec.md, and the app/package/service is smolstuff.
 
-## Vision and implementation
+### Vision and implementation
 
 The vision remains an easy-to-use AI operations system for small local businesses: automatically triage permitted email without uploads, extract actionable work, investigate inventory, recommend/perform bounded reordering, identify staffing-light days, and potentially save a sale with nearby merchant agents. Privacy, least privilege, exact authority, auditability and trust are governing requirements.
 
@@ -21,7 +42,7 @@ The app is an interactive synthetic demonstration of that vision. It now include
 | UI | Shared dark tokens/frame/navigation; lavender/mint, smile mark, responsive cards/forms/evidence/error states | Broader accessibility/user testing and hosted verification |
 | Security/authority | Synthetic visitor isolation, deterministic policy, terms hash, session-scoped SQLite, request limits, and sponsor calls off by default | Authenticated roles, full material hashes, atomic spending reservations, and a hosted session that survives redeploy |
 
-## Documentation repairs in this change
+### Documentation repairs in this change
 
 - Updated implementation contract for the actual smolstuff package, scenario store, optional model/research clients and shared UI.
 - Replaced stale “no provider clients” / “previews absent” status with actual wiring, while separating old provider reports from fresh evidence.
@@ -31,15 +52,15 @@ The app is an interactive synthetic demonstration of that vision. It now include
 - Unified the formerly separate procurement/empty pages with the same dark shell.
 - Added two numeric-error regression tests, observed them fail with dropped connections, then handled Decimal conversion errors as styled HTTP 400 without saving invalid scenario data.
 
-## Evidence and limits
+### Evidence and limits
 
 Source inspection verified optional Novita/Tavily wiring. The README's earlier successful Tavily, separate Moss query and account/probe reports were not rerun. Supplier offers, purchases, messages, and merchant participants remain fictional. The dark daily brief is deployed. That is not a production security certification.
 
-The UI-sync review recorded 64 passing tests. The current suite, run on Python 3.9 after the public-demo fixes, is 85 passed and 1 skipped. The skip is the Postgres test when `psycopg` is not installed.
+The UI-sync review recorded 64 passing tests. A later repository edit reported 85 passed and 1 skipped on Python 3.9 after the public-demo fixes; this cleanup did not rerun or establish the exact commit covered by that count. The skip is the Postgres test when `psycopg` is not installed.
 
-## Final verification for the synchronization change
+### Final verification for the synchronization change
 
-- Earlier UI-sync run: **64 tests passed** on Python 3.14. The current suite is recorded above.
+- Earlier UI-sync run: **64 tests passed** on Python 3.14. The later repository-reported count is recorded above; neither count is a current-suite certification.
 - Browser: completed reorder (21 unchanged at confirmation, 121 after receipt), workshop ($700/eight kits), detective (20 → 17, unresolved one → recount resolves), merchant rescue ($21/$27 offers, $27 reconciled fulfillment), and Saturday staffing (14 hours/two blocks; saved plan).
 - Browser: refreshed awaiting-receipt state; all completed previews remain in session and Daily brief counts show five completed cases. Evidence correctly shows parser/Tavily simulated fallbacks in this run.
 - Responsive: all six routes inspected at 390px and 320px, no horizontal document overflow. Desktop at 1280px has a 228px rail and two card columns without overflow. Mobile and full desktop screenshots visually inspected.

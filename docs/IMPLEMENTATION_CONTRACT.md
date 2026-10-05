@@ -6,7 +6,7 @@ Updated October 4, 2026. **Current implementation** sections describe the last v
 
 ```text
 Browser GET/POST /
-  -> inbox.make_session_handler: smol_session cookie -> session SQLite file
+  -> inbox.make_session_handler: smol_session cookie -> session-scoped store (SQLite locally; Postgres with DATABASE_URL)
   -> InboxApp.route: reorder or one of four persisted synthetic previews
   -> extract.resolve_lead_time: optional Novita -> validated LeadTimeFact or parser fallback
   -> research.research_supplier: optional Tavily sources or labeled fallback
@@ -16,9 +16,9 @@ Browser GET/POST /
   -> shared demo_ui.shell + ui_theme: persisted progress, preview state and evidence -> dark HTML
 ```
 
-`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses SQLite transactions and unique constraints. `inbox.py` combines rendering and HTTP handling. An optional Novita client and Tavily research client are wired. `ops_demos.py` owns the four deterministic preview scenarios and ScenarioStore; `demo_ui.py` renders/routes previews, and `ui_theme.py` owns the shared dark style. There is no connector worker, generic email task extractor, vector retrieval inside the inbox, independent agent runtime, or live inventory/POS adapter.
+`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses transactions and unique constraints through SQLite or the Postgres adapter selected by `DATABASE_URL`. Local session markers and sponsor counters remain file-backed. `inbox.py` combines rendering and HTTP handling. Optional Novita extraction, Tavily research, and ZooWork explanation clients are wired behind the local sponsor-call gate. `ops_demos.py` owns the four deterministic preview scenarios and ScenarioStore; `demo_ui.py` renders/routes previews, and `ui_theme.py` owns the shared dark style. There is no connector worker, generic email task extractor, vector retrieval inside the inbox, independent agent runtime, or live inventory/POS adapter.
 
-Current tables: workflows, actions, approvals, executions, confirmations, receipts, inventory_movements, integration_events, workflow_transitions, scenario_state (phase and JSON payload by scenario key). Stock is a caller-supplied fixture baseline plus stored movements, not a synchronized inventory ledger. Policy is supplied by Python; actions store policy result/reasons but not a complete versioned policy snapshot. Each visitor file provides demo separation; it is not production authorization or tenant isolation.
+Current tables: workflows, actions, approvals, executions, confirmations, receipts, inventory_movements, integration_events, workflow_transitions, scenario_state (phase and JSON payload by scenario key). Stock is a caller-supplied fixture baseline plus stored movements, not a synchronized inventory ledger. Policy is supplied by Python; actions store policy result/reasons but not a complete versioned policy snapshot. Local visitor files or session-scoped Postgres rows provide demo separation; neither is production authorization or tenant isolation. Sponsor call counters stay in local SQLite and do not establish a shared hosted spending cap. See [STATUS.md](STATUS.md) for source inspection versus recorded runtime evidence.
 
 ## Required adapter boundaries
 
@@ -95,7 +95,7 @@ These are review proposals and may be adjusted in a documented decision before i
 | FR-01 signal/extraction | test_reorder parser/override and validated model-output/fallback tests | Live-provider duplicates, blocked metadata/body, revocation, cursor recovery and general task extraction |
 | FR-02/03 planning/economics | test_inventory, test_reorder | No-risk planner, stale facts, timed inbound, fees unknown, variant/pack mapping |
 | FR-04 authority | test_policy, test_terms, test_workflow | Full material hash, authenticated actor, budget reservation across concurrent orders, hard-limit overrides |
-| FR-05 receipt/persistence | test_fulfillment, test_lifecycle, test_workflow | Remote unknown outcome, conflicting replay payload, hosted durability, financial obligations |
+| FR-05 receipt/persistence | test_fulfillment, test_lifecycle, test_workflow | Remote unknown outcome, conflicting replay payload, hosted recovery beyond the single repository-recorded redeploy check, financial obligations |
 | FR-06–09 previews | test_ops_demos verifies default fixture math, blocked workshop, correction/recount, negotiation floors and coverage; browser review exercises persisted paths | Broader range/finite-number validation, per-action authorization binding, decline/expiry, hostile state/replay, concurrency and financial reconciliation |
 | FR-10 status/audit | test_inbox execution records and test_research provider-result/fallback tests | Real successful/failed provider calls, fallback origin, field disclosure manifest and secret redaction |
 | Security/public experience | test_inbox session/HTTP flow | CSRF/request validation, disk/session quotas, expiry cleanup, keyboard/mobile and recoverable errors |

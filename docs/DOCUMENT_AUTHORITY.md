@@ -2,7 +2,7 @@
 
 This index says which file owns a topic. It does not change account settings, connector scopes, spending, or execution authority.
 
-`AGENTS.md` still holds the engineering rules. On 2026-10-05 that file had an unrelated uncommitted privacy edit, so this cleanup did not modify it. The hierarchy below is the maintenance map those rules already imply, plus the roadmap and archive added the same day.
+`AGENTS.md` holds engineering instructions. The hierarchy below is the maintenance map; historical cleanup circumstances do not change document authority.
 
 | Topic | Owner |
 | --- | --- |

@@ -30,19 +30,19 @@ Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at 
 | --- | --- |
 | PORT | Default 8765; presence also binds 0.0.0.0 instead of 127.0.0.1 |
 | DEMO_COOKIE_SECURE | `1` adds Secure to the cookie; use on HTTPS host, not local plain HTTP |
-| Storage | `data/sessions/` beneath repository root, one SQLite file per cookie |
+| Storage | Without `DATABASE_URL`: `data/sessions/`, one SQLite file per cookie. With it: session-scoped Postgres workflow/preview rows; local session markers and sponsor counters remain files |
 | Cookie | `smol_session`, HttpOnly, SameSite=Lax, one-day Max-Age |
-| Provider credentials | `NOVITA_API_KEY` and `TAVILY_API_KEY` are read only when sponsor calls are enabled and both limits are set. A key is not proof of a verified workflow. |
+| Provider credentials | `NOVITA_API_KEY`, `TAVILY_API_KEY`, and `ZOOWORK_API_KEY` are read only when sponsor calls are enabled and both limits are set. A key is not proof of a verified workflow. |
 
 Startup loads `.env` without overriding already-set process variables. `.env` and `.env.*` are ignored except `.env.example`. Demo files older than `SMOL_DEMO_TTL_SECONDS` (default one day) are removed when a request arrives. Paid calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are positive integers. Keep private configuration out of commits.
 
-Reset demo on reorder clears its workflow, supplier fact, and integration records. It preserves the session file and the other previews. Cookie expiry alone leaves a file behind. A missing file means the initial screen on refresh. Do not delete another visitor's state. Stop the process with Ctrl-C. Restarting with the same surviving disk and cookie resumes saved progress.
+Reset demo on reorder clears its workflow, supplier fact, and integration records. It preserves the session file and the other previews. Cookie expiry alone leaves a file behind. Without `DATABASE_URL`, a missing file means the initial screen on refresh. With Postgres configured, persisted workflow/scenario rows can identify an existing session. File expiry does not establish a database-row retention policy. Do not delete another visitor's state. Stop the process with Ctrl-C. Restarting with the same surviving disk and cookie resumes saved progress.
 
 ## Deploy and verify
 
-Vercel is the host. Render is retired. Production `https://smolstuff.vercel.app` serves the dark daily brief without a Vercel login. Session files on the host are temporary. See [ARCHITECTURE.md](ARCHITECTURE.md).
+Vercel is the host. Render is retired. Production `https://smolstuff.vercel.app` serves the dark daily brief without a Vercel login. Temporary host files remain ephemeral; workflow/preview rows use Postgres when `DATABASE_URL` is configured. Commit `0847325` records one approval surviving redeploy; this cleanup did not rerun it. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
-After a database is connected, verify on the host: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, and a new deployment that still has the earlier session. Do not claim that passed until those calls succeed. Check narrow mobile layout, keyboard focus, and displayed totals.
+For a complete hosted regression check, verify: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, and a new deployment that still has the earlier session. Do not claim that passed until those calls succeed. Check narrow mobile layout, keyboard focus, and displayed totals.
 
 ## Implementation sequence
 
