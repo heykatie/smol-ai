@@ -83,3 +83,7 @@ The local reorder path is the behavior covered by `tests/`:
 The same suite covers the inventory math, the $40 threshold, decline, refresh/resume, and duplicate-click protection.
 
 Still open, and not claimed as done: a public URL, a configured public call budget, and a sponsor call inside the demo other than the verified Tavily search. Status for those belongs in the README.
+
+## Shared experience
+
+All local screens use the same modern dark UI, responsive navigation, lavender accents, mint status treatments and gently playful smolstuff mark. Design criteria are in docs/DESIGN.md; current synchronization evidence and remaining gates are in docs/STATUS.md. The visuals do not imply that real email monitoring, merchants or purchases are connected.

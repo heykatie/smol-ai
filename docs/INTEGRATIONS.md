@@ -1,16 +1,16 @@
 # smolstuff integration contract and status
 
-At inspected commit `2dc9093610c874179bc14a870ae3b9ad8f0f72b0`, **no sponsor/runtime network integration is implemented**. The source has no provider client or credential loading. Accounts, installed plugins and API keys are not proof of an application integration. This review makes no assertion about current vendor API capabilities; consult official provider documentation when choosing adapters.
+Current application inspection: `d48c344a485924b2eea9120e7e96ee3260b8e722` plus the UI synchronization change. Novita extraction and Tavily research clients are wired; startup reads private local configuration. This inspection uses synthetic data without fresh paid provider calls. Earlier README observations are repository-reported, not rerun proof. Accounts/keys are not evidence of working workflows. See [STATUS.md](STATUS.md).
 
 | Integration | Current | Intended responsibility | Proof before calling it live |
 | --- | --- | --- | --- |
-| Email | Simulated arrival + local regex | Automatic permitted-provider events/polling, triage and task extraction | Allowed arrival opens case without uploads; blocked body never reaches downstream; duplicate/revocation recovery |
+| Email | Simulated arrival, optional constrained Novita lead-time output or parser fallback; no real mailbox | Automatic permitted-provider events/polling, triage and task extraction | Allowed arrival opens case without uploads; blocked body never reaches downstream; duplicate/revocation recovery |
 | Inventory/POS | Seeded fixture + receipt movements | Read authoritative stock/sales/inbound; scoped authorized corrections | Real scoped read with time/source; write/reconciliation tests before writes |
 | ZooWork | Not wired | Scoped managed-agent interpretation/planning where supported | Validated task output affects case; durable state/policy stays in app |
 | BAND | Not wired | Meaningful handoff between distinct logical specialists or merchants | Receiving agent consumes findings and changes its next action |
-| Moss | Not wired | Permission-filtered evidence retrieval | Relevant cited retrieval; business filtering and deletion verified |
-| Tavily | Not wired | Public supplier discovery | Real search result used by investigation; stock/ETA still tentative |
-| Novita/selected model | Not wired | Constrained fact extraction or explanation | Schema-valid result from permitted excerpt; output cannot set authority |
+| Moss | Not wired in inbox; previous README reports a separate local query | Permission-filtered evidence retrieval | Relevant cited retrieval; business filtering and deletion verified |
+| Tavily | Wired; missing-key/error fallback; previous README reports a successful call, not rerun here | Public supplier discovery | Real search result used by investigation; stock/ETA still tentative |
+| Novita/selected model | Wired for two lead-time fields; fresh successful call not verified here | Constrained fact extraction or explanation | Schema-valid result from permitted excerpt; output cannot set authority |
 | Browser verification | Not wired | Timestamped product-page observation | Product/cost/timing evidence and limitations; no reservation claim |
 | Purchase/confirmation/receipt | Local simulated adapters | Authorized submission, independent confirmation and receiving | External ID, matching approved terms, idempotency/recovery and actual receipt |
 | Merchant network | Not wired | Bounded nonbinding requests/offers and verified fulfillment | Onboarded counterparties, explicit disclosure scope, expiry/reservation and dispute flow |
@@ -32,4 +32,4 @@ Transport status and business validity are separate: HTTP success with malformed
 4. Run one permitted synthetic workflow task; validate response and demonstrate effect on the persisted case. Record sanitized evidence. Test unavailable credentials, timeout, invalid output and quota exhaustion.
 5. Enable public calls only after approved budget, rate limits, privacy controls and fallback are verified. Keep real purchases/messages disabled for this demo.
 
-Exact IDs/key names are intentionally not invented in this doc. Retrieve them from selected providers' official documentation during implementation. Do not add redundant providers solely to increase sponsor logos.
+Current app settings are NOVITA_API_KEY, optional NOVITA_MODEL, and TAVILY_API_KEY. `.env.example` also lists ZooWork, Moss and BAND placeholders; they do not wire those adapters into the app. No actual secret values belong in documentation. Exact additional IDs/key names are not invented in this doc. Retrieve them from selected providers' official documentation during implementation. Do not add redundant providers solely to increase sponsor logos.

@@ -7,12 +7,12 @@ Requirements and proposals as of October 4, 2026. No audited-security claim is m
 | Boundary | Required enforcement | Current limit |
 | --- | --- | --- |
 | Mail provider → gate | Exact consent/scopes; approved metadata first; prohibited bodies never fetched | No live mailbox connector |
-| Gate → models/agents | Minimum structured operational facts with evidence references | Local fixture parser only |
+| Gate → models/agents | Minimum structured operational facts with evidence references | Optional constrained Novita call or parser fallback using synthetic supplier message |
 | Canonical store → retrieval | Business/source access filters; expiry/deletion propagation | No retrieval index |
 | Planner → policy | Schema validation; canonical trust/freshness from application records | Seeded proposal flags |
 | Policy → executor | Versioned exact authority; fail closed on missing critical evidence | Simulated execution only |
 | Owner → approval | Authenticated role, session/business binding, exact terms, CSRF protection | Synthetic `owner`; anonymous demo session |
-| Browser/research → network | Allowlisted schemes/hosts, private-network denial, safe redirect handling, no unrestricted downloads | No browser/network research adapter |
+| Browser/research → network | Allowlisted schemes/hosts, private-network denial, safe redirect handling, no unrestricted downloads | Tavily research exists; no browser verifier; destination enforcement still required before general network tools |
 | Store → audit/export | Minimal facts, actor/scope, disclosure fields, redaction and defined retention | Workflow history and short integration records; not a tamper-evident ledger |
 
 External email, attachments, webpages and agent text are evidence. They cannot change instructions, trust themselves, grant permission, raise limits, obtain credentials or invoke unrestricted tools. No model receives purchase credentials or direct execution tools. Validate recipients and destinations in application code. Raw evidence must be separated from general model context and user-facing logs.
@@ -23,7 +23,7 @@ Sender allowlisting is permission to process, not proof of identity or factual c
 
 ## Public demo launch gates
 
-Current cookie is an unguessable 32-hex identifier with HttpOnly, SameSite=Lax and a one-day Max-Age; Secure is optional via DEMO_COOKIE_SECURE. This is not login. Session files have no automatic expiry cleanup. The HTTP handler lacks an explicit CSRF token/origin check, request-size bound, rate limiting and comprehensive malformed-request errors. A cookie expiry does not delete a database. `.gitignore` excludes data but does not currently exclude `.env`.
+Current cookie is an unguessable 32-hex identifier with HttpOnly, SameSite=Lax and a one-day Max-Age; Secure is optional via DEMO_COOKIE_SECURE. This is not login. Session files have no automatic expiry cleanup. The HTTP handler lacks an explicit CSRF token/origin check, request-size bound, rate limiting and comprehensive malformed-request errors. A cookie expiry does not delete a database. `.gitignore` excludes data and private `.env`/`.env.*` files; `.env.example` is the public placeholder. Styled 400 errors handle invalid numeric input; comprehensive request validation remains open.
 
 Before public paid calls or broader exposure, require:
 
@@ -31,7 +31,7 @@ Before public paid calls or broader exposure, require:
 2. Server-side session scoping for every read/mutation; tests that one visitor cannot approve, reset or view another visitor's case. Do not adopt a client-selected arbitrary existing session as authentication.
 3. Session/file creation rate and disk quotas. Proposed demo default: idle session expiry after 24 hours and daily cleanup of database files; document reset/deletion semantics and hosted backups. This is a proposed implementation setting, not an existing cleanup job.
 4. Paid connectors disabled unless a server-side owner-approved budget exists; overall and per-session quotas, cache/replay fallback, timeouts and no unlimited public provider calls.
-5. Secrets excluded from source, `.env` files, prompts, evidence, screenshots, browser output and development provenance. Add ignores and a placeholder config before entering credentials locally.
+5. Secrets excluded from source, `.env` files, prompts, evidence, screenshots, browser output and development provenance. Maintain private-config ignores and public placeholders before entering credentials locally.
 6. Persistence contract stating whether restart/redeploy retains files. No current hosting certification; if ephemeral, show a session-reset limitation and do not promise durable approval resume across deployments.
 
 ## Production pilot gates
@@ -59,3 +59,7 @@ These are missing consequential choices, not permissions the coding assistant ma
 | D9 | Real staffing advice | Minimum coverage, opening-hour availability, workload data and scheduling constraints | Coverage-hour recommendation only; no named-worker scheduling |
 
 Preview input ranges, retry caps and synthetic negotiation rounds in the implementation contract are proposed engineering defaults. Record accepted changes here; do not call them owner-confirmed decisions. None of these proposals expands access, spending or disclosure authority.
+
+## Inspection scope
+
+The dark UI changes presentation only; they do not make these production gates complete. The current app can call Novita/Tavily when configured and has no public-call quota; do not host it with paid credentials until D3 and rate limits are implemented. This UI inspection ran without loading private credentials or making provider calls. See STATUS.md for current versus historical evidence.

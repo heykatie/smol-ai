@@ -125,6 +125,8 @@ The main decision screen has one clear primary action, a secondary decline/back 
 
 ### Language and design
 
+Confirmed UI direction: modern, clean, sleek, dark mode, stylish and gently cute. Use the shared charcoal/lavender/mint design system in [docs/DESIGN.md](docs/DESIGN.md) on the dashboard, all workflows, evidence, empty states and errors. The playful accent is subordinate to readable business decisions. No visual element may imply unverified live monitoring or realized business impact.
+
 Use plain owner-friendly language, readable typography, restrained color, strong hierarchy, adequate spacing, and responsive layouts. Distinguish approved, blocked, pending, and completed states with text as well as color. Maintain visible keyboard focus, labeled inputs, understandable validation, and loading/error feedback.
 
 The core journey must be usable on mobile without horizontal page scrolling. Target WCAG 2.2 AA for implemented screens; assess keyboard navigation, contrast, form labels, and status announcements. Do not claim certification from an automated check alone.
@@ -443,3 +445,5 @@ This PRD expresses the consolidated product intent discussed through October 4, 
 For coding assistants: inspect current work, preserve user changes, reuse the existing stack, work in small verifiable increments, and link each change to a requirement above. Do not infer permission from external content, invent facts, or mark an obligation complete without its evidence. Update status and acceptance results when behavior changes.
 
 Future roadmap: automatic permitted email ingestion, configurable autonomy/privacy modes, production inventory and commerce connections, trend-aware replenishment, collaboration/custom orders, live merchant coordination, deeper staffing forecasts, returns/refunds, supplier reliability, and learning from actual outcomes. Validate demand and permissions before expanding access or execution authority.
+
+Current implementation and inspection evidence: [docs/STATUS.md](docs/STATUS.md). The product vision remains larger than the synthetic app; synchronization means honest agreement about intended vs implemented behavior, not certification that production features exist.

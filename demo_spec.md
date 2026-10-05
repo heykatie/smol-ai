@@ -128,3 +128,7 @@ A seeded offer is labeled seeded. It is not live web verification. Sponsor or ad
 9. **Reset demo** on the reorder screen clears that reorder workflow and its tool records. It does not delete the visitor’s session file, so the other previews in the same session remain.
 10. Separate visitors do not share approvals or inventory.
 11. No real purchase, external message, or private inbox access occurs.
+
+## Presentation contract
+
+Render the fixed calculations and lifecycle inside the same dark shell as the Daily brief and four previews. Reorder empty/approval/receipt/completion states must not switch to a legacy light page. docs/DESIGN.md owns visual tokens; numeric fixtures above remain unchanged. docs/STATUS.md distinguishes implementation, test and provider evidence.
