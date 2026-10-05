@@ -1,6 +1,7 @@
-# smolstuff — Master Project Context
+# smolstuff — Product Context and Reference
 
-> Philosophy, architecture, and engineering rules for Claude, Cursor, and other coding assistants.
+> Long-form product philosophy, architecture intent, examples, and background for coding assistants.
+> This supporting reference does not override [prd.md](prd.md), [AGENTS.md](AGENTS.md), [docs/IMPLEMENTATION_CONTRACT.md](docs/IMPLEMENTATION_CONTRACT.md), [docs/SECURITY_AND_DECISIONS.md](docs/SECURITY_AND_DECISIONS.md), or [docs/STATUS.md](docs/STATUS.md).
 > Updated October 4, 2026. All business examples are fictional and use synthetic data.
 > Requirements and acceptance criteria are in [prd.md](prd.md). Reorder fixture numbers are in [demo_spec.md](demo_spec.md). The current product boundary is in [mvp_scope.md](mvp_scope.md). Observed behavior is in [README.md](README.md). Hosting direction is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 > This document does not claim that a feature is already built. Older suggestions requiring routine manual email selection or approval at every step are superseded.

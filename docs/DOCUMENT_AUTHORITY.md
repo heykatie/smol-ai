@@ -17,11 +17,11 @@ This index says which file owns a topic. It does not change account settings, co
 | Visual design | [DESIGN.md](DESIGN.md) |
 | Integration contracts and recorded status | [INTEGRATIONS.md](INTEGRATIONS.md) |
 | Local setup and deploy checks | [DEVELOPMENT.md](DEVELOPMENT.md) |
-| Product philosophy and engineering rules | [project_context.md](../project_context.md) |
+| Product philosophy, architecture intent, examples, and long-form reference | [project_context.md](../project_context.md) |
 | Future and post-MVP work | [ROADMAP.md](ROADMAP.md) |
 | Hackathon history, sponsor presentation context, and the historical demo script | [archive/HACKATHON_CONTEXT.md](archive/HACKATHON_CONTEXT.md) |
 | Historical inspection | [REVIEW.md](REVIEW.md), commit `2dc9093`, reviewed October 4, 2026 |
 
-If a reorder number disagrees, `demo_spec.md` wins. If documents disagree about what is required, `prd.md` wins. If they disagree about what is built, the code, the tests, and the README win. `project_context.md` is vision, not evidence that a feature exists. `REVIEW.md` and the hackathon archive do not override later status. A roadmap item is not a release gate and does not grant permission.
+If a reorder number disagrees, `demo_spec.md` wins. If documents disagree about what is required, `prd.md` wins. If they disagree about what is built, inspect the code and tests; `STATUS.md` is authoritative for current verification evidence, and README summarizes observed behavior. `project_context.md` is supporting context and does not override `prd.md`, `AGENTS.md`, `IMPLEMENTATION_CONTRACT.md`, `SECURITY_AND_DECISIONS.md`, or `STATUS.md`. `REVIEW.md` and the hackathon archive do not override later status. A roadmap item is not a release gate and does not grant permission.
 
 Do not resolve a conflict by deleting a requirement. Say which owner applies and what evidence is missing.

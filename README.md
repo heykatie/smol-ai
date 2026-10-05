@@ -110,7 +110,7 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | [prd.md](prd.md) | Requirements and acceptance criteria |
 | [demo_spec.md](demo_spec.md) | Reorder numbers and screen copy |
 | [mvp_scope.md](mvp_scope.md) | Current product boundary |
-| [project_context.md](project_context.md) | Product philosophy, architecture intent, and [engineering rules](project_context.md#25-engineering-rules) |
+| [project_context.md](project_context.md) | Product philosophy, architecture intent, examples, and long-form reference |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting direction. A hosted session is not durable until a redeploy keeps it |
 | [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) | Which document owns each topic |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Future and post-MVP work, not current evidence |

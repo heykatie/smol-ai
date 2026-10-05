@@ -1,6 +1,6 @@
 # smolstuff implementation contract
 
-Updated October 4, 2026. **Current** means inspected source at `d48c344a485924b2eea9120e7e96ee3260b8e722`; **required** means target behavior, not a claim that a control exists. PRD defines product scope. Build in small increments against behavior tests; keep business actions synthetic in the public demo.
+Updated October 4, 2026. **Current implementation** sections describe the last verified implementation state recorded in [STATUS.md](STATUS.md); **required** means target behavior, not a claim that a control exists. `docs/STATUS.md` is authoritative for current verification evidence. PRD defines product scope. Build in small increments against behavior tests; keep business actions synthetic in the public demo.
 
 ## Existing components and data flow
 
