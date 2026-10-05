@@ -14,6 +14,7 @@ This index says which file owns a topic. It does not change account settings, co
 | Technical gates, adapters, lifecycle, and recovery | [IMPLEMENTATION_CONTRACT.md](IMPLEMENTATION_CONTRACT.md) |
 | Observed implementation status | [README.md](../README.md) and [STATUS.md](STATUS.md), then the code and tests |
 | Hosting and storage direction | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Target UI/API stack (Next + FastAPI + TypeScript) and migration phases | [TARGET_STACK.md](TARGET_STACK.md) |
 | Visual design | [DESIGN.md](DESIGN.md) |
 | Integration contracts and recorded status | [INTEGRATIONS.md](INTEGRATIONS.md) |
 | Local setup and deploy checks | [DEVELOPMENT.md](DEVELOPMENT.md) |

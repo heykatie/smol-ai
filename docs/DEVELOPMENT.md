@@ -18,6 +18,8 @@ PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 
 Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at awaiting receipt (stock 21), simulate full receipt (stock 121), then reset. Decline creates no order. This process reads no private mailbox and sends no external message/purchase.
 
+Planned later local DX (not implemented): Next `npm run dev` + FastAPI for JSON — see [TARGET_STACK.md](TARGET_STACK.md). Until that migration starts, use the Python inbox server above.
+
 ```bash
 .venv/bin/python -m pytest -q
 ```

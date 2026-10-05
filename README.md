@@ -112,6 +112,7 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | [mvp_scope.md](mvp_scope.md) | Current product boundary |
 | [project_context.md](project_context.md) | Product philosophy, architecture intent, examples, and long-form reference |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting/storage direction and the recorded single-session redeploy check |
+| [docs/TARGET_STACK.md](docs/TARGET_STACK.md) | Planned Next + FastAPI + TypeScript migration (not implemented) |
 | [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) | Which document owns each topic |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Future and post-MVP work, not current evidence |
 | [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md) | Historical hackathon, sponsor, and demo-script context |

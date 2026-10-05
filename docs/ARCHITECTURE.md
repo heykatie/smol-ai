@@ -40,3 +40,9 @@ Neon Free is repository-recorded as provisioned and connected. It is $0, with 10
 ## Not in this migration
 
 Production mailbox, commerce, payments, owner login, and a real merchant network stay later releases. Each needs its own permission decision. The public demo does not gain those by being hosted.
+
+## Target application stack (planned)
+
+Owner-confirmed direction: eventually **Next.js + TypeScript** UI, **FastAPI** JSON API, and the **existing deterministic Python core** on **Neon**. This is not implemented yet. Current production remains stdlib HTTP / WSGI HTML.
+
+**Agents:** follow [TARGET_STACK.md](TARGET_STACK.md) for phases, non-negotiables, and when to start. Do not begin Phase 1+ unless the user explicitly asks. Do not rewrite domain logic into TypeScript or Next.

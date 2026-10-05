@@ -6,6 +6,8 @@ Read prd.md, mvp_scope.md, demo_spec.md and docs/IMPLEMENTATION_CONTRACT.md befo
 
 [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) identifies which document owns each topic. `prd.md`, `mvp_scope.md`, `README.md`, and `docs/STATUS.md` keep the roles described there.
 
+**Target stack (Next.js + TypeScript UI, FastAPI JSON API, existing Python core, Neon):** see [docs/TARGET_STACK.md](docs/TARGET_STACK.md). That plan is owner-confirmed but **not implemented**. Stay on the current stdlib/WSGI HTML stack unless the user explicitly starts Phase 1+. Never move authority, money, or workflow rules into Next or the browser.
+
 ## Before coding
 
 For every requested change:

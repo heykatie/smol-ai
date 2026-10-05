@@ -28,4 +28,8 @@ These exclusions are also listed in [mvp_scope.md](../mvp_scope.md). They stay o
 - Live supplier-page checks
 - A public paid-call budget
 
-A hosted session that survives a redeploy is an open storage decision in [ARCHITECTURE.md](ARCHITECTURE.md), not a completed roadmap item.
+## Planned UI/API stack migration
+
+Owner-confirmed target: Next.js + TypeScript UI, FastAPI JSON API, existing Python domain core, Neon. Phases, triggers, and agent rules live in [TARGET_STACK.md](TARGET_STACK.md). Do not treat that document as completed work.
+
+A hosted session that survives a redeploy is recorded in [ARCHITECTURE.md](ARCHITECTURE.md) / [STATUS.md](STATUS.md) within verification limits; backup/retention decisions remain separate.
