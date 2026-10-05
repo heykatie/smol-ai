@@ -71,6 +71,14 @@ Requirements: FR-05 saved-state persistence, FR-06 workshop results, FR-09 staff
 
 Local verification: **102 passed, no skips**, Python 3.14.7, pytest 9.1.1, psycopg 3.3.6, isolated local Postgres; no paid provider calls. Diff whitespace passed. Hosted rendering and post-deploy persistence will be recorded after deployment and browser/HTTP checks; prior hosted failures remain historical until those checks pass.
 
+## Rendering verification and hosted input-error follow-up — October 4, 2026
+
+Vercel reported deployment `2g6pSdrt8r6p7bcfhrt9PCVmvJRd` successful for `c912b58`. The recovered in-app browser displayed saved workshop and staffing results. Workshop default showed $700 contribution and eight remaining kits; changing its deadline to two days blocked the commitment, and restoring seven days plus refresh preserved the result. Saturday staffing showed 10 hours without workshop and 14 hours/two extra coverage blocks with it; save and refresh preserved the plan. Completing reorder produced stock 121 and the daily brief correctly showed both reorder and staffing completed, with simulated tool evidence.
+
+Twenty independent-HTTP-session checks passed on this deployed version, including lifecycle, replay, reset, isolation, dashboard completion, and visible preview results. They were sequential checks on the same deployed version, not a new deployment boundary between scripts. The keyboard skip link focused `main#content`; at 390px the dashboard document width was 390px with no horizontal overflow. Temporary viewport override was reset.
+
+The browser error check exposed an additional WSGI defect: invalid numeric staffing input produced a Vercel 500 although the local HTTP adapter handled it. Three new WSGI behavior tests demonstrated uncaught Decimal errors or a plain-text error instead of the recoverable page. The WSGI adapter now handles `InvalidOperation` and `ValueError` with the existing HTML 400 page. Tests verify saved staffing, rescue, and workshop results remain unchanged. Complete regression result: **105 passed, no skips** in the isolated local Postgres environment. Hosted error recovery and post-deploy saved-state checks remain to be verified after this follow-up deploys.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.

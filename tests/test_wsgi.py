@@ -1,5 +1,7 @@
 import io
 
+import pytest
+
 from app import app
 
 
@@ -55,3 +57,48 @@ def test_wsgi_rejects_an_oversized_length_before_reading_the_body():
     app(environ, start_response)
     assert captured["status"].startswith("413")
     assert read_sizes == []
+
+
+@pytest.mark.parametrize("scenario,action,valid,invalid", [
+    ("staffing", "staffing_calculate", {"day": ["saturday"], "owner_hours": ["6"]}, {"owner_hours": "not-a-number"}),
+    ("rescue", "rescue_offers", {"selling_price": ["150"]}, {"selling_price": "not-a-number"}),
+    ("workshop", "workshop_check", {"attendees": ["20"], "days_until": ["7"]}, {"attendees": "not-a-number"}),
+])
+def test_wsgi_invalid_input_returns_recoverable_error_and_preserves_saved_result(tmp_path, monkeypatch, scenario, action, valid, invalid):
+    from urllib.parse import urlencode
+    from smolstuff.inbox import InboxApp
+    from smolstuff.ops_demos import ScenarioStore
+
+    root = tmp_path / "sessions"
+    root.mkdir()
+    monkeypatch.setenv("SMOL_SESSIONS", str(root))
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    session = "a" * 32
+    path = str(root / (session + ".sqlite3"))
+    InboxApp(path, session_id=session).route(action, dict(valid, scenario=[scenario]))
+    store = ScenarioStore(path, session)
+    try:
+        before = store.get(scenario)
+    finally:
+        store.close()
+    raw = urlencode(dict(invalid, action=action, scenario=scenario)).encode()
+    captured = {}
+
+    def start_response(status, headers):
+        captured.update(status=status, headers=dict(headers))
+
+    body = b"".join(app({
+        "REQUEST_METHOD": "POST", "PATH_INFO": "/", "HTTP_HOST": "localhost",
+        "HTTP_COOKIE": "smol_session=" + session,
+        "CONTENT_TYPE": "application/x-www-form-urlencoded", "CONTENT_LENGTH": str(len(raw)),
+        "wsgi.input": io.BytesIO(raw),
+    }, start_response)).decode()
+    assert captured["status"] == "400 Bad Request"
+    assert captured["headers"]["Content-Type"].startswith("text/html")
+    assert 'role="alert"' in body
+    assert "Back to daily brief" in body
+    store = ScenarioStore(path, session)
+    try:
+        assert store.get(scenario) == before
+    finally:
+        store.close()

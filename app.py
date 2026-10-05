@@ -8,10 +8,12 @@ files on Vercel. See docs/STATUS.md for recorded hosted checks and their limits.
 
 import os
 import sys
+from decimal import InvalidOperation
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
+from smolstuff.demo_ui import error_page
 from smolstuff.http_guard import MAX_BODY_BYTES, RequestRejected, read_form
 from smolstuff.inbox import (
     InboxApp,
@@ -111,9 +113,13 @@ def app(environ, start_response):
             str(Path(directory) / "{0}.sqlite3".format(session_id)),
             session_id=session_id,
         ).route(action, fields)
-    except ValueError:
-        start_response("400 Bad Request", [("Content-Type", "text/plain; charset=utf-8")])
-        return [b"Unknown action"]
+    except (ValueError, InvalidOperation):
+        encoded = error_page().encode("utf-8")
+        start_response(
+            "400 Bad Request",
+            [("Content-Type", "text/html; charset=utf-8"), ("Content-Length", str(len(encoded)))],
+        )
+        return [encoded]
     response_headers = [("Location", _scenario_location(scenario))]
     if new_cookie:
         response_headers.append(("Set-Cookie", _session_cookie(session_id)))
