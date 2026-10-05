@@ -126,9 +126,11 @@ def _cookie_session(cookie_header: str):
 
 
 def _page(directory: str, session_id, scenario: str) -> str:
+    from smolstuff.database import persisted_session
+
     if session_id is None:
         return _blank_scenario(scenario)
     path = Path(directory) / "{0}.sqlite3".format(session_id)
-    if not path.exists():
+    if not path.is_file() and not persisted_session(session_id):
         return _blank_scenario(scenario)
     return InboxApp(str(path), session_id=session_id).view(scenario)

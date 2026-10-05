@@ -24,3 +24,26 @@ def postgres_connection():
 
     raw = psycopg.connect(url, autocommit=True, row_factory=dict_row, connect_timeout=10)
     return PgConnection(raw)
+
+
+def persisted_session(session_id: str) -> bool:
+    """True when this visitor already has rows in Neon."""
+    if not database_url() or not session_id:
+        return False
+    connection = postgres_connection()
+    if connection is None:
+        return False
+    try:
+        for table in ("workflows", "scenario_state"):
+            try:
+                row = connection.execute(
+                    "SELECT 1 AS found FROM {0} WHERE session_id = ? LIMIT 1".format(table),
+                    (session_id,),
+                ).fetchone()
+            except Exception:
+                continue
+            if row:
+                return True
+        return False
+    finally:
+        connection.close()

@@ -770,7 +770,7 @@ def make_session_handler(directory: str):
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
             path = None if session_id is None else root / "{0}.sqlite3".format(session_id)
-            if path is None or not path.exists():
+            if session_id is None or not (path.is_file() or _session_in_database(session_id)):
                 self._send(200, _blank_scenario(scenario))
                 return
             self._send(200, InboxApp(str(path), session_id=session_id).view(scenario))
@@ -892,12 +892,21 @@ def _load_local_env() -> None:
             os.environ[name] = value
 
 
+def _session_in_database(session_id: str) -> bool:
+    from smolstuff.database import persisted_session
+
+    return persisted_session(session_id)
+
+
 def open_session(directory: str, cookie_header: str):
     """Return a server-issued session. A client-chosen id counts only when its file exists."""
     root = Path(directory)
     root.mkdir(parents=True, exist_ok=True)
     requested = _read_session(cookie_header or "")
-    if requested and (root / "{0}.sqlite3".format(requested)).is_file():
+    if requested and (
+        (root / "{0}.sqlite3".format(requested)).is_file()
+        or _session_in_database(requested)
+    ):
         return requested, False
     if not reserve_session(str(root)):
         raise SessionLimited()
