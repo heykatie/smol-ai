@@ -26,22 +26,15 @@ The app is a long-running `http.server` process. Each visitor's state is a SQLit
 
 ## Hosting decision
 
-Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production returned the dark daily brief at `https://smolstuff.vercel.app`. Neon is not provisioned. Session files on Vercel are temporary, so a hosted session is not durable across a redeploy.
+Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production serves the dark daily brief at `https://smolstuff.vercel.app`. Neon Free is connected to the Vercel project in the Washington, D.C. region. The app uses it when `DATABASE_URL` is set. Local development stays on SQLite when that variable is empty. A hosted session is not durable until an approval is still present after a redeploy.
 
-## Database choice, not yet provisioned
+## Database
 
-**Proposed, pending confirmation:** Neon Postgres through the Vercel Marketplace.
-
-- Workflows, approvals, inventory movements, orders, and audit rows need transactions and foreign keys. The current schema is already relational.
-- Postgres is the store for hosted use. Local tests stay on SQLite behind the same store calls where the SQL allows it.
-- Turso would keep more of the current SQLite dialect. It is a second database vendor and a weaker fit once more than one business shares a database.
-
-Do not create the Neon database until that choice is confirmed. The local demo keeps working on SQLite until the store can talk to both.
+Neon Free is provisioned and connected. It is $0, with 100 compute-hours and 0.5 GB per project each month, and it sleeps after 5 minutes idle. Do not create a second database. The local demo keeps using SQLite until `DATABASE_URL` is present.
 
 ## Cost, before any service is created
 
-- The owner selected the Vercel Hobby plan. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. The project exists. Neon has not been created.
-- Neon Free, checked on the plans page the same day, is $0: 100 CU-hours and 0.5 GB of storage per project each month. Compute suspends after 5 minutes idle. Launch, only if those limits are exceeded, is $0.106 per CU-hour and $0.35 per GB-month with no monthly minimum. No Neon project has been created.
+- The owner selected the Vercel Hobby plan. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. The project exists. Neon Free is connected. Launch pricing applies only after an upgrade: $0.106 per compute-hour and $0.35 per GB-month.
 - Tavily, Novita, ZooWork, Moss, and BAND are separate bills. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both a global limit and a per-session limit are set. A key alone does not place a call.
 
 ## Not in this migration

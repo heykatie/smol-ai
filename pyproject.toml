@@ -3,7 +3,7 @@ name = "smolstuff"
 version = "0.2.0"
 description = "Deterministic core for the smolstuff operations demo."
 requires-python = ">=3.9"
-dependencies = []
+dependencies = ["psycopg[binary]>=3.2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

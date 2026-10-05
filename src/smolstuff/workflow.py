@@ -119,6 +119,10 @@ class WorkflowStore:
         self.now = now
         self.session_id = session_id or "local"
         self._session_scoped = False
+        if connection is None:
+            from smolstuff.database import postgres_connection
+
+            connection = postgres_connection()
         self.dialect = "postgres" if connection is not None else "sqlite"
         if connection is None:
             self._conn = sqlite3.connect(path)
