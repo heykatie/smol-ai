@@ -1,5 +1,24 @@
 # smolstuff implementation status and verification evidence
 
+## Production smoke and local ZooWork cost sample — October 5, 2026 (America/Los_Angeles)
+
+### 1) Production smoke (`https://smolstuff.vercel.app`)
+
+Independent HTTP cookie jar: start reorder → approve → receive full. Observed:
+
+- Start and completion pages showed **Sponsor calls are off**, parser fallback / not a verified live model call, and **no** `Tavily · live` / `ZooWork · live` / `Novita · live`
+- After approve: awaiting receipt with available stock **21**
+- After receive: stock **121**, completed reorder; daily brief showed replenishment completed
+- No production env changes; `SMOL_SPONSOR_CALLS` left off
+
+In-app browser also reached awaiting receipt with sponsor-off parser evidence after approving the **$189** order. Receipt was confirmed on the HTTP path above.
+
+### 2) Local ZooWork cost sample (not production)
+
+One local `explain_supplier_delay` against the configured stopped agent returned **live** text (lead time 14→~35 days) without changing order authority. Key-scoped `/usage?range=24h` moved from **13→14** requests and about **89.55→96.53** platform credits (~**+7.0 credits**). At the documented **200 credits/USD**, that is about **$0.035** for this one explanation. Usage attribution lagged the HTTP response by a few seconds. This is one sample on the project key, not Organization-wide billing or a guarantee for every future model/run.
+
+Recommended showcase posture updated in [SECURITY_AND_DECISIONS.md](SECURITY_AND_DECISIONS.md): still keep public calls off; ~50 live ZooWork explanations remains a conservative budget against the $200 grant.
+
 ## Postgres demo TTL expiry — October 5, 2026 (America/Los_Angeles)
 
 Requirements: anonymous demo cleanup aligned with the one-day cookie TTL (D4 interim).

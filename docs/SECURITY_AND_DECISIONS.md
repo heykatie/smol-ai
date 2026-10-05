@@ -68,11 +68,11 @@ One reorder start can claim up to three sponsor slots today (Novita + Tavily + Z
 | --- | --- | --- |
 | `SMOL_SPONSOR_SESSION_LIMIT` | `3` | One full provider pass per showcase session |
 | `SMOL_SPONSOR_GLOBAL_LIMIT` | `60` | ~20 full showcase starts site-wide before the shared Neon counter stops calls |
-| ZooWork spend posture | Treat as scarcest; prefer ≤ ~20–30 live explanations until one metered run shows $ per task | $200 grant; Platform docs note 200 credits/USD, but $ per explanation is not measured in-app yet |
+| ZooWork spend posture | Measured ~**7.0 platform credits** (~**$0.035**) per local explanation on 2026-10-05 (200 credits/USD). Prefer ≤ ~50 live explanations for showcases until more samples exist | $200 grant ≈ 40,000 credits; one sample is not a billing guarantee |
 | Tavily posture | Comfortable headroom at 8,000 credits (~1 credit/basic search) | Global 60 claims is far under the grant if many claims are Tavily |
 | Novita / others | Keep off, or include only inside the same 60 global claims | Signup free-plan only; no separate grant |
 
-Public site stays `SMOL_SPONSOR_CALLS` unset/off. Revisit caps after measuring one ZooWork explanation cost and any Novita free-tier monthly ceiling.
+Public site stays `SMOL_SPONSOR_CALLS` unset/off. Revisit caps after additional ZooWork samples and any Novita free-tier monthly ceiling.
 
 ## Inspection scope
 
