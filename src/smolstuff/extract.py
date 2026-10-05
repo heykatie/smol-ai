@@ -122,7 +122,7 @@ def _validated_model_days(payload: dict):
 
 
 def call_novita(message: str) -> dict:
-    """Ask Novita for two lead-time numbers. The API key never leaves this process."""
+    """Ask Novita for two lead-time numbers. The API key stays server-side and is sent only for provider authentication."""
     import json
     import os
     import urllib.request

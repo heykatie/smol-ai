@@ -96,6 +96,8 @@ A physical count or a genuinely new trust decision may still need human input. A
 
 ## 4. Action Inbox and trust UX
 
+Confirmed visual direction: modern, clean, sleek, dark, stylish and gently playful. All screens share the design in [docs/DESIGN.md](docs/DESIGN.md); current feature/provider evidence is in [docs/STATUS.md](docs/STATUS.md). Keep decisions legible, calm and owner-friendly.
+
 The Action Inbox surfaces meaningful exceptions, opportunities, decisions, and completed outcomes. Background work belongs in an expandable activity history.
 
 Each action card should answer:
@@ -544,7 +546,7 @@ Prefer a few real, coherent integrations over seven decorative logos. Clearly id
 
 ### Required vertical slice
 
-Target **permitted supplier signal → stockout investigation → alternative with evidence → policy/approval → execution → confirmation → receipt → reconciliation → closure**. In the current demo the signal, offer, and business actions are synthetic; no live verification is performed. PRD and MVP_SCOPE define release priority; this section does not impose extra independent gates.
+Target **permitted supplier signal → stockout investigation → alternative with evidence → policy/approval → execution → confirmation → receipt → reconciliation → closure**. In the current demo the signal, offer, and business actions are synthetic; supplier terms remain seeded even when optional public research is called. PRD and MVP_SCOPE define release priority; this section does not impose extra independent gates.
 
 Required pieces:
 

@@ -2,20 +2,20 @@
 
 **An operations team for small businesses. From incoming signal to verified resolution.**
 
-smolstuff is a privacy-first operations agent for very small businesses. The owner sets boundaries once. The system handles a routine reorder and asks for approval only when the purchase is outside that authority.
+smolstuff is a privacy-first AI operations system for small local businesses. The vision is automatic permitted-email triage, actionable work, inventory investigation and supplier-aware reordering, staffing-light-day recommendations, and sale rescue through nearby merchants’ agents. Owners set the boundaries once; sensitive commitments wait for approval. The current app demonstrates these operations with synthetic scenarios; it does not connect a real inbox or merchant network.
 
 > **Automate the work, not the authority.**
 
-This README describes what the code does now. Requirements, fixtures, scope, and engineering rules are linked under Documents. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [the review](docs/REVIEW.md) record an earlier check of the code against those requirements.
+This README describes what the code does now. Requirements, fixtures, scope, and engineering rules are linked under Documents. [The implementation contract](docs/IMPLEMENTATION_CONTRACT.md) record technical behavior and remaining requirements. [Current synchronization review](docs/STATUS.md) supersedes [the historical review](docs/REVIEW.md). [Design specification](docs/DESIGN.md) defines the shared dark UI.
 
 ## What runs today
 
-One simulated procurement workflow for one fictional product, the workshop supply pack.
+A dark, responsive Daily brief with one simulated procurement workflow and four separate functional previews. All screens share the smolstuff navigation, typography, controls, evidence styles, and synthetic-data notice. No fake live monitoring or business-impact metrics are displayed.
 
 | Step | Behavior |
 | --- | --- |
 | Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. This is a demonstration trigger, not a live mailbox subscription. |
-| Extraction | Waiting on a Novita key. Until then a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
+| Extraction | Optional Novita extraction is wired. Without a usable configured key/result, a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
 | Recommendation | Order 100 units from Supplier B because that is the minimum. $54 merchandise + $7 shipping = $61. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
@@ -24,11 +24,11 @@ One simulated procurement workflow for one fictional product, the workshop suppl
 | Receipt | **Simulate receiving 100 units** adds those units to the 21 already available. On hand becomes 121. No extra sales are subtracted. The workflow completes only after that receipt. |
 | Refresh | Each visitor has one SQLite file under `data/sessions/`. Reloading the page resumes that file. **Reset demo** clears the reorder workflow and its tool records. It does not delete the file, so the other previews in that session remain. This persists while the host retains its disk; the current hosting configuration does not establish durable storage across redeploys. |
 
-Sponsor status, from observed calls rather than from the presence of a key:
+Integration status: application wiring verified by this inspection; previous account/probe observations are repository-reported and were not rerun here:
 
 | Tool | Observed status |
 | --- | --- |
-| Tavily | Verified in the reorder demo. **Start interactive demo** runs one basic search and records provider Tavily, status live, and public source links. Those links do not change the seeded $61 offer. |
+| Tavily | Wired in the reorder demo; a previous repository report records a successful call. With a configured key, **Start interactive demo** attempts a basic search and records live only for usable returned links. Missing key/error is labeled simulated fallback. This inspection verified code/tests, not a fresh provider call. Links do not change the seeded $61 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
 | ZooWork | A models read and an empty agent create succeeded, and that agent was deleted. No operations task has run. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
@@ -139,3 +139,7 @@ Examples use fictional businesses and synthetic numbers. Do not commit credentia
 ## License
 
 Licensed under the [MIT License](LICENSE).
+
+## UI direction and review status
+
+Modern, clean, sleek, dark, stylish and gently playful is the product design direction. Shared tokens live in `src/smolstuff/ui_theme.py`; all screen shells use them. See [docs/DESIGN.md](docs/DESIGN.md) for tokens, responsive behavior and accessibility criteria. [docs/STATUS.md](docs/STATUS.md) records what was checked and what remains open. A local preview is not a deployed site.

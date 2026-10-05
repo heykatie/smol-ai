@@ -24,82 +24,39 @@ from smolstuff.ops_demos import (
     workshop_receive,
 )
 
-_SHELL = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>smolstuff — {title}</title>
-  <style>
-    :root {{
-      --bg: #f3f0e8;
-      --surface: #fffcf8;
-      --ink: #1c1915;
-      --muted: #6f675e;
-      --line: #e4dcd0;
-      --wait: #f6e6cc;
-      --progress: #e4eef6;
-      --done: #dcead9;
-      --idle: #eeeae4;
-    }}
-    body {{ margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.45; }}
-    main {{ max-width: 52rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }}
-    a {{ color: inherit; }}
-    .top {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }}
-    .brand {{ margin: 0; font-size: 1.05rem; font-weight: 650; letter-spacing: -0.03em; }}
-    .tagline {{ margin: 0.15rem 0 0; color: var(--muted); font-size: 0.92rem; }}
-    .home {{ font-size: 0.92rem; text-decoration: none; border-bottom: 1px solid currentColor; white-space: nowrap; }}
-    h1 {{ font-size: 1.7rem; letter-spacing: -0.03em; font-weight: 650; margin: 0; }}
-    h2 {{ font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 650; margin: 1.4rem 0 0.55rem; }}
-    h3 {{ margin: 0.15rem 0 0; font-size: 1.05rem; letter-spacing: -0.02em; }}
-    .lede, .note {{ color: var(--muted); }}
-    .counts {{ display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.85rem 0 0.2rem; }}
-    .counts span {{ background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 0.28rem 0.65rem; font-size: 0.82rem; }}
-    .grid {{ display: grid; gap: 0.75rem; }}
-    @media (min-width: 720px) {{ .grid {{ grid-template-columns: 1fr 1fr; }} }}
-    article, .card {{ background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1rem 0.9rem; box-shadow: 0 1px 2px rgba(28, 25, 21, 0.04); }}
-    article p, .card p {{ margin: 0.35rem 0; }}
-    .status {{ display: inline-block; font-size: 0.75rem; font-weight: 650; padding: 0.18rem 0.5rem; border-radius: 999px; background: var(--idle); }}
-    .status.decision {{ background: var(--wait); }}
-    .status.progress {{ background: var(--progress); }}
-    .status.done, .completed {{ background: var(--done); }}
-    .card-actions {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.7rem; margin-top: 0.7rem; }}
-    .open {{ font-size: 0.92rem; text-decoration: none; border-bottom: 1px solid currentColor; }}
-    form {{ display: inline; }}
-    button, .linkish {{ font: inherit; font-size: 0.95rem; border-radius: 999px; padding: 0.5rem 0.9rem; margin: 0.25rem 0.35rem 0.25rem 0; cursor: pointer; }}
-    button.primary {{ background: var(--ink); color: #fffdf8; border: 0; }}
-    button.secondary {{ background: transparent; border: 1px solid #c9bfb2; }}
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {{ outline: 2px solid var(--ink); outline-offset: 3px; }}
-    label {{ display: block; margin: 0.55rem 0; }}
-    input, select {{ font: inherit; width: 100%; max-width: 16rem; box-sizing: border-box; padding: 0.45rem 0.55rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; }}
-    .empty {{ margin: 0; }}
-    .activity {{ list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }}
-    .activity li {{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0.75rem 0.9rem; }}
-    @media (max-width: 640px) {{
-      .top {{ flex-direction: column; }}
-      h1 {{ font-size: 1.45rem; }}
-    }}
-  </style>
-</head>
-<body>
-  <main>
-    <header class="top">
-      <div>
-        <p class="brand">smolstuff — Small but mighty.</p>
-        <p class="tagline">Your small-business operations team. Fictional business data. Purchases and deliveries are simulated.</p>
-      </div>
-      {home}
-    </header>
-    {body}
-  </main>
-</body>
-</html>
-"""
+from smolstuff.ui_theme import STYLE
 
 
 def shell(title: str, body: str) -> str:
-    home = "" if title == "Daily brief" else '<a class="home" href="/">Daily brief</a>'
-    return _SHELL.format(title=escape(title), body=body, home=home)
+    nav = [("Daily brief", "/", "✦"), ("Reorder", "/?scenario=reorder", "↗"),
+           ("Workshop feasibility", "/?scenario=workshop", "◇"),
+           ("Inventory Detective", "/?scenario=detective", "⌕"),
+           ("Sale rescue", "/?scenario=rescue", "♡"),
+           ("Staffing coverage", "/?scenario=staffing", "☷")]
+    links = "".join('<a href="{href}"{active}><span class="nav-icon" aria-hidden="true">{icon}</span>{label}</a>'.format(
+        href=href, active=' aria-current="page"' if title == label else "",
+        icon=icon, label=escape(label)) for label, href, icon in nav)
+    home = "" if title == "Daily brief" else '<a class="home" href="/">← Daily brief</a>'
+    return ("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+        '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<meta name="theme-color" content="#101115">'
+        '<title>smolstuff — {title}</title><style>{style}</style></head>'
+        '<body><a class="skip" href="#content">Skip to content</a><div class="app-layout">'
+        '<aside class="rail"><a class="brand" href="/" aria-label="smolstuff daily brief">'
+        '<span class="brand-mark" aria-hidden="true">:)</span>smolstuff</a>'
+        '<div><p class="rail-label">Your operations</p><nav aria-label="Main navigation">{nav}</nav></div>'
+        '<div class="rail-note"><strong>Small but mighty.</strong>One less thing for you to carry. You keep the final say.</div></aside>'
+        '<main id="content" tabindex="-1"><header class="top"><span class="workspace"><strong>Your workspace</strong> / {title}</span>'
+        '<span class="demo-tag">Interactive demo</span>{home}</header>{body}'
+        '<footer class="footer-note">Fictional business data. Purchases, messages, and deliveries are simulated. '
+        'This demo does not monitor a real inbox. Provider calls are labeled in the evidence.</footer>'
+        '</main></div></body></html>').format(title=escape(title), style=STYLE, nav=links, home=home, body=body)
+
+
+def error_page(message: str = "That action or value could not be accepted.") -> str:
+    return shell("Check your input", '<h1>Let’s try that again.</h1><article class="alert" role="alert"><p>{}</p>'
+                 '<p>Return to the daily brief, open the workflow, and check the values before submitting.</p>'
+                 '<a class="open" href="/">Back to daily brief</a></article>'.format(escape(message)))
 
 
 def _hidden(scenario: str) -> str:
@@ -128,28 +85,28 @@ def dashboard_page(cards: list, events=()) -> str:
         groups.setdefault(card["bucket"], []).append(card)
     order = ("Needs your decision", "In progress", "Not started", "Completed")
     sections = [
-        "<h1>Daily brief</h1>",
-        "<p class=\"lede\">Counts come from this session only.</p>",
+        '<section class="hero"><span class="hero-spark" aria-hidden="true">✧</span><p class="kicker">Daily brief · small but mighty</p><h1>A little less on your plate.</h1><p class="lede">A home for the details, decisions, and follow-through. Explore your operations team with five hands-on demos.</p></section>',
+        '<p class="note">Counts come from this session only.</p>',
         '<p class="counts">{0}</p>'.format(
             "".join(
-                "<span>{0} {1}</span>".format(len(groups[name]), escape(name).lower())
+                "<span>{1}<strong>{0}</strong></span>".format(len(groups[name]), escape(name).lower())
                 for name in order
             )
         ),
     ]
     for name in order:
         items = groups.get(name, [])
-        sections.append("<h2>{0} ({1})</h2>".format(escape(name), len(items)))
         if not items:
-            sections.append("<p class=\"note empty\">None.</p>")
             continue
+        sections.append("<h2>{0} ({1})</h2>".format("Explore your operations" if name == "Not started" else escape(name), len(items)))
         sections.append('<div class="grid">')
         for card in items:
             tone = _BUCKET_CLASS.get(card["bucket"], "idle")
             sections.append(
-                "<article><p class=\"status {tone}\">{status}</p><h3>{title}</h3><p>{description}</p>"
-                '<div class="card-actions"><a class="open" href="{href}">Open</a>{action}</div></article>'.format(
+                "<article><div class=\"card-top\"><span class=\"card-icon\" aria-hidden=\"true\">{icon}</span><p class=\"status {tone}\">{status}</p></div><h3>{title}</h3><p>{description}</p>"
+                '<div class="card-actions"><a class="open" href="{href}" aria-label="Open {title}">Open →</a>{action}</div></article>'.format(
                     tone=tone,
+                    icon={"reorder": "↗", "workshop": "◇", "detective": "⌕", "rescue": "♡", "staffing": "☷"}.get(card["href"].split("=")[-1], "✦"),
                     status=escape(card["status"]),
                     title=escape(card["title"]),
                     description=escape(card["description"]),
@@ -344,7 +301,7 @@ def staffing_page(saved: Optional[dict], message: str = "") -> str:
             body.append("<p>Saved recommendation for {0}. This is not an employee schedule.</p>".format(escape(saved["day"])))
     body.append(_button("staffing", "staffing_reset", "Reset demo", "secondary"))
     body.append("</article>")
-    return shell("Staffing forecast", "".join(body))
+    return shell("Staffing coverage", "".join(body))
 
 
 def apply_ops(path: str, action: str, fields: dict) -> None:

@@ -11,3 +11,5 @@ Public data is fictional; business purchases, messages and merchant transactions
 Check docs/SECURITY_AND_DECISIONS.md before enabling connectors or paid execution. Missing production decisions do not block synthetic development; keep real access/commitments disabled. Ask for only the exact missing credential/ID for one service at a time; owner enters secrets privately, never in chat. Vendor capabilities must be checked against official docs at implementation time.
 
 Report changes, evidence and blockers honestly. Do not label a simulated/replayed result live, an order confirmation received, or a deployed build verified without evidence. Update documentation and requirement status when actual behavior changes.
+
+UI direction is confirmed: modern, clean, sleek, dark, stylish and gently cute. Reuse `demo_ui.shell` and `ui_theme.STYLE` across every screen; follow docs/DESIGN.md. Consult docs/STATUS.md for current inspection evidence; docs/REVIEW.md is historical. Never let historical docs override the latest implemented status.

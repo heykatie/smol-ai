@@ -1,23 +1,24 @@
 # smolstuff implementation contract
 
-Updated October 4, 2026. **Current** means inspected source at `2dc9093610c874179bc14a870ae3b9ad8f0f72b0`; **required** means target behavior, not a claim that a control exists. PRD defines product scope. Build in small increments against behavior tests; keep business actions synthetic in the public demo.
+Updated October 4, 2026. **Current** means inspected source at `d48c344a485924b2eea9120e7e96ee3260b8e722`; **required** means target behavior, not a claim that a control exists. PRD defines product scope. Build in small increments against behavior tests; keep business actions synthetic in the public demo.
 
 ## Existing components and data flow
 
 ```text
 Browser GET/POST /
   -> inbox.make_session_handler: smol_session cookie -> session SQLite file
-  -> InboxApp.apply: fixed demo action
-  -> extract.extract_lead_time: local regex -> LeadTimeFact
+  -> InboxApp.route: reorder or one of four persisted synthetic previews
+  -> extract.resolve_lead_time: optional Novita -> validated LeadTimeFact or parser fallback
+  -> research.research_supplier: optional Tavily sources or labeled fallback
   -> reorder.plan_reorder: seeded inputs -> inventory/money math -> policy result
   -> WorkflowStore: persisted action, approval and transitions
   -> simulated execution -> confirmation -> receipt + inventory movement
-  -> InboxApp.page: persisted progress + fixture plan + tool records -> HTML
+  -> shared demo_ui.shell + ui_theme: persisted progress, preview state and evidence -> dark HTML
 ```
 
-`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses SQLite transactions and unique constraints. `inbox.py` combines rendering and HTTP handling. There is no connector worker, generic email task extractor, LLM client, vector retrieval, independent agent runtime, or inventory/POS adapter.
+`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses SQLite transactions and unique constraints. `inbox.py` combines rendering and HTTP handling. An optional Novita client and Tavily research client are wired. `ops_demos.py` owns the four deterministic preview scenarios and ScenarioStore; `demo_ui.py` renders/routes previews, and `ui_theme.py` owns the shared dark style. There is no connector worker, generic email task extractor, vector retrieval inside the inbox, independent agent runtime, or live inventory/POS adapter.
 
-Current tables: workflows, actions, approvals, executions, confirmations, receipts, inventory_movements, integration_events, workflow_transitions. Stock is a caller-supplied fixture baseline plus stored movements, not a synchronized inventory ledger. Policy is supplied by Python; actions store policy result/reasons but not a complete versioned policy snapshot. Each visitor file provides demo separation; it is not production authorization or tenant isolation.
+Current tables: workflows, actions, approvals, executions, confirmations, receipts, inventory_movements, integration_events, workflow_transitions, scenario_state (phase and JSON payload by scenario key). Stock is a caller-supplied fixture baseline plus stored movements, not a synchronized inventory ledger. Policy is supplied by Python; actions store policy result/reasons but not a complete versioned policy snapshot. Each visitor file provides demo separation; it is not production authorization or tenant isolation.
 
 ## Required adapter boundaries
 
@@ -78,7 +79,7 @@ Required behavior before generalization:
 
 ## Preview contracts
 
-Use PRD FR-06–FR-09 as executable scenario contracts. Persist each scenario independently, with its own fixture/version and exact action approval. Proposed preview defaults where PRD leaves mechanics unspecified:
+Use PRD FR-06–FR-09 as executable scenario contracts. The four previews now persist in independent ScenarioStore keys in the same visitor file, with a synthetic authorization/fulfillment path. Production exact action approval/roles remain future requirements. Proposed further defaults, which must not be mistaken for existing input validation:
 
 - Workshop: validate integer attendees 1–100 and deadline 1–90 days; negative cost invalid. Reserve materials/capacity only after customer commitment authority; purchasing is a separate action. Purchase cash and consumed material cost are not counted twice.
 - Detective: confirm 12 actual uses before proposing the three-unit correction from 20 to 17; original physical count 16 stays recorded; a recount 17 resolves, otherwise the remaining discrepancy stays open. No automatic write-off.
@@ -91,12 +92,16 @@ These are review proposals and may be adjusted in a documented decision before i
 
 | Requirement | Existing evidence | Required additional coverage |
 | --- | --- | --- |
-| FR-01 signal/extraction | test_reorder parser/override tests | Live-provider duplicates, blocked metadata/body, revocation, cursor recovery and general task extraction |
+| FR-01 signal/extraction | test_reorder parser/override and validated model-output/fallback tests | Live-provider duplicates, blocked metadata/body, revocation, cursor recovery and general task extraction |
 | FR-02/03 planning/economics | test_inventory, test_reorder | No-risk planner, stale facts, timed inbound, fees unknown, variant/pack mapping |
 | FR-04 authority | test_policy, test_terms, test_workflow | Full material hash, authenticated actor, budget reservation across concurrent orders, hard-limit overrides |
 | FR-05 receipt/persistence | test_fulfillment, test_lifecycle, test_workflow | Remote unknown outcome, conflicting replay payload, hosted durability, financial obligations |
-| FR-06–09 previews | None in inspected repo | Default numbers, editable inputs, invalid data, approval/decline, isolated persistence and completion |
-| FR-10 status/audit | test_inbox execution records | Real successful/failed provider calls, fallback origin, field disclosure manifest and secret redaction |
+| FR-06–09 previews | test_ops_demos verifies default fixture math, blocked workshop, correction/recount, negotiation floors and coverage; browser review exercises persisted paths | Broader range/finite-number validation, per-action authorization binding, decline/expiry, hostile state/replay, concurrency and financial reconciliation |
+| FR-10 status/audit | test_inbox execution records and test_research provider-result/fallback tests | Real successful/failed provider calls, fallback origin, field disclosure manifest and secret redaction |
 | Security/public experience | test_inbox session/HTTP flow | CSRF/request validation, disk/session quotas, expiry cleanup, keyboard/mobile and recoverable errors |
 
 Test meaningful business behavior first and demonstrate intended failures before implementation. Run targeted tests then relevant regressions. Do not add tests that merely assert documentation wording. Browser/host validation is separate from passing Python tests.
+
+## UI source of truth
+
+All pages use demo_ui.shell and ui_theme.STYLE; no separate light procurement page remains. docs/DESIGN.md defines the confirmed dark/playful direction and measurable experience checks. docs/STATUS.md records the fresh inspection and distinguishes tests/source wiring from previous provider reports. This contract does not certify those provider reports or a hosted release.

@@ -1,3 +1,5 @@
+> **Historical review.** This document describes the first inspection at the commit below. It is retained as history and is superseded for current status by [STATUS.md](STATUS.md). File names, package paths, feature status and test counts here are historical observations, not current implementation claims.
+
 # smolstuff documentation review
 
 Reviewed October 4, 2026 against live GitHub `heykatie/smolstuff`, main commit `2dc9093610c874179bc14a870ae3b9ad8f0f72b0`. The former repo URL redirects to the renamed repository. This review covers every tracked documentation/configuration file, the Python component structure and relevant behavior/tests. It compares them with the project PRD and the user's stated product intent. Separate local work is not assumed to be on GitHub.

@@ -7,7 +7,7 @@ It cannot change quantity, price, or approval.
 
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from html import escape
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
@@ -23,6 +23,7 @@ from smolstuff.inventory import SupplyAssessment, assess_supply
 from smolstuff.lifecycle import WorkflowState
 from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
 from smolstuff.demo_ui import (
+    shell, error_page,
     apply_ops,
     dashboard_page,
     detective_page,
@@ -56,68 +57,11 @@ _ACTIONS = (
     "receive_rest",
 )
 
-_PAGE = Template(
-    """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>smolstuff — Action Inbox</title>
-  <style>
-    :root { color-scheme: light; }
-    body {
-      margin: 0;
-      font-family: Georgia, "Iowan Old Style", serif;
-      background: #f6f3ec;
-      color: #1c1915;
-    }
-    main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
-    .eyebrow { font-family: ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.75rem; color: #6b645b; }
-    h1 { font-size: 2rem; line-height: 1.15; margin: 0.4rem 0 0.25rem; }
-    .product { margin: 0 0 1.25rem; font-size: 1.15rem; }
-    .card { background: #fffdf8; border: 1px solid #e2d9cc; border-radius: 14px; padding: 1.25rem; }
-    .status { display: inline-block; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8rem; padding: 0.2rem 0.55rem; border-radius: 999px; background: #f3e2c4; }
-    .status.executing, .status.completed { background: #d9ead8; }
-    .status.declined, .status.cancelled, .status.recovery { background: #ece7e1; }
-    dl { display: grid; grid-template-columns: 11rem 1fr; gap: 0.45rem 0.75rem; margin: 1rem 0; }
-    dt { color: #6b645b; }
-    dd { margin: 0; }
-    .decision { font-size: 1.2rem; margin: 0.5rem 0 1rem; }
-    form { display: inline; }
-    button { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; border-radius: 999px; padding: 0.55rem 0.95rem; margin: 0 0.4rem 0.4rem 0; cursor: pointer; }
-    button.primary { background: #1c1915; color: #fffdf8; border: 1px solid #1c1915; }
-    button.secondary, summary.evidence { background: transparent; border: 1px solid #c9bfb2; }
-    summary.evidence { display: inline-block; border-radius: 999px; padding: 0.55rem 0.95rem; margin: 0 0.4rem 0.4rem 0; cursor: pointer; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; }
-    summary.evidence::-webkit-details-marker { display: none; }
-    button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid #1c1915; outline-offset: 3px; }
-    h2 { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; margin: 1.25rem 0 0.4rem; }
-    ol { margin: 0; padding-left: 1.2rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.92rem; }
-    li { margin: 0.25rem 0; }
-    .note, .built-with { font-family: ui-sans-serif, system-ui, sans-serif; color: #6b645b; font-size: 0.9rem; }
-  </style>
-</head>
-<body>
-  <main>
-    <p class="eyebrow">Fictional business data. Purchases and deliveries are simulated.</p>
-    <h1>$headline</h1>
-    <p class="product">$summary</p>
-    <article class="card">
-      <p class="status $status_class">$status_label</p>
-      <p>$investigation</p>
-      <p class="decision">$decision</p>
-      <p class="note">$note</p>
-      $actions
-      <details id="evidence">
-        <summary class="evidence">Review evidence</summary>
-        $evidence
-      </details>
-      <p class="built-with"><strong>Built with</strong> $built_with</p>
-    </article>
-  </main>
-</body>
-</html>
-"""
-)
+_PAGE = Template("""<h1>$headline</h1><p class="lede">$summary</p>
+<article class="card"><p class="status $status_class">$status_label</p>
+<p>$investigation</p><p class="decision">$decision</p><p class="note">$note</p>$actions
+<details id="evidence"><summary>Review evidence</summary>$evidence</details>
+<p class="built-with"><strong>Built with</strong> $built_with</p></article>""")
 
 
 class InboxApp:
@@ -415,7 +359,7 @@ def render_inbox(
     headline, summary, investigation, decision, note, status_label, status_class, actions = _status_copy(
         progress, order, plan
     )
-    return _PAGE.substitute(
+    return shell("Reorder", _PAGE.substitute(
         headline=escape(headline),
         summary=escape(summary),
         investigation=escape(investigation),
@@ -426,7 +370,7 @@ def render_inbox(
         actions=actions,
         evidence=_evidence(plan, progress, order, events),
         built_with=_built_with(events),
-    )
+    ))
 
 
 def _status_copy(progress, order, plan: ReorderPlan):
@@ -662,31 +606,13 @@ def _show_units(value: Decimal) -> str:
     return format(quantized, "f")
 
 
-_EMPTY_PAGE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>smolstuff — Action Inbox</title>
-  <style>
-    body { margin: 0; font-family: Georgia, serif; background: #f6f3ec; color: #1c1915; }
-    main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1.25rem; }
-    button { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1rem; border-radius: 999px; padding: 0.55rem 0.95rem; background: #1c1915; color: #fffdf8; border: 0; cursor: pointer; }
-    p { font-family: ui-sans-serif, system-ui, sans-serif; }
-  </style>
-</head>
-<body>
-  <main>
-    <p>Fictional business data. Purchases and deliveries are simulated.</p>
-    <h1>Your operations, followed through.</h1>
-    <p>smolstuff connects business signals, investigates what needs attention, and completes routine workflows within rules you control.</p>
-    <form method="post" action="/">
-      <input type="hidden" name="action" value="simulate_email">
-      <button type="submit">Start interactive demo</button>
-    </form>
-  </main>
-</body>
-</html>
-"""
+_EMPTY_PAGE = shell("Reorder", """<section class="hero"><p class="kicker">Replenishment</p>
+<h1>Your operations, followed through.</h1><p class="lede">See a supplier delay become an informed decision,
+then a verified receipt. One meaningful approval, with the evidence close at hand.</p></section>
+<article><h3>A small signal. A complete resolution.</h3><p class="note">Start interactive demo simulates a permitted supplier message.
+No upload, real inbox access, or real purchase is needed.</p><form method="post" action="/">
+<input type="hidden" name="scenario" value="reorder"><input type="hidden" name="action" value="simulate_email">
+<button class="primary" type="submit">Start interactive demo</button></form></article>""")
 
 
 def _decision_buttons(total: str) -> str:
@@ -753,22 +679,22 @@ def make_handler(app: InboxApp):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
             if urlparse(self.path).path != "/":
-                self._send(404, "Not found")
+                self._send(404, error_page("This page could not be found."))
                 return
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             self._send(200, app.view(scenario))
 
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/":
-                self._send(404, "Not found")
+                self._send(404, error_page("This page could not be found."))
                 return
             length = int(self.headers.get("Content-Length", "0"))
             fields = parse_qs(self.rfile.read(length).decode("utf-8"))
             action = fields.get("action", [""])[0]
             try:
                 scenario = app.route(action, fields)
-            except ValueError:
-                self._send(400, "Unknown action")
+            except (ValueError, InvalidOperation):
+                self._send(400, error_page())
                 return
             self.send_response(303)
             self.send_header("Location", _scenario_location(scenario))
@@ -802,7 +728,7 @@ def make_session_handler(directory: str):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
             if urlparse(self.path).path != "/":
-                self._send(404, "Not found")
+                self._send(404, error_page("This page could not be found."))
                 return
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
@@ -814,7 +740,7 @@ def make_session_handler(directory: str):
 
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/":
-                self._send(404, "Not found")
+                self._send(404, error_page("This page could not be found."))
                 return
             length = int(self.headers.get("Content-Length", "0"))
             fields = parse_qs(self.rfile.read(length).decode("utf-8"))
@@ -827,8 +753,8 @@ def make_session_handler(directory: str):
             path = root / "{0}.sqlite3".format(session_id)
             try:
                 scenario = InboxApp(str(path)).route(action, fields)
-            except ValueError:
-                self._send(400, "Unknown action")
+            except (ValueError, InvalidOperation):
+                self._send(400, error_page())
                 return
             self._redirect(session_id if new_cookie else None, scenario)
 
