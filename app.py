@@ -1,7 +1,7 @@
 """WSGI entry point for Vercel.
 
 Local development still uses `python -m smolstuff.inbox`.
-This app is not a hosted deployment until a preview URL is verified.
+This app is the Vercel entry. A production response was verified for the dark daily brief. Session files on Vercel are temporary and are not durable across redeploys.
 """
 
 import os

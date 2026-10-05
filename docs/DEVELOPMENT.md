@@ -40,7 +40,7 @@ Reset demo on reorder clears its workflow, supplier fact, and integration record
 
 ## Deploy and verify
 
-Vercel is the host. Render is retired. This dark UI is the local app. A previous upload is not proof that this checkout is deployed, and it is not proof that a session survives a redeploy. See [ARCHITECTURE.md](ARCHITECTURE.md).
+Vercel is the host. Render is retired. Production `https://smolstuff.vercel.app` returned the dark daily brief. Deployment Protection requires a Vercel login in a normal browser. Session files on the host are temporary. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 After a database is connected, verify on the host: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, and a new deployment that still has the earlier session. Do not claim that passed until those calls succeed. Check narrow mobile layout, keyboard focus, and displayed totals.
 

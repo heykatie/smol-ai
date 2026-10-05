@@ -25,7 +25,7 @@ The app is an interactive synthetic demonstration of that vision. It now include
 
 - Updated implementation contract for the actual smolstuff package, scenario store, optional model/research clients and shared UI.
 - Replaced stale “no provider clients” / “previews absent” status with actual wiring, while separating old provider reports from fresh evidence.
-- Corrected development settings: .env loader and ignores exist, and reorder reset preserves other previews. Render is retired. Vercel is the host. This dark UI is local until a deployment of this checkout is verified.
+- Corrected development settings: .env loader and ignores exist, and reorder reset preserves other previews. Render is retired. Vercel production returned the dark daily brief. Sessions on that host are temporary.
 - Added docs/DESIGN.md and linked the confirmed visual direction from PRD, scope, fixture, project context, README and AGENTS.
 - Retained the old review explicitly as history; all current status pointers use this file.
 - Unified the formerly separate procurement/empty pages with the same dark shell.

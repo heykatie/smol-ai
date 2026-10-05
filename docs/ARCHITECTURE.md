@@ -26,7 +26,7 @@ The app is a long-running `http.server` process. Each visitor's state is a SQLit
 
 ## Hosting decision
 
-Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. An earlier upload is not this dark UI, and it is not durable session storage. Neon is not provisioned. Do not claim a hosted session survives a redeploy.
+Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production returned the dark daily brief at `https://smolstuff.vercel.app`. Neon is not provisioned. Session files on Vercel are temporary, so a hosted session is not durable across a redeploy.
 
 ## Database choice, not yet provisioned
 

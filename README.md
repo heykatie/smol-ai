@@ -54,7 +54,7 @@ Collaboration inquiries and custom orders are not separate workflows. They would
 
 These remain requirements or later work. They are not available in the demo:
 
-- A verified deployment of this dark UI
+- A hosted session that survives a redeploy
 - Live mailbox, Shopify, payment, or browser-verification integrations
 - A verified Novita extraction, ZooWork operations task, BAND handoff, or Moss retrieval inside the Action Inbox
 - Returns, account onboarding, multiple privacy modes, and analytics dashboards
