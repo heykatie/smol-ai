@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, urlparse
 
 from smolstuff.fixtures import EXAMPLE_POLICY, WORKSHOP_SUPPLY_PACK
 from smolstuff.http_guard import RequestRejected, read_form
-from smolstuff.session_files import creation_allowed, expire_demo_sessions
+from smolstuff.session_files import SessionLimited, expire_demo_sessions, reserve_session
 from smolstuff.inventory import SupplyAssessment, assess_supply
 from smolstuff.lifecycle import WorkflowState
 from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
@@ -70,7 +70,7 @@ class InboxApp:
     def __init__(self, path: str, session_id: str = "local", budget_path: str = None) -> None:
         self.path = path
         self.session_id = session_id
-        self.budget_path = budget_path or str(Path(path).with_suffix(".budget.sqlite3"))
+        self.budget_path = budget_path or str(Path(path).parent / "sponsor-budget.sqlite3")
 
     def page(self) -> str:
         store = WorkflowStore(self.path, session_id=self.session_id)
@@ -102,6 +102,15 @@ class InboxApp:
                 ScenarioStore(self.path, self.session_id).reset("supplier_fact")
                 return
             if action == "simulate_email":
+                if store.find_by_dedup(DEMO_SIGNAL_KEY) is not None:
+                    store.record_integration(
+                        "Lead-time parser",
+                        "Extract supplier lead time from a synthetic email",
+                        "No new model call was made.",
+                        "Returned the existing decision.",
+                        "replayed",
+                    )
+                    return
                 attempt = self._extract_supplier_fact()
                 plan = plan_reorder(attempt.fact)
                 self._save_supplier_fact(attempt)
@@ -286,12 +295,8 @@ class InboxApp:
         if workflow is None:
             return "Not started", "Not started", start
         if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
-            approve = (
-                '<form method="post" action="/"><input type="hidden" name="scenario" value="reorder">'
-                '<input type="hidden" name="action" value="approve">'
-                '<button class="primary" type="submit">Approve simulated $61 order</button></form>'
-            )
-            return "Decision needed", "Needs your decision", approve
+            review = '<a class="open" href="/?scenario=reorder">Review the $61 decision</a>'
+            return "Decision needed", "Needs your decision", review
         if workflow.state == WorkflowState.AWAITING_RECEIPT:
             return "Awaiting receipt", "In progress", ""
         if workflow.state == WorkflowState.COMPLETED:
@@ -329,10 +334,9 @@ class InboxApp:
     def _record_supplier_research(self, store) -> None:
         from smolstuff.research import research_supplier
 
-        if os.environ.get("TAVILY_API_KEY"):
-            attempt = research_supplier(allow_network=self._claim_sponsor_call())
-        else:
-            attempt = research_supplier()
+        if not os.environ.get("TAVILY_API_KEY", "").strip() or not self._claim_sponsor_call():
+            return
+        attempt = research_supplier(allow_network=True)
         store.record_integration(
             attempt.provider,
             attempt.task,
@@ -494,7 +498,7 @@ def _status_copy(progress, order, plan: ReorderPlan):
             "The {0}-day delivery estimate was a supplier term. This receipt was an accelerated simulation.".format(
                 plan.delivery_days
             ),
-            "1 owner approval. Receipt verified. Inventory reconciled.",
+            "1 owner approval. Simulated receipt recorded. Inventory reconciled.",
             "On hand is now {0}.".format(on_hand),
             "Completed",
             "completed",
@@ -603,7 +607,7 @@ def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tupl
 def _extraction_note(events) -> str:
     extraction = next((event for event in events if event.task.startswith("Extract")), None)
     if extraction is not None and extraction.status == "live":
-        return "<p>Arrived through the configured monitoring rule. Lead times came from a verified Novita call. Prices and the spending limit did not.</p>"
+        return "<p>Arrived through the configured monitoring rule. Lead times came from a schema-checked Novita call. Prices and the spending limit did not.</p>"
     return "<p>Arrived through the configured monitoring rule. Read by the local parser fallback. Not a verified live model call.</p>"
 
 
@@ -780,14 +784,11 @@ def make_session_handler(directory: str):
                 self._send(rejected.status, error_page(rejected.message))
                 return
             action = fields.get("action", [""])[0]
-            session_id = _read_session(self.headers.get("Cookie", ""))
-            new_cookie = False
-            if session_id is None:
-                if not creation_allowed(str(root)):
-                    self._send(429, error_page("Too many new demos. Try again later."))
-                    return
-                session_id = uuid.uuid4().hex
-                new_cookie = True
+            try:
+                session_id, new_cookie = open_session(str(root), self.headers.get("Cookie", ""))
+            except SessionLimited:
+                self._send(429, error_page("Too many new demos. Try again later."))
+                return
             path = root / "{0}.sqlite3".format(session_id)
             try:
                 scenario = InboxApp(str(path), session_id=session_id).route(action, fields)
@@ -862,8 +863,23 @@ def _load_local_env() -> None:
             os.environ[name] = value
 
 
+def open_session(directory: str, cookie_header: str):
+    """Return a server-issued session. A client-chosen id counts only when its file exists."""
+    root = Path(directory)
+    root.mkdir(parents=True, exist_ok=True)
+    requested = _read_session(cookie_header or "")
+    if requested and (root / "{0}.sqlite3".format(requested)).is_file():
+        return requested, False
+    if not reserve_session(str(root)):
+        raise SessionLimited()
+    return uuid.uuid4().hex, True
+
+
+_KNOWN_SCENARIOS = {"reorder", "workshop", "detective", "rescue", "staffing"}
+
+
 def _scenario_location(scenario: str) -> str:
-    if not scenario or scenario == "home":
+    if scenario not in _KNOWN_SCENARIOS:
         return "/"
     return "/?scenario={0}".format(scenario)
 

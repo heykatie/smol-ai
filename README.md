@@ -35,7 +35,7 @@ Integration status: application wiring verified by this inspection; previous acc
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |
 
-The public site is not deployed. No per-session paid-call budget is configured.
+The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app). A normal browser does not need a Vercel login. Hosted session files are temporary and do not survive a redeploy. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. Those limits share one budget file on each server instance. They are not a provider-wide spend cap.
 
 Confirmation does not complete the workflow. Completion is the reconciled receipt.
 

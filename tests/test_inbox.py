@@ -79,7 +79,7 @@ def test_simulated_receipt_reconciles_and_completes(tmp_path):
 
     assert "Replenishment workflow completed" in done
     assert "Available inventory updated from 21 to 121." in done
-    assert "1 owner approval. Receipt verified. Inventory reconciled." in done
+    assert "1 owner approval. Simulated receipt recorded. Inventory reconciled." in done
     store = WorkflowStore(app.path)
     try:
         assert store.count_executions() == 1
@@ -160,7 +160,8 @@ def test_visitor_sessions_do_not_share_a_workflow(tmp_path):
         first_page = _session_get(port, first)
         second_page = _session_get(port, second)
         assert "Awaiting receipt" in first_page
-        assert "Approve simulated $61 order" in second_page
+        assert "Review the $61 decision" in second_page
+        assert "Approve simulated $61 order" not in second_page
         assert "Awaiting receipt" not in second_page
     finally:
         server.shutdown()

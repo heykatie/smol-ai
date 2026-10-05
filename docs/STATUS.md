@@ -33,13 +33,13 @@ The app is an interactive synthetic demonstration of that vision. It now include
 
 ## Evidence and limits
 
-Source inspection verified optional Novita/Tavily wiring. The README's earlier successful Tavily, separate Moss query and account/probe reports were not rerun. This inspection used an isolated temporary session store and did not load private .env credentials or make fresh paid provider calls. Supplier offers/purchases/messages and merchant participants remain fictional/simulated. No public deployment or production security certification is claimed.
+Source inspection verified optional Novita/Tavily wiring. The README's earlier successful Tavily, separate Moss query and account/probe reports were not rerun. Supplier offers, purchases, messages, and merchant participants remain fictional. The dark daily brief is deployed. That is not a production security certification.
 
-The baseline suite passed 62 tests. Final validation and browser checks for the change are recorded below after execution. Missing production decisions stay in SECURITY_AND_DECISIONS; missing tests/control requirements stay in IMPLEMENTATION_CONTRACT. Implemented previews are not marked production-ready merely because the default examples work.
+The UI-sync review recorded 64 passing tests. The current suite, run on Python 3.9 after the public-demo fixes, is 85 passed and 1 skipped. The skip is the Postgres test when `psycopg` is not installed.
 
 ## Final verification for the synchronization change
 
-- **64 tests passed** on Python 3.14: 62 existing plus two HTTP numeric-error regression cases. New cases first failed because InvalidOperation closed the connection; the fix now returns HTTP 400 and does not save invalid scenario data.
+- Earlier UI-sync run: **64 tests passed** on Python 3.14. The current suite is recorded above.
 - Browser: completed reorder (21 unchanged at confirmation, 121 after receipt), workshop ($700/eight kits), detective (20 → 17, unresolved one → recount resolves), merchant rescue ($21/$27 offers, $27 reconciled fulfillment), and Saturday staffing (14 hours/two blocks; saved plan).
 - Browser: refreshed awaiting-receipt state; all completed previews remain in session and Daily brief counts show five completed cases. Evidence correctly shows parser/Tavily simulated fallbacks in this run.
 - Responsive: all six routes inspected at 390px and 320px, no horizontal document overflow. Desktop at 1280px has a 228px rail and two card columns without overflow. Mobile and full desktop screenshots visually inspected.

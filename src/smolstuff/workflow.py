@@ -757,10 +757,21 @@ class WorkflowStore:
             (action["id"],),
         ).fetchone()
         matched = None if confirmation is None else bool(confirmation["matched"])
-        row = self._conn.execute(
-            "SELECT COALESCE(SUM(delta), 0) AS n FROM inventory_movements WHERE sku = ?",
-            (action["sku"],),
-        ).fetchone()
+        if self._session_scoped:
+            row = self._conn.execute(
+                """
+                SELECT COALESCE(SUM(movement.delta), 0) AS n
+                FROM inventory_movements AS movement
+                JOIN receipts ON receipts.id = movement.receipt_id
+                WHERE movement.sku = ? AND receipts.session_id = ?
+                """,
+                (action["sku"], self.session_id),
+            ).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT COALESCE(SUM(delta), 0) AS n FROM inventory_movements WHERE sku = ?",
+                (action["sku"],),
+            ).fetchone()
         return FulfillmentView(
             workflow_state=WorkflowState(workflow["state"]),
             ordered_quantity=ordered,

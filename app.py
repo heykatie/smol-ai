@@ -10,15 +10,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from smolstuff.http_guard import RequestRejected, read_form
+from smolstuff.http_guard import MAX_BODY_BYTES, RequestRejected, read_form
 from smolstuff.inbox import (
     InboxApp,
     _blank_scenario,
     _load_local_env,
     _scenario_location,
     _session_cookie,
+    open_session,
 )
-from smolstuff.session_files import creation_allowed, expire_demo_sessions
+from smolstuff.session_files import SessionLimited, expire_demo_sessions
 
 
 def _sessions_directory() -> str:
@@ -79,6 +80,9 @@ def app(environ, start_response):
         length = int(environ.get("CONTENT_LENGTH") or "0")
     except ValueError:
         length = -1
+    if length > MAX_BODY_BYTES:
+        start_response("413 Payload Too Large", [("Content-Type", "text/plain; charset=utf-8")])
+        return [b"Request body is too large."]
     raw = environ["wsgi.input"].read(length if length > 0 else 0)
 
     def read(_length):
@@ -94,17 +98,11 @@ def app(environ, start_response):
         )
         return [encoded]
 
-    from smolstuff.inbox import _read_session
-    import uuid
-
-    session_id = _read_session(headers.get("Cookie", ""))
-    new_cookie = False
-    if session_id is None:
-        if not creation_allowed(directory):
-            start_response("429 Too Many Requests", [("Content-Type", "text/plain; charset=utf-8")])
-            return [b"Too many new demos. Try again later."]
-        session_id = uuid.uuid4().hex
-        new_cookie = True
+    try:
+        session_id, new_cookie = open_session(directory, headers.get("Cookie", ""))
+    except SessionLimited:
+        start_response("429 Too Many Requests", [("Content-Type", "text/plain; charset=utf-8")])
+        return [b"Too many new demos. Try again later."]
     action = fields.get("action", [""])[0]
     try:
         scenario = InboxApp(

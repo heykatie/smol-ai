@@ -56,7 +56,7 @@ Collaboration inquiries and custom orders remain future variants of the feasibil
 ## Remaining plan
 
 1. Core reorder workflow: implemented locally.
-2. Public self-guided URL: not deployed. Isolated visitor sessions exist on the local server.
+2. Public URL: [https://smolstuff.vercel.app](https://smolstuff.vercel.app) serves the dark daily brief without a Vercel login. A hosted session can disappear on redeploy.
 3. Execution records: each recorded run stores provider, task, result, effect, timestamp, and simulated, replayed, or live status.
 4. Sponsor calls stay limited to a step the workflow actually uses. Do not add a logo without that step.
 5. A demo video waits until the public demo is reliable.
@@ -82,7 +82,7 @@ The local reorder path is the behavior covered by `tests/`:
 
 The same suite covers the inventory math, the $40 threshold, decline, refresh/resume, and duplicate-click protection.
 
-Still open, and not claimed as done: a public URL, a configured public call budget, and a sponsor call inside the demo other than the verified Tavily search. Status for those belongs in the README.
+Still open, and not claimed as done: a hosted session that survives redeploy, a provider-wide call budget, and a fresh sponsor call inside this checkout. An earlier Tavily search was reported and was not rerun. Status for those belongs in the README.
 
 ## Shared experience
 

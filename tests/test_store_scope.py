@@ -42,6 +42,13 @@ def test_receipt_keys_do_not_collide_across_visitors(tmp_path):
         assert second.count_receipts() == 1
         assert first.count_movements() == 1
         assert second.count_movements() == 1
+        third = WorkflowStore(path, session_id="visitor-c")
+        started = third.start_purchase("demo-signal-c", NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
+        third.approve(started.workflow_id, actor="owner")
+        third.execute(started.workflow_id, NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
+        third.confirm(started.workflow_id, NEEDS_APPROVAL_PURCHASE, baseline)
+        assert third.progress(started.workflow_id, baseline).on_hand == baseline
+        third.close()
     finally:
         first.close()
         second.close()

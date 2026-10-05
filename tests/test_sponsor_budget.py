@@ -66,8 +66,8 @@ def test_replayed_email_does_not_consume_another_call(tmp_path, monkeypatch):
     monkeypatch.setenv("TAVILY_API_KEY", "configured")
     monkeypatch.setenv("NOVITA_API_KEY", "configured")
     monkeypatch.setenv("SMOL_SPONSOR_CALLS", "1")
-    monkeypatch.setenv("SMOL_SPONSOR_SESSION_LIMIT", "2")
-    monkeypatch.setenv("SMOL_SPONSOR_GLOBAL_LIMIT", "2")
+    monkeypatch.setenv("SMOL_SPONSOR_SESSION_LIMIT", "10")
+    monkeypatch.setenv("SMOL_SPONSOR_GLOBAL_LIMIT", "10")
     calls = {"n": 0}
 
     def count_call(*args, **kwargs):
@@ -83,8 +83,26 @@ def test_replayed_email_does_not_consume_another_call(tmp_path, monkeypatch):
     app.apply("simulate_email")
 
     assert calls["n"] == 2
-    store = WorkflowStore(app.path, session_id="visitor-a")
-    try:
-        assert store.count_workflows() == 1
-    finally:
-        store.close()
+    assert "No new model call was made." in app.page()
+
+
+def test_separate_session_files_share_one_global_budget(tmp_path, monkeypatch):
+    monkeypatch.setenv("SMOL_SPONSOR_CALLS", "1")
+    monkeypatch.setenv("SMOL_SPONSOR_SESSION_LIMIT", "5")
+    monkeypatch.setenv("SMOL_SPONSOR_GLOBAL_LIMIT", "1")
+    monkeypatch.setenv("NOVITA_API_KEY", "configured")
+    calls = {"n": 0}
+
+    def count_call(*args, **kwargs):
+        from urllib.error import URLError
+
+        calls["n"] += 1
+        raise URLError("stop before the network")
+
+    monkeypatch.setattr("smolstuff.extract.call_novita", count_call)
+    first = InboxApp(str(tmp_path / "a.sqlite3"), session_id="a" * 32)
+    second = InboxApp(str(tmp_path / "b.sqlite3"), session_id="b" * 32)
+    first.apply("simulate_email")
+    second.apply("simulate_email")
+    assert calls["n"] == 1
+    assert first.budget_path == second.budget_path

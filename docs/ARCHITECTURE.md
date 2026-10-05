@@ -40,7 +40,7 @@ Do not create the Neon database until that choice is confirmed. The local demo k
 
 ## Cost, before any service is created
 
-- The owner selected the Vercel Hobby plan for now. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. No project has been created, because the CLI is not logged in.
+- The owner selected the Vercel Hobby plan. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. The project exists. Neon has not been created.
 - Neon Free, checked on the plans page the same day, is $0: 100 CU-hours and 0.5 GB of storage per project each month. Compute suspends after 5 minutes idle. Launch, only if those limits are exceeded, is $0.106 per CU-hour and $0.35 per GB-month with no monthly minimum. No Neon project has been created.
 - Tavily, Novita, ZooWork, Moss, and BAND are separate bills. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both a global limit and a per-session limit are set. A key alone does not place a call.
 

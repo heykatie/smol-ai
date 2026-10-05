@@ -23,13 +23,13 @@ Sender allowlisting is permission to process, not proof of identity or factual c
 
 ## Public demo launch gates
 
-The cookie is an unguessable 32-hex identifier with HttpOnly, SameSite=Lax, and a one-day Max-Age. Secure is set when `DEMO_COOKIE_SECURE=1` or `VERCEL=1`. This is not login. A request removes demo files older than `SMOL_DEMO_TTL_SECONDS`. Posts are size-limited, content-type checked, and refused when the Origin host does not match Host. New session creation is rate-limited. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are positive integers. `.gitignore` excludes `data/` and private `.env` files; `.env.example` is the public placeholder. Styled 400 pages handle invalid numeric input.
+The cookie is a server-issued 32-hex identifier with HttpOnly, SameSite=Lax, and a one-day Max-Age. A client-invented value is ignored unless that session file already exists. Secure is set when `DEMO_COOKIE_SECURE=1` or `VERCEL=1`. This is not login. A request removes demo files older than `SMOL_DEMO_TTL_SECONDS`. Posts are size-limited before the body is read, content-type checked, and refused when the Origin host does not match Host. New sessions are counted in a window, 100 per hour by default. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are positive integers. The counters share one file per server instance. `.gitignore` excludes `data/` and private `.env` files; `.env.example` is the public placeholder. Styled 400 pages handle invalid numeric input.
 
 Before public paid calls or broader exposure, require:
 
 1. HTTPS and Secure cookies on the host; CSRF/origin validation on mutations, bounded body length, validated content type/action, controlled invalid-input/error responses.
 2. Server-side session scoping for every read/mutation; tests that one visitor cannot approve, reset or view another visitor's case. Do not adopt a client-selected arbitrary existing session as authentication.
-3. Session/file creation rate and disk quotas. Proposed demo default: idle session expiry after 24 hours and daily cleanup of database files; document reset/deletion semantics and hosted backups. This is a proposed implementation setting, not an existing cleanup job.
+3. New anonymous sessions are limited to 100 per hour by default. That counter is not a disk quota, and it does not survive as a business-record retention policy.
 4. Paid connectors disabled unless a server-side owner-approved budget exists; overall and per-session quotas, cache/replay fallback, timeouts and no unlimited public provider calls.
 5. Secrets excluded from source, `.env` files, prompts, evidence, screenshots, browser output and development provenance. Maintain private-config ignores and public placeholders before entering credentials locally.
 6. Persistence contract stating whether restart/redeploy retains files. No current hosting certification; if ephemeral, show a session-reset limitation and do not promise durable approval resume across deployments.
