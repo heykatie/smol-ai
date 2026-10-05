@@ -27,19 +27,24 @@ def demo_ttl_seconds() -> int:
 
 
 def expire_demo_sessions(directory: str, now: float = None) -> int:
-    """Delete demo session files older than the anonymous TTL. Returns how many were removed."""
+    """Delete demo session files and Postgres rows older than the anonymous TTL.
+
+    Returns how many local files plus Postgres session ids were removed.
+    """
     root = Path(directory)
-    if not root.exists():
-        return 0
     moment = time.time() if now is None else now
     ttl = demo_ttl_seconds()
     removed = 0
-    for path in root.glob("*.sqlite3"):
-        if not _SESSION_FILE.match(path.name):
-            continue
-        if moment - path.stat().st_mtime > ttl:
-            path.unlink()
-            removed += 1
+    if root.exists():
+        for path in root.glob("*.sqlite3"):
+            if not _SESSION_FILE.match(path.name):
+                continue
+            if moment - path.stat().st_mtime > ttl:
+                path.unlink()
+                removed += 1
+    from smolstuff.database import expire_persisted_sessions
+
+    removed += expire_persisted_sessions(now=moment)
     return removed
 
 

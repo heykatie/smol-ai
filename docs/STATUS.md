@@ -1,5 +1,13 @@
 # smolstuff implementation status and verification evidence
 
+## Postgres demo TTL expiry — October 5, 2026 (America/Los_Angeles)
+
+Requirements: anonymous demo cleanup aligned with the one-day cookie TTL (D4 interim).
+
+`expire_demo_sessions` now also deletes Postgres rows for session ids whose latest activity is older than `SMOL_DEMO_TTL_SECONDS`. Activity comes from workflow, preview (`scenario_state.updated_at`), receipt, and integration timestamps. Related workflow rows and per-session sponsor counters are removed; the global sponsor counter is kept. Three new local Postgres behavior tests cover old-vs-fresh workflows, preview-only sessions, and combined file+Postgres cleanup.
+
+Local verification: **113 passed, no skips** on Python 3.14 with pytest, psycopg, and an isolated UTF-8 Postgres cluster. No paid provider calls. Backup/restore remains deferred.
+
 ## Shared Postgres sponsor counters — October 5, 2026 (America/Los_Angeles)
 
 Requirements: public call budgets before paid execution (PRD), D3 hosted enforcement of call quotas (not yet a monetary budget).

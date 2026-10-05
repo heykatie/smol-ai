@@ -345,6 +345,7 @@ class ScenarioStore:
                         scenario TEXT NOT NULL,
                         phase TEXT NOT NULL,
                         payload TEXT NOT NULL,
+                        updated_at TEXT,
                         PRIMARY KEY (session_id, scenario)
                     )
                     """
@@ -353,6 +354,8 @@ class ScenarioStore:
             else:
                 columns = {row[1] for row in self._conn.execute("PRAGMA table_info(scenario_state)")}
                 self._scoped = "session_id" in columns
+                if "updated_at" not in columns:
+                    self._conn.execute("ALTER TABLE scenario_state ADD COLUMN updated_at TEXT")
             return
         self._conn = connection
         self._scoped = True
@@ -363,9 +366,13 @@ class ScenarioStore:
                 scenario TEXT NOT NULL,
                 phase TEXT NOT NULL,
                 payload TEXT NOT NULL,
+                updated_at TEXT,
                 PRIMARY KEY (session_id, scenario)
             )
             """
+        )
+        self._conn.execute(
+            "ALTER TABLE scenario_state ADD COLUMN IF NOT EXISTS updated_at TEXT"
         )
 
     def close(self) -> None:
@@ -388,24 +395,32 @@ class ScenarioStore:
         return payload
 
     def save(self, scenario: str, payload: dict) -> None:
+        from datetime import datetime, timezone
+
         phase = payload.get("phase", "saved")
+        touched = datetime.now(timezone.utc).isoformat()
         if self._scoped:
             self._conn.execute(
                 """
-                INSERT INTO scenario_state (session_id, scenario, phase, payload)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO scenario_state (session_id, scenario, phase, payload, updated_at)
+                VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(session_id, scenario) DO UPDATE SET
-                    phase = excluded.phase, payload = excluded.payload
+                    phase = excluded.phase,
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at
                 """,
-                (self.session_id, scenario, phase, json.dumps(payload)),
+                (self.session_id, scenario, phase, json.dumps(payload), touched),
             )
         else:
             self._conn.execute(
                 """
-                INSERT INTO scenario_state (scenario, phase, payload) VALUES (?, ?, ?)
-                ON CONFLICT(scenario) DO UPDATE SET phase = excluded.phase, payload = excluded.payload
+                INSERT INTO scenario_state (scenario, phase, payload, updated_at) VALUES (?, ?, ?, ?)
+                ON CONFLICT(scenario) DO UPDATE SET
+                    phase = excluded.phase,
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at
                 """,
-                (scenario, phase, json.dumps(payload)),
+                (scenario, phase, json.dumps(payload), touched),
             )
 
     def reset(self, scenario: str) -> None:

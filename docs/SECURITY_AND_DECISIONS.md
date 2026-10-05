@@ -48,17 +48,31 @@ These are missing consequential choices, not permissions the coding assistant ma
 
 | ID | Decision needed before | Required choice | Safe interim behavior |
 | --- | --- | --- | --- |
-| D1 | Real mailbox onboarding | First provider, operations mailbox/routing vs mixed inbox, exact scopes, permitted categories and consent wording | Synthetic event source only; no routine uploads as intended production UX |
-| D2 | Real inventory/POS integration | Authoritative system, SKU/location mapping, conflict priority, observation cadence, read/write scopes | Fixture ledger; never overwrite remote quantities |
-| D3 | Public sponsor/model execution | Runtime/provider, specific model, approved total and session cost budget, quota window | Paid calls disabled; deterministic fallback labeled simulated |
-| D4 | Hosted durability | Vercel and Neon Postgres are recorded as connected in [ARCHITECTURE.md](ARCHITECTURE.md); commit `0847325` records one approval surviving redeploy. Backup/restore and database retention/cleanup policy still need decisions | SQLite without `DATABASE_URL`; session-scoped Postgres with it. Do not infer broader recovery or retention guarantees from one recorded check |
-| D5 | Real approvals or purchases | Auth/roles, allowed action classes, approval TTL, hard cash limits vs overrideable rules, budget window and reservation semantics | Synthetic approval only; block real executor |
-| D6 | Real data ingestion | Raw-content/fact/audit/vector retention, storage location, third-party handling, erasure and backup exceptions | No private records; public fixtures only |
-| D7 | Live merchant outreach | Participating counterparties, discovery/geo scope, nonbinding message authority, offer expiry/reservation protocol, transfer/dispute responsibility | Two fictional participants; simulated negotiation only |
+| D1 | Real mailbox onboarding | First provider, operations mailbox/routing vs mixed inbox, exact scopes, permitted categories and consent wording | Synthetic event source only. **Interim (2026-10-05):** no real connectors unless a disposable/dummy account with fictional data is used for controlled testing; no production mailbox or real-business commitments |
+| D2 | Real inventory/POS integration | Authoritative system, SKU/location mapping, conflict priority, observation cadence, read/write scopes | Fixture ledger; never overwrite remote quantities. Same dummy-account test gate as D1 |
+| D3 | Public sponsor/model execution | Runtime/provider, specific model, approved total and session cost budget, quota window | **Interim (2026-10-05):** anonymous/public visitors must not trigger paid calls. Keep `SMOL_SPONSOR_CALLS` off for the public site. Later demo-login may allow owner/demo paid calls only. Recorded hackathon inventory: ZooWork **$200**; Tavily **8,000 credits**; other providers = signup free-plan only (no separate grant). Exact env caps still required before enabling; see recommended starting caps below |
+| D4 | Hosted durability | Vercel and Neon Postgres are recorded as connected in [ARCHITECTURE.md](ARCHITECTURE.md); commit `0847325` records one approval surviving redeploy. Backup/restore and database retention/cleanup policy still need decisions | **Interim (2026-10-05):** keep anonymous demo TTL at one day (`SMOL_DEMO_TTL_SECONDS=86400`), matching the cookie. Local files and Postgres demo session rows expire on that TTL. App-level backup/restore is deferred; Neon’s restore/branching is enough while data stays synthetic |
+| D5 | Real approvals or purchases | Auth/roles, allowed action classes, approval TTL, hard cash limits vs overrideable rules, budget window and reservation semantics | **Interim (2026-10-05):** owner login deferred. Synthetic approval only; block real executor |
+| D6 | Real data ingestion | Raw-content/fact/audit/vector retention, storage location, third-party handling, erasure and backup exceptions | No private records; public fixtures only. Retention follows the D4 interim until private data exists |
+| D7 | Live merchant outreach | Participating counterparties, discovery/geo scope, nonbinding message authority, offer expiry/reservation protocol, transfer/dispute responsibility | Two fictional participants; simulated negotiation only. Same dummy-account test gate as D1 |
 | D8 | General forecasting | Complete-history minimum, target coverage horizon, safety-stock rule, seasonality and stockout bias | Ten-day demo average; no optimized quantity claim |
 | D9 | Real staffing advice | Minimum coverage, opening-hour availability, workload data and scheduling constraints | Coverage-hour recommendation only; no named-worker scheduling |
 
 Preview input ranges, retry caps and synthetic negotiation rounds in the implementation contract are proposed engineering defaults. Record accepted changes here; do not call them owner-confirmed decisions. None of these proposals expands access, spending or disclosure authority.
+
+### Recommended starting caps (demo-login only; not enabled)
+
+One reorder start can claim up to three sponsor slots today (Novita + Tavily + ZooWork). Counts are task attempts, not dollars. Do not set these on the public Vercel project until demo-login exists and the owner confirms.
+
+| Limit | Suggested start | Why |
+| --- | --- | --- |
+| `SMOL_SPONSOR_SESSION_LIMIT` | `3` | One full provider pass per showcase session |
+| `SMOL_SPONSOR_GLOBAL_LIMIT` | `60` | ~20 full showcase starts site-wide before the shared Neon counter stops calls |
+| ZooWork spend posture | Treat as scarcest; prefer ≤ ~20–30 live explanations until one metered run shows $ per task | $200 grant; Platform docs note 200 credits/USD, but $ per explanation is not measured in-app yet |
+| Tavily posture | Comfortable headroom at 8,000 credits (~1 credit/basic search) | Global 60 claims is far under the grant if many claims are Tavily |
+| Novita / others | Keep off, or include only inside the same 60 global claims | Signup free-plan only; no separate grant |
+
+Public site stays `SMOL_SPONSOR_CALLS` unset/off. Revisit caps after measuring one ZooWork explanation cost and any Novita free-tier monthly ceiling.
 
 ## Inspection scope
 

@@ -34,7 +34,7 @@ Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at 
 | Cookie | `smol_session`, HttpOnly, SameSite=Lax, one-day Max-Age |
 | Provider credentials | `NOVITA_API_KEY`, `TAVILY_API_KEY`, and `ZOOWORK_API_KEY` are read only when sponsor calls are enabled and both limits are set. A key is not proof of a verified workflow. |
 
-Startup loads `.env` without overriding already-set process variables. `.env` and `.env.*` are ignored except `.env.example`. Demo files older than `SMOL_DEMO_TTL_SECONDS` (default one day) are removed when a request arrives. Paid calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are positive integers. Keep private configuration out of commits.
+Startup loads `.env` without overriding already-set process variables. `.env` and `.env.*` are ignored except `.env.example`. Demo files and Postgres demo session rows older than `SMOL_DEMO_TTL_SECONDS` (default one day) are removed when a request arrives. Paid calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are positive integers. Keep private configuration out of commits.
 
 Reset demo on reorder clears its workflow, supplier fact, and integration records. It preserves the session file and the other previews. Cookie expiry alone leaves a file behind. Without `DATABASE_URL`, a missing file means the initial screen on refresh. With Postgres configured, persisted workflow/scenario rows can identify an existing session. File expiry does not establish a database-row retention policy. Do not delete another visitor's state. Stop the process with Ctrl-C. Restarting with the same surviving disk and cookie resumes saved progress.
 
