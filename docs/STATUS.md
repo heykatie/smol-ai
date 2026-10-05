@@ -45,6 +45,24 @@ In-app browser checks: starting reorder displayed the $189 decision, refresh pre
 
 Chrome control subsequently disconnected. Verification continued with the in-app browser and independent HTTP sessions. This documentation-only checkpoint will trigger the existing main-branch Vercel deployment while the in-app and HTTP A sessions remain awaiting receipt and HTTP B remains declined. Redeploy survival, receipt, replay, and reset will be recorded only after that deployment succeeds and those checks run. Earlier workshop/staffing UI failures remain open.
 
+## Hosted results after redeploy — October 4, 2026 (America/Los_Angeles)
+
+The documentation-only push `2cb075a` triggered Vercel deployment `FGVBzFo5ystrhosFx9Hao9VZLwpB`; GitHub's Vercel status changed from pending to success. Checks then used the production domain `https://smolstuff.vercel.app` with the same saved sessions. No application code, credentials, provider switches, budgets, or database settings changed.
+
+| Check | Result and observed evidence |
+| --- | --- |
+| Saved approval across deployment | In-app browser and HTTP A still awaited receipt with stock 21 after the new deployment succeeded |
+| Independent declined session | HTTP B remained declined, with no purchase submitted, after redeploy |
+| Receipt and refresh | In-app browser and HTTP A completed the simulated receipt; stock became 121, one owner approval displayed, and refresh preserved completion |
+| Receipt replay | Repeating HTTP A's full-receipt request left stock at 121 and one owner approval |
+| Reset and separation | Resetting HTTP A returned it to the initial reorder; refresh preserved reset while HTTP B stayed declined |
+| Daily brief | **Failed:** both browser and HTTP checks showed the completed reorder as not started; browser counts still showed five not started and zero completed. Returning to reorder still showed completion |
+| Workshop / staffing | **Failed:** valid default workshop and Saturday staffing submissions displayed no calculated results. These reproduce the earlier hosted UI failures |
+
+The HTTP checks comprised nine passing checks before redeploy and eight passing checks plus three failed UI-result checks afterward. Test-harness requests were corrected to use the actual lowercase staffing value and exact workshop fields before recording the preview failures. This is independent cookie-jar isolation and one in-app browser, not a two-browser-profile certification. No fresh paid provider calls were exercised; the UI labeled parser, purchase, confirmation, and receipt as simulated.
+
+Reorder state persistence is verified within these synthetic scenarios. The broader hosted experience does not pass because dashboard and preview rendering remain broken. Local-file guards in `InboxApp` are a candidate cause requiring failing regression tests and a code fix; this verification did not change them. Backup/restore, retention, authenticated tenant isolation, and shared hosted spend enforcement remain unverified or unresolved.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.
