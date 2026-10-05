@@ -1,0 +1,41 @@
+where did we leave off?
+
+---
+
+where did we leave off?
+
+---
+
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+
+---
+
+can you finish what didn't get completed, including adding the keys to .env
+
+---
+
+yes. ok what are the next steps
+
+---
+
+ok
+
+---
+
+yes
+
+---
+
+what's next?
+
+---
+
+ask me questions needed to move forward
+
+---
+
+let's not work on login yet. for paid calls, question 5, guests or public visitors shouldn't trigger any paid calls. later with demo login, caps for paid calls should be capped based on how much free credits we got from the hackathon and how reasonable it is to use so the credits will last long enough to showcase this app to people. what do you recommend for question 8 and 9? question 10, confirm real connectors stay off unless we can make dummy accounts with dummy data in order to test the connectors
+
+---
+
+ok #1 sounds good. also here's the slides that include the free credits: https://docs.google.com/presentation/d/REDACTED/edit
