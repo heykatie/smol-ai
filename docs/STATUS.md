@@ -37,6 +37,14 @@ Source baseline `3ecb108` contains local-file existence checks in `InboxApp._sav
 
 Vercel dashboard access required sign-in. Paid-call settings could not be verified, so the provider-capable reorder start was not exercised. Approval, receipt, reset, two independent session isolation, and redeploy persistence remain **not verified in this attempt**. No deployment settings or application code changed. Continue after dashboard sign-in, first confirming sponsor calls are disabled.
 
+## Hosted verification retry — October 4, 2026 (America/Los_Angeles)
+
+Vercel project dashboard identified production deployment `2mLgaGwH9N8pGXbmJt31kGvVosNx` as ready at source `053e4a4`; GitHub's Vercel status agreed. The project and shared environment-variable searches listed no `SMOL_SPONSOR` switch/limits. `DATABASE_URL` was listed as Neon-linked in all environments; no secret values were revealed and no settings changed. The reorder UI reported the simulated lead-time parser.
+
+In-app browser checks: starting reorder displayed the $189 decision, refresh preserved it, and approval reached awaiting receipt with stock still 21. Two independent HTTP cookie jars then passed nine checks: fresh sessions, synthetic start, B remaining unstarted while A starts, A approval and refresh with stock 21, independent B decline, A unchanged by B, distinct session ids, and B decline surviving refresh. These verify HTTP session separation, not two separate browser profiles or authenticated business tenancy.
+
+Chrome control subsequently disconnected. Verification continued with the in-app browser and independent HTTP sessions. This documentation-only checkpoint will trigger the existing main-branch Vercel deployment while the in-app and HTTP A sessions remain awaiting receipt and HTTP B remains declined. Redeploy survival, receipt, replay, and reset will be recorded only after that deployment succeeds and those checks run. Earlier workshop/staffing UI failures remain open.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.
