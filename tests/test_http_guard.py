@@ -169,3 +169,36 @@ def test_expired_demo_file_is_removed_and_a_fresh_one_remains(tmp_path, monkeypa
     assert expire_demo_sessions(str(root)) == 1
     assert not old.exists()
     assert fresh.exists()
+
+
+def test_localhost_answers_on_ipv4_and_ipv6(tmp_path):
+    import socket
+    from http.client import HTTPConnection
+
+    from smolstuff.inbox import _serve_loopback
+
+    probe = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    try:
+        probe.bind(("::1", 0))
+    except OSError:
+        return
+    finally:
+        probe.close()
+    holder = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    holder.bind(("127.0.0.1", 0))
+    port = holder.getsockname()[1]
+    holder.close()
+    thread = Thread(
+        target=_serve_loopback,
+        args=(make_session_handler(str(tmp_path / "sessions")), port),
+        daemon=True,
+    )
+    thread.start()
+    for address in ("127.0.0.1", "::1"):
+        connection = HTTPConnection(address, port, timeout=2)
+        connection.request("GET", "/")
+        response = connection.getresponse()
+        page = response.read().decode("utf-8")
+        assert response.status == 200
+        assert "Daily brief" in page
+        connection.close()

@@ -13,7 +13,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 from pathlib import Path
 import re
+import socket
 from string import Template
+from threading import Thread
 from typing import Optional
 import uuid
 from urllib.parse import parse_qs, urlparse
@@ -819,9 +821,36 @@ def make_session_handler(directory: str):
 
 
 def serve_sessions(directory: str, host: str = HOST, port: int = PORT) -> None:
-    server = HTTPServer((host, port), make_session_handler(directory))
+    handler = make_session_handler(directory)
+    if host in ("127.0.0.1", "localhost", "::1"):
+        _serve_loopback(handler, port)
+        return
+    server = HTTPServer((host, port), handler)
     print("Action Inbox: http://{0}:{1}".format(host, port), flush=True)
     server.serve_forever()
+
+
+def _serve_loopback(handler, port: int) -> None:
+    """Accept both 127.0.0.1 and localhost. macOS resolves localhost to IPv6 first."""
+    servers = []
+    for family, address in ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1")):
+        try:
+            servers.append(_bound_server(family, address, port, handler))
+        except OSError:
+            continue
+    if not servers:
+        raise OSError("The local demo could not bind to localhost.")
+    print("Action Inbox: http://localhost:{0}".format(port), flush=True)
+    for extra in servers[1:]:
+        Thread(target=extra.serve_forever, daemon=True).start()
+    servers[0].serve_forever()
+
+
+def _bound_server(family: int, address: str, port: int, handler):
+    class BoundServer(HTTPServer):
+        address_family = family
+
+    return BoundServer((address, port), handler)
 
 
 def main() -> None:
