@@ -30,7 +30,7 @@ Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at 
 | --- | --- |
 | PORT | Default 8765; presence also binds 0.0.0.0 instead of 127.0.0.1 |
 | DEMO_COOKIE_SECURE | `1` adds Secure to the cookie; use on HTTPS host, not local plain HTTP |
-| Storage | Without `DATABASE_URL`: `data/sessions/`, one SQLite file per cookie. With it: session-scoped Postgres workflow/preview rows; local session markers and sponsor counters remain files |
+| Storage | Without `DATABASE_URL`: `data/sessions/`, one SQLite file per cookie, and a local sponsor-budget SQLite file. With it: session-scoped Postgres workflow/preview rows and shared Postgres sponsor call counters; local session marker files remain |
 | Cookie | `smol_session`, HttpOnly, SameSite=Lax, one-day Max-Age |
 | Provider credentials | `NOVITA_API_KEY`, `TAVILY_API_KEY`, and `ZOOWORK_API_KEY` are read only when sponsor calls are enabled and both limits are set. A key is not proof of a verified workflow. |
 

@@ -1,5 +1,13 @@
 # smolstuff implementation status and verification evidence
 
+## Shared Postgres sponsor counters — October 5, 2026 (America/Los_Angeles)
+
+Requirements: public call budgets before paid execution (PRD), D3 hosted enforcement of call quotas (not yet a monetary budget).
+
+`SponsorBudget` now uses the configured Postgres database when `DATABASE_URL` is set, including an atomic `FOR UPDATE` claim path, and keeps the previous SQLite file when it is not. Inbox still requires the enable switch and both positive limits before Novita, Tavily, or ZooWork calls. Four new local Postgres behavior tests cover shared global caps across budget paths/`DATABASE_URL`, session caps, and concurrent claims.
+
+Local verification: **110 passed, no skips** for the full suite including `tests/test_sponsor_budget.py` and `tests/test_sponsor_budget_postgres.py` on Python 3.14 with pytest, psycopg, and an isolated UTF-8 local Postgres cluster. No paid provider calls, no sponsor switch enabled on Vercel, and no hosted claim exercised. D3 remains open for an approved monetary budget and public paid execution.
+
 ## Documentation/source inspection — October 4, 2026 (America/Los_Angeles)
 
 Inspected source and tracked evidence at `7cd4647` on live main. This is a documentation/source review, not a fresh runtime, provider, dashboard, database, or deployment test. No private configuration was loaded; no permissions, budgets, connectors, or runtime behavior were changed. The earlier synchronization review below retains its recorded evidence and does not certify later commits.
@@ -9,7 +17,7 @@ Inspected source and tracked evidence at `7cd4647` on live main. This is a docum
 | Document authority | PRD owns requirements; AGENTS owns engineering instructions; project context is supporting philosophy/architecture/examples; this file owns verification evidence | Reference material does not override governing requirements or decisions |
 | Storage wiring | `database.py`, `WorkflowStore`, and `ScenarioStore` select Postgres when `DATABASE_URL` is set, otherwise SQLite. `app.py` and `inbox.py` recognize persisted Postgres sessions without a surviving local file | Source inspection does not verify current hosted configuration, every preview, or backup/restore |
 | Hosted persistence | Architecture and commit `0847325` report Neon connected and the same approved reorder awaiting receipt with stock 21 after redeploy. Commit authored October 4 Pacific / October 5 UTC | Repository-recorded single-session result; not rerun here. Backup/restore, database retention/cleanup, and broader hosted recovery remain unresolved |
-| Sponsor limits | `SponsorBudget.claim` requires the enable switch and two positive call limits and reserves counts atomically in local SQLite. Inbox checks this gate before Novita, Tavily, and ZooWork calls | Counters cover sessions sharing that file. They are not a shared multi-instance/redeploy cap or a monetary budget; D3 remains open |
+| Sponsor limits | `SponsorBudget.claim` requires the enable switch and two positive call limits and reserves counts atomically. Later work moved the store to Postgres when `DATABASE_URL` is set; see the October 5 entry above | Historical note for this cleanup only: counters were still local SQLite here |
 | Provider wiring | Novita extraction, Tavily research, and ZooWork explanation are wired; ZooWork cannot set the calculated order or approval | Commit `4e704e3` reports one local explanation; no fresh provider call or hosted credential verification here. BAND and Moss remain outside the inbox |
 | Tests | Inspected existing sponsor-budget, Postgres-store, WSGI, and ZooWork tests as supporting source | No tests executed for this documentation cleanup. Earlier counts below are historical reports, not current-suite results |
 

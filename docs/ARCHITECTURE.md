@@ -35,7 +35,7 @@ Neon Free is repository-recorded as provisioned and connected. It is $0, with 10
 ## Recorded plan and cost decisions
 
 - The owner selected the Vercel Hobby plan. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. The project exists. Neon Free is connected. Launch pricing applies only after an upgrade: $0.106 per compute-hour and $0.35 per GB-month.
-- Tavily, Novita, ZooWork, Moss, and BAND are separate bills. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both a global limit and a per-session limit are set. A key alone does not place a call. Sponsor counters remain in local SQLite, even with Postgres configured; the global counter covers sessions sharing that file, not all Vercel instances or redeploys. It is a call-count limit, not a monetary cap.
+- Tavily, Novita, ZooWork, Moss, and BAND are separate bills. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both a global limit and a per-session limit are set. A key alone does not place a call. Sponsor counters use the same Postgres database when `DATABASE_URL` is set, so instances sharing that database share the call-count caps. Without `DATABASE_URL`, counters stay in a local SQLite file. It is a call-count limit, not a monetary cap.
 
 ## Not in this migration
 
