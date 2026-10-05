@@ -63,9 +63,9 @@ def test_postgres_money_round_trips_as_exact_text(pg_conn):
     store = _store(pg_conn, "visitor-a")
     store.start_purchase("demo-signal", NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
     row = store._conn.execute("SELECT unit_price, fees, total FROM actions").fetchone()
-    assert row["unit_price"] == "0.54"
+    assert row["unit_price"] == "1.82"
     assert row["fees"] == "7.00"
-    assert row["total"] == "61.00"
+    assert row["total"] == "189.00"
 
 
 def test_postgres_duplicate_receipt_creates_one_movement(pg_conn):

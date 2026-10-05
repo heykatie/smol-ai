@@ -18,7 +18,7 @@ A dark, responsive Daily brief with one simulated procurement workflow and four 
 | Extraction | Novita is wired. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are set. Otherwise a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
-| Recommendation | Order 100 units from Supplier B because that is the minimum. $54 merchandise + $7 shipping = $61. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
+| Recommendation | Order 100 quiet linear switches from Supplier B because that is the minimum. $182 merchandise + $7 shipping = $189. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
 | Approval | Purchases auto-execute only under $40. Every other configured check passes, so the limit is the only reason this order waits. |
 | After approval | The saved workflow submits one simulated order and records a matching confirmation. Stock does not change. A second click does not create a second order. |
 | Receipt | **Simulate receiving 100 units** adds those units to the 21 already available. On hand becomes 121. No extra sales are subtracted. The workflow completes only after that receipt. |
@@ -28,7 +28,7 @@ Integration status: application wiring verified by this inspection; previous acc
 
 | Tool | Observed status |
 | --- | --- |
-| Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $61 offer. |
+| Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $189 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
 | ZooWork | A models read and an empty agent create succeeded, and that agent was deleted. No operations task has run. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
@@ -78,8 +78,8 @@ PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the server binds `0.0.0.0` on that port.
 
 1. Click **Start interactive demo**.
-2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $54 + $7 shipping = $61, and **Approve simulated $61 order**.
-3. Click **Approve simulated $61 order** once. The page should say the order is confirmed and awaiting receipt. Available inventory stays 21.
+2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $182 + $7 shipping = $189, and **Approve simulated $189 order**.
+3. Click **Approve simulated $189 order** once. The page should say the order is confirmed and awaiting receipt. Available inventory stays 21.
 4. Refresh the browser. The same awaiting-receipt state should still be there.
 5. Click **Simulate receiving 100 units**. Available inventory becomes 121 and the workflow is complete.
 6. Click **Reset demo** to run the reorder again. **Decline** submits no order. **Review evidence** opens the calculations, the seeded Supplier B offer, and the tool records.

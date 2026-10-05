@@ -76,9 +76,9 @@ def test_money_is_stored_as_exact_text(tmp_path):
         row = store._conn.execute(
             "SELECT unit_price, fees, total FROM actions"
         ).fetchone()
-        assert row["unit_price"] == "0.54"
+        assert row["unit_price"] == "1.82"
         assert row["fees"] == "7.00"
-        assert row["total"] == "61.00"
+        assert row["total"] == "189.00"
         assert "." in row["total"]
     finally:
         store.close()

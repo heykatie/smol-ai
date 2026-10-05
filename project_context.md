@@ -112,7 +112,7 @@ Each action card should answer:
 Illustrative card:
 
 ```text
-STOCKOUT RISK — Workshop Supply Pack
+STOCKOUT RISK — Quiet linear switch
 
 Available: 21 units | Velocity: 1.1/day | Supply: ~19 days
 Supplier lead time changed: 14 → 35 days
@@ -120,12 +120,12 @@ Projected gap without another solution: ~16 days
 
 Already checked: warehouse, open POs, reservations, approved alternatives
 Proposed resolution: order 100 units from Supplier B
-Illustrative total: $61 | Estimated arrival: 6 days
+Illustrative total: $189 | Estimated arrival: 6 days
 
 Approved supplier ✓ | Known SKU ✓ | Below $40 auto limit ✕
-Decision needed: Approve $61 purchase
+Decision needed: Approve $189 purchase
 
-[Review evidence] [Approve $61] [Decline / choose another option]
+[Review evidence] [Approve $189] [Decline / choose another option]
 ```
 
 Provide an expandable **Why smolstuff can do this** panel showing accessed sources, fields passed to models/tools, permitted actions, blocked access, policy results, and approval history. Distinguish provider access granted to the connector from data actually retrieved or disclosed. Make privacy claims from recorded behavior, not decorative badges.
@@ -165,7 +165,7 @@ Internal analysis and reversible preparation within granted permissions should r
 Detect supplier email → extract lead time → update sourced facts
 → recalculate risk → check inventory/POs → investigate alternatives
 → calculate economics → verify evidence
-→ ONE meaningful decision: “Approve this $61 purchase?”
+→ ONE meaningful decision: “Approve this $189 purchase?”
 ```
 
 An approval must bind to a specific action, recipient, item, quantity, total, and material terms. Recheck policy, evidence, and authority immediately before execution. Material changes invalidate the approval. Declining, expiry, or revocation must prevent execution and leave a clear next state.
@@ -415,7 +415,7 @@ Example request:
 
 ```json
 {
-  "item_requirement": "compatible workshop supply pack",
+  "item_requirement": "compatible quiet linear switch",
   "quantity": 1,
   "deadline": "customer-required same-day deadline",
   "radius_miles": 8
@@ -608,7 +608,7 @@ These describe target behavior, not verified implementation status. PRD defines 
 - Deterministic math identifies the illustrative ~16-day gap from 21 units, 1.1/day demand, and 35-day lead time.
 - Internal stock, reservations, POs, and alternatives affect the decision.
 - Critical product, cost, and fulfillment claims are verified or explicitly marked unknown.
-- The $61 action cannot execute automatically under the example strict $40 policy; an eligible lower-cost action can proceed only when every applicable rule passes.
+- The $189 action cannot execute automatically under the example strict $40 policy; an eligible lower-cost action can proceed only when every applicable rule passes.
 - Approval survives pause/resume but cannot authorize changed terms; denial/revocation prevents execution.
 - Duplicate signals, callbacks, or approval clicks do not create duplicate orders or inventory movements.
 - Untrusted text cannot change policy, disclose secrets, or authorize execution.

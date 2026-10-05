@@ -16,7 +16,7 @@ from smolstuff.policy import PolicyDecision, evaluate_purchase, proposal_from_ma
 def test_sixty_one_dollar_order_needs_approval_under_forty_dollar_limit():
     result = evaluate_purchase(NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
 
-    assert result.computed_total == Money(Decimal("61.00"))
+    assert result.computed_total == Money(Decimal("189.00"))
     assert result.decision == PolicyDecision.NEEDS_APPROVAL
     assert any("auto limit" in reason for reason in result.reasons)
 
@@ -97,7 +97,7 @@ def test_incomplete_evidence_is_not_an_approval_request():
 def test_claimed_total_is_ignored_in_favor_of_computed_total():
     result = evaluate_purchase(NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
 
-    assert result.computed_total.amount == Decimal("61.00")
+    assert result.computed_total.amount == Decimal("189.00")
 
 
 def test_untrusted_payload_cannot_raise_the_spending_limit():
@@ -125,7 +125,7 @@ def test_untrusted_payload_cannot_raise_the_spending_limit():
     assert "message" in result.ignored_untrusted_fields
     assert EXAMPLE_POLICY.auto_execute_total_below == Money(Decimal("40.00"))
     assert result.decision == PolicyDecision.NEEDS_APPROVAL
-    assert result.computed_total == Money(Decimal("61.00"))
+    assert result.computed_total == Money(Decimal("189.00"))
 
 
 def test_string_boolean_is_rejected():

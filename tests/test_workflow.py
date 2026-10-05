@@ -18,7 +18,7 @@ def test_approval_survives_restart_and_second_submit_replays_one_order(tmp_path)
     store = WorkflowStore(path)
     started = store.start_purchase("lead-time-email", NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
     assert started.state == WorkflowState.WAITING_FOR_APPROVAL
-    assert started.total == Money(Decimal("61.00"))
+    assert started.total == Money(Decimal("189.00"))
     assert started.origin == "simulated"
     store.approve(started.workflow_id, actor="owner")
     store.close()
@@ -29,7 +29,7 @@ def test_approval_survives_restart_and_second_submit_replays_one_order(tmp_path)
     assert saved.supplier_id == "supplier-b"
     assert saved.sku == "DEMO-SKU-001"
     assert saved.quantity == 100
-    assert saved.total == Money(Decimal("61.00"))
+    assert saved.total == Money(Decimal("189.00"))
 
     first = resumed.execute(started.workflow_id, NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
     second = resumed.execute(started.workflow_id, NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
@@ -54,7 +54,7 @@ def test_duplicate_signal_does_not_open_a_second_workflow(tmp_path):
     assert second.replayed is True
     assert second.workflow_id == first.workflow_id
     assert second.quantity == 100
-    assert second.total == Money(Decimal("61.00"))
+    assert second.total == Money(Decimal("189.00"))
     assert store.count_workflows() == 1
     store.close()
 
@@ -76,8 +76,8 @@ def test_changed_price_cannot_reuse_the_approval(tmp_path):
     assert revised.state == WorkflowState.WAITING_FOR_APPROVAL
     assert revised.total == Money(Decimal("82.00"))
     assert revised.total != Money(Decimal("75.00"))
-    assert started.total == Money(Decimal("61.00"))
-    assert started.total != Money(Decimal("54.00"))
+    assert started.total == Money(Decimal("189.00"))
+    assert started.total != Money(Decimal("182.00"))
     assert revised.terms_hash != started.terms_hash
     assert store.count_approvals() == 1
 

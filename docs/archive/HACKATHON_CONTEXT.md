@@ -66,7 +66,7 @@ The steps below are the intended judging story. They are not a claim that every 
 2. A supplier message arrives automatically: lead time changes from 14 to 35 days. Show the minimized fact and its source.
 3. The system calculates ~19 days of supply and investigates warehouse stock, POs, and alternatives.
 4. Show meaningful agent coordination and current evidence for a candidate supplier; optionally use the local-merchant branch.
-5. Explain the illustrative $61 resolution and show the deterministic $40 authorization limit.
+5. Explain the illustrative $189 resolution and show the deterministic $40 authorization limit.
 6. The owner approves once. The workflow resumes and verifies the order confirmation.
 7. Advance through clearly labeled simulated shipment/receipt events. Reconcile the full 100-unit receipt for the shortest successful path.
 8. Show the completed outcome, inventory update, audit evidence, and one human decision. Briefly show the shortage/recovery branch if time permits.

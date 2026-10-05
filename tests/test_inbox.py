@@ -19,12 +19,12 @@ def test_email_opens_one_explained_reorder(tmp_path):
     assert "about 16 days" in page
     assert "19.1" in page
     assert "15.9" in page
-    assert "$54 merchandise + $7 shipping = $61 total" in page
-    assert "Approve simulated $61 order" in page
+    assert "$182 merchandise + $7 shipping = $189 total" in page
+    assert "Approve simulated $189 order" in page
     assert "below-$40" in page
     assert "Minimum order: 100 units" in page
     assert "Seeded offer, not a live web check." in page
-    assert "Updated lead time for Workshop Supply Pack" in page
+    assert "Updated lead time for Quiet linear switch" in page
     store = WorkflowStore(app.path)
     try:
         assert store.count_workflows() == 1
@@ -42,7 +42,7 @@ def test_approve_confirms_once_and_refresh_resumes(tmp_path):
     assert "Order confirmed — awaiting receipt" in page
     assert "Available inventory is still 21." in page
     assert "Replenishment workflow completed" not in page
-    assert "Approve simulated $61 order" not in page
+    assert "Approve simulated $189 order" not in page
     store = WorkflowStore(app.path)
     try:
         assert store.count_executions() == 1
@@ -160,8 +160,8 @@ def test_visitor_sessions_do_not_share_a_workflow(tmp_path):
         first_page = _session_get(port, first)
         second_page = _session_get(port, second)
         assert "Awaiting receipt" in first_page
-        assert "Review the $61 decision" in second_page
-        assert "Approve simulated $61 order" not in second_page
+        assert "Review the $189 decision" in second_page
+        assert "Approve simulated $189 order" not in second_page
         assert "Awaiting receipt" not in second_page
     finally:
         server.shutdown()
@@ -221,7 +221,7 @@ def test_server_runs_the_demo_path(tmp_path):
     try:
         assert "Start interactive demo" in _get(port)
         waiting = _post(port, "simulate_email")
-        assert "Approve simulated $61 order" in waiting
+        assert "Approve simulated $189 order" in waiting
         confirmed = _post(port, "approve")
         assert "Awaiting receipt" in confirmed
         assert "Completed" not in confirmed

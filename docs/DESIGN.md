@@ -35,7 +35,7 @@ The owner must know what is being authorized. Reorder shows quantity, counterpar
 ## Acceptance for this UI change
 
 - All six routes and empty/error screens share the dark frame, typography and controls.
-- Reorder remains $61, one approval, stock 21 until receipt and 121 after full receipt.
+- Reorder remains $189, one approval, stock 21 until receipt and 121 after full receipt.
 - Workshop shows $700 contribution/eight kits left; detective preserves the original count and resolves on recount; merchant defaults show $21/$27; staffing Saturday with workshop shows 14 workload hours/two blocks.
 - All routes reflow without horizontal page overflow at 390px and 320px; input/button content remains legible.
 - Keyboard can reach navigation, forms and evidence; focus is visible and skip link reaches main content.

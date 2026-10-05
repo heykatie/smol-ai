@@ -174,7 +174,7 @@ Acceptance for the primary fixture:
 
 | Input or output | Value |
 | --- | --- |
-| SKU | `DEMO-SKU-001`, Workshop Supply Pack |
+| SKU | `DEMO-SKU-001`, quiet linear switch |
 | Sales over ten complete days | `[1, 2, 0, 1, 1, 2, 1, 0, 2, 1]` |
 | Total / daily velocity | 11 units / 1.1 units per day |
 | Available / reserved / warehouse / open PO | 21 / 0 / 0 / 0 |
@@ -189,14 +189,14 @@ The UI rounds to about 19 days of supply and a 16-day gap. Explain that Supplier
 
 Check warehouse stock, reservations, open orders, and arrival timing before recommending an external source. Candidate suppliers require product/variant compatibility, quantity, MOQ, total landed cost, timing, source freshness, and trust status.
 
-The primary seeded offer is 100 units at $0.54, merchandise $54, shipping $7, total $61, estimated delivery six days. No additional taxes or fees exist in this fixture. Unknown fees in future inputs must remain unknown rather than silently becoming zero.
+The primary seeded offer is 100 units at $1.82, merchandise $182, shipping $7, total $189, estimated delivery six days. No additional taxes or fees exist in this fixture. Unknown fees in future inputs must remain unknown rather than silently becoming zero.
 
 Acceptance:
 
 - Internal checks are visible in evidence and influence feasibility.
 - The subtotal and total are calculated with decimal or minor-unit arithmetic.
 - Public search results are labeled discovery evidence, not confirmed stock or reserved inventory.
-- The seeded $61 offer remains explicitly seeded even when research is live.
+- The seeded $189 offer remains explicitly seeded even when research is live.
 - A critical mismatch or missing term blocks execution or produces a specific clarification.
 
 ### FR-04 — Authority, approvals, and execution
@@ -209,7 +209,7 @@ New suppliers, unsupported inventory write-offs, customer commitments, policy ex
 
 Acceptance:
 
-- The $61 proposal waits for one approval; the other fixture checks pass.
+- The $189 proposal waits for one approval; the other fixture checks pass.
 - Approval binds to exact recipient, item, quantity, currency, total, and material terms or a versioned payload hash.
 - Changed terms invalidate approval; authority is rechecked before execution.
 - Decline submits no order and preserves inventory.

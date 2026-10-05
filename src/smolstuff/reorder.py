@@ -1,4 +1,4 @@
-"""One reorder decision for the Workshop Supply Pack.
+"""One reorder decision for the quiet linear switch.
 
 Recent sales use a rolling average. The order quantity is the supplier minimum,
 not a forecast. Warehouse stock and open orders are checked before that choice.

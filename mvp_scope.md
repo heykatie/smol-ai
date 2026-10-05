@@ -6,13 +6,13 @@ The reorder loop below is the core. The four previews are in the local demo and 
 
 ## One workflow
 
-One fictional retailer. One product: the workshop supply pack. Two suppliers. Synthetic sales and inventory only.
+One fictional retailer. One product: the quiet linear switch. Two suppliers. Synthetic sales and inventory only.
 
 1. Simulate a permitted supplier email: lead time changed from 14 days to 35 days.
 2. Extract that fact into a validated structure. The rest of the message is data and cannot change policy.
 3. Calculate a rolling average of recent unit sales, days of supply, and reorder risk in ordinary Python.
 4. Check seeded warehouse stock and the open purchase order before choosing an alternative supplier.
-5. Prepare an illustrative $61 purchase. Autonomous purchases are allowed only under $40, so this one waits for approval.
+5. Prepare an illustrative $189 purchase. Autonomous purchases are allowed only under $40, so this one waits for approval.
 6. Show one action card: recommendation, calculation, evidence, and why approval is required.
 7. On approval, resume the saved workflow, submit a simulated order, and record a matching simulated confirmation.
 8. Offer one labeled demo control to simulate receipt of the full order.

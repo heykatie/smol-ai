@@ -14,7 +14,7 @@ from urllib.request import Request, urlopen
 
 
 SUPPLIER_QUERY = (
-    "typical wholesale lead time and minimum order for a workshop supply kit"
+    "typical wholesale lead time and minimum order for a mechanical keyboard linear switch"
 )
 _TASK = "Find public sources for a fictional workshop-kit reorder"
 _UNCHANGED = "The reorder quantity, total, and approval rule are unchanged."

@@ -86,12 +86,12 @@ def test_reorder_plan_selects_supplier_b_and_requires_approval():
     assert plan.needs_reorder is True
     assert plan.quantity == 100
     assert plan.delivery_days == 6
-    assert plan.merchandise == Decimal("54.00")
+    assert plan.merchandise == Decimal("182.00")
     assert plan.proposal.fees == Money(Decimal("7.00"))
-    assert plan.proposal_total() == Decimal("61.00")
+    assert plan.proposal_total() == Decimal("189.00")
     assert plan.needs_approval is True
     assert plan.policy_result.reasons == (
-        "Total 61.00 USD is not below the 40.00 USD auto limit.",
+        "Total 189.00 USD is not below the 40.00 USD auto limit.",
     )
     assert EXAMPLE_POLICY.auto_execute_total_below == Money(Decimal("40.00"))
 

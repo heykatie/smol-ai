@@ -17,7 +17,7 @@ def test_terms_hash_binds_price_quantity_and_supplier():
         "supplier-b",
         "DEMO-SKU-001",
         100,
-        Money(Decimal("0.54")),
+        Money(Decimal("1.82")),
         Money(Decimal("7.00")),
     )
     changed_price = purchase_terms_hash(

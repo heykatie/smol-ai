@@ -485,7 +485,7 @@ def load_cards(path: str, reorder_status: str, reorder_bucket: str, reorder_acti
 
 def load_cards_from(workshop, detective, rescue, staffing, reorder_status, reorder_bucket, reorder_action) -> list:
     return [
-        {"title": "Reorder the workshop supply pack", "description": "Supplier delay, one approval, simulated receipt.", "href": "/?scenario=reorder", "status": reorder_status, "bucket": reorder_bucket, "action": reorder_action},
+        {"title": "Reorder the quiet linear switches", "description": "Supplier delay, one approval, simulated receipt.", "href": "/?scenario=reorder", "status": reorder_status, "bucket": reorder_bucket, "action": reorder_action},
         _card("Can we take this on?", "Workshop feasibility before a customer promise.", "/?scenario=workshop", workshop, "Not checked"),
         _card("Where did the missing stock go?", "A count discrepancy with no invented cause.", "/?scenario=detective", detective, "Not investigated"),
         _card("Save the sale", "Two merchant simulators and a contribution check.", "/?scenario=rescue", rescue, "Not requested"),

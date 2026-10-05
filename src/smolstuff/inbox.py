@@ -297,7 +297,7 @@ class InboxApp:
         if workflow is None:
             return "Not started", "Not started", start
         if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
-            review = '<a class="open" href="/?scenario=reorder">Review the $61 decision</a>'
+            review = '<a class="open" href="/?scenario=reorder">Review the $189 decision</a>'
             return "Decision needed", "Needs your decision", review
         if workflow.state == WorkflowState.AWAITING_RECEIPT:
             return "Awaiting receipt", "In progress", ""
@@ -573,7 +573,7 @@ def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tupl
             plan.lead_time_days,
         ),
         "<h2>Supplier B offer</h2>",
-        "<p>Seeded offer, not a live web check. Approved supplier. Previously purchased SKU. {qty} units available. Minimum order {qty}. Unit price ${price}, previous price ${price}. {breakdown}. Estimated delivery {days} days.</p>".format(
+        "<p>Seeded offer, not a live web check. Quiet linear switch, 5-pin, factory lubricated, sold by the switch. Approved supplier. Previously purchased SKU. {qty} units available. Minimum order {qty}. Unit price ${price}, previous price ${price}. {breakdown}. Estimated delivery {days} days.</p>".format(
             qty=plan.quantity,
             price=escape(_cash(plan.proposal.unit_price.amount)),
             breakdown=escape(_price_breakdown(plan)),

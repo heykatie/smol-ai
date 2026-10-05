@@ -6,7 +6,8 @@ Fictional data only. Purchases and deliveries are simulated. No private inbox is
 
 ## Shared data
 
-- Product: Workshop Supply Pack
+- Product: Quiet linear switch
+- Catalog line: 5-pin, factory lubricated, sold by the switch. Fictional. Not copied from a real shop.
 - SKU: `DEMO-SKU-001`
 - Currency: USD
 - Units sold over the last 10 complete days: `[1, 2, 0, 1, 1, 2, 1, 0, 2, 1]`
@@ -25,11 +26,11 @@ Supplier B:
 - Known, previously purchased SKU
 - Available quantity: 100
 - Minimum order quantity: 100
-- Unit price: $0.54
-- Previous unit price: $0.54
-- Merchandise subtotal: $54
+- Unit price: $1.82
+- Previous unit price: $1.82
+- Merchandise subtotal: $182
 - Shipping: $7
-- Total: $61
+- Total: $189
 - Estimated delivery: 6 days
 - No other taxes or fees
 
@@ -61,12 +62,12 @@ The six-day delivery is a supplier term. The receipt control is an accelerated s
 
 ## Supplier message
 
-Subject: Updated lead time for Workshop Supply Pack
+Subject: Updated lead time for Quiet linear switch
 
 ```text
 Hello,
 
-The lead time for Workshop Supply Pack has increased from 14 days to approximately 35 days. Please use the updated estimate when planning your next order.
+The lead time for Quiet linear switch has increased from 14 days to approximately 35 days. Please use the updated estimate when planning your next order.
 
 Supplier A
 ```
@@ -88,10 +89,10 @@ Risk card:
 - “You have about 19 days of stock. Your supplier now needs 35 days to replenish it.”
 - “There is about a 16-day gap. Warehouse stock and existing orders cannot cover the gap. Supplier B offers an alternative with an estimated 6-day delivery.”
 - “Order 100 units from Supplier B”
-- “$54 merchandise + $7 shipping = $61 total”
+- “$182 merchandise + $7 shipping = $189 total”
 - “Minimum order: 100 units. This buys more than the immediate shortage.”
 - “This purchase exceeds your below-$40 automatic spending limit. The other configured checks pass.”
-- Buttons: “Review evidence”, “Approve simulated $61 order”, “Decline”
+- Buttons: “Review evidence”, “Approve simulated $189 order”, “Decline”
 
 After approval:
 
@@ -119,7 +120,7 @@ A seeded offer is labeled seeded. It is not live web verification. Sponsor or ad
 
 1. A new visitor can start without credentials or private business data.
 2. Displayed calculations match this specification.
-3. The $61 order cannot execute before approval.
+3. The $189 order cannot execute before approval.
 4. Declining leaves inventory unchanged.
 5. Confirmation alone leaves available inventory at 21.
 6. Simulated receipt changes inventory to 121 and completes the workflow.

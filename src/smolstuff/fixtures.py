@@ -29,16 +29,16 @@ EXAMPLE_POLICY = GuardedPurchasePolicy(
     aggregate_budget_remaining=Money(Decimal("200.00")),
 )
 
-# 100 * $0.54 = $54, plus $7 shipping = $61. Synthetic demo total.
+# 100 * $1.82 = $182, plus $7 shipping = $189. Synthetic demo total.
 NEEDS_APPROVAL_PURCHASE = PurchaseProposal(
     supplier_id="supplier-b",
     sku="DEMO-SKU-001",
     supplier_allowlisted=True,
     sku_previously_purchased=True,
     quantity=100,
-    unit_price=Money(Decimal("0.54")),
+    unit_price=Money(Decimal("1.82")),
     fees=Money(Decimal("7.00")),
-    previous_unit_price=Money(Decimal("0.54")),
+    previous_unit_price=Money(Decimal("1.82")),
     evidence_current=True,
     evidence_complete=True,
     verification_passed=True,
@@ -71,7 +71,7 @@ STORE_ON_HAND = Decimal("21")
 WAREHOUSE_ON_HAND = Decimal("0")
 OPEN_PO_UNITS = Decimal("0")
 SUPPLIER_MOQ = 100
-ALTERNATIVE_UNIT_PRICE = Money(Decimal("0.54"))
+ALTERNATIVE_UNIT_PRICE = Money(Decimal("1.82"))
 SHIPPING = Money(Decimal("7.00"))
 DELIVERY_DAYS = 6
 # Ten complete days. Total 11 units, so the rolling average is 1.1 per day.
@@ -79,9 +79,9 @@ RECENT_UNIT_SALES = tuple(
     Decimal(value) for value in ("1", "2", "0", "1", "1", "2", "1", "0", "2", "1")
 )
 SUPPLIER_EMAIL = (
-    "Subject: Updated lead time for Workshop Supply Pack\n\n"
+    "Subject: Updated lead time for Quiet linear switch\n\n"
     "Hello,\n\n"
-    "The lead time for Workshop Supply Pack has increased from 14 days "
+    "The lead time for Quiet linear switch has increased from 14 days "
     "to approximately 35 days. Please use the updated estimate when planning "
     "your next order.\n\n"
     "Supplier A"

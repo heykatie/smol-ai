@@ -11,7 +11,7 @@ class ExtractionError(Exception):
 
 
 _LEAD_TIME = re.compile(
-    r"lead time for (?P<product>workshop supply pack) has increased from "
+    r"lead time for (?P<product>quiet linear switch) has increased from "
     r"(?P<previous>\d+) days to (?:approximately )?(?P<current>\d+) days",
     re.IGNORECASE,
 )
