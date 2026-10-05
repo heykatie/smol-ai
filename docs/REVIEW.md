@@ -52,6 +52,8 @@ Priority here is review urgency, separate from PRD feature priority. **P0** reso
 
 ## Concrete file-by-file changes
 
+Historical `src/smol_ai/` paths in this table are the package paths recorded at commit `2dc9093`. Later commits use `src/smolstuff/`. Those old paths stay because they are what that inspection saw.
+
 | File | Applied documentation edit / remaining work |
 | --- | --- |
 | README.md | Correct brand/URL and status; new reading path; demo-vs-production intake and disk persistence limits; developer/security/integration links |

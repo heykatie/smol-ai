@@ -66,7 +66,7 @@ Do not introduce real store or owner names, addresses, locations, contact detail
 
 smolstuff is an ongoing product. There is no submission deadline. Vercel is the hosting target. The earlier Render plan is retired. The public demo still uses fictional business actions.
 
-The original build was shaped as a solo hackathon demo. That history explains the one-loop-first sequence. It does not limit later releases. Do not imply unverified sponsorship, endorsement, or adoption.
+The original build was shaped as a solo hackathon demo. That history explains the one-loop-first sequence. It does not limit later releases. Do not imply unverified sponsorship, endorsement, or adoption. The presentation script and sponsor-role table from that period are in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md).
 
 ## 3. Zero-chores product principle
 
@@ -211,7 +211,7 @@ For a newly identified business sender, offer **Allow future messages**, **Allow
 
 For mixed personal/business inboxes, support a dedicated operations mailbox, business alias, or provider-side automatic routing. Sender/category filtering inside smolstuff must not be presented as provider-enforced mailbox isolation if the actual connector scope is broader.
 
-The hackathon simulates an arriving message with Start interactive demo. After that demonstration trigger, the workflow runs without upload or classification. The production product must begin from a permitted connector event or background poll without the owner starting each case.
+The public demo simulates an arriving message with Start interactive demo. After that demonstration trigger, the workflow runs without upload or classification. Production ingestion must begin from a permitted connector event or background poll; that work is listed in [docs/ROADMAP.md](docs/ROADMAP.md). The earlier hackathon wording of this paragraph is in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md).
 
 ## 7. Supplier intelligence and business memory
 
@@ -440,7 +440,7 @@ Customer need → internal options fail → local merchant requests
 
 Restrict communications to transaction facts. Do not exchange broad pricing strategies, future retail-price plans, competitor margins, coordinated prices, or unrelated forecasts. Do not disclose customer identity unless fulfillment requires it and sharing is authorized.
 
-For the hackathon, two seeded merchant agents are sufficient to demonstrate the coordination. Label them as simulated participants; do not imply a live merchant network already exists.
+For the public demo, two seeded merchant agents are sufficient to demonstrate the coordination. Label them as simulated participants; do not imply a live merchant network already exists. The earlier “for the hackathon” wording is in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md).
 
 ## 15. Staffing demand forecasting
 
@@ -528,19 +528,7 @@ Include a demo attack fixture that attempts to override a spending limit or requ
 
 ## 19. Sponsor-tool roles
 
-These are the intended roles selected in the conversation, not claims that integration or current vendor capability has been verified. Confirm official APIs, account access, and limitations when implementing. Keep adapters replaceable.
-
-| Tool | Intended role | Boundary / evidence of meaningful use |
-| --- | --- | --- |
-| **ZooWork** | Main orchestration/runtime for planning, execution, and approval pauses where supported. | Application state and deterministic policy remain authoritative; demonstrate pause/resume. |
-| **BAND** | Coordination and handoffs among specialized agents, optionally local merchant agents. | One agent's result must materially change another's next step. Removing BAND should break meaningful coordination. |
-| **Moss** | Retrieval over permitted catalog information, supplier terms, policies, compatibility, and business context. | Retrieval augments the canonical structured store; apply source and business access filters. |
-| **Tavily** | Discover external suppliers, products, and relevant current pages after internal options fail. | Search results are candidates, not verified stock or delivery promises. |
-| **Browser verification sponsor** | Inspect candidate pages and verify current product details, price, stock, and fulfillment evidence. | Timestamp observations and preserve limitations; page availability is not a reservation. |
-| **Novita** | Model inference for structured extraction, interpretation, explanation, or candidate ranking. | Models neither perform authoritative arithmetic nor grant permissions. |
-| **Entire** | Development provenance for the Claude/Cursor build process. | Keep its role in development; do not force it into merchant operations or record secrets. |
-
-Prefer a few real, coherent integrations over seven decorative logos. Clearly identify live, seeded, and simulated components and fallback behavior.
+The presentation table of intended sponsor roles was moved on 2026-10-05 to [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md). It is history, not proof of an integration. The current contract is [prd.md](prd.md) section 7 and [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md). Observed calls belong in the README. Prefer a few real, coherent integrations over decorative logos, and label live, seeded, and simulated results.
 
 ## 20. MVP scope and demo plan
 
@@ -566,22 +554,7 @@ Keep full mailbox production integration, broad Shopify write coverage, live pay
 
 The local demo now includes the four functional previews named in [prd.md](prd.md): workshop feasibility, Inventory Detective, sale rescue, and staffing coverage. They are simulated workflows, not production integrations. Current sponsor-call status belongs in the README, not in this vision.
 
-The steps below are the intended judging story. They are not a claim that every step is live. Current execution status is in [README.md](README.md).
-
-### Approximately 90-second demo
-
-1. **Opening:** “Big companies have operations teams. Small businesses have an inbox.” Show the one-time boundaries already configured.
-2. A supplier message arrives automatically: lead time changes from 14 to 35 days. Show the minimized fact and its source.
-3. The system calculates ~19 days of supply and investigates warehouse stock, POs, and alternatives.
-4. Show meaningful agent coordination and current evidence for a candidate supplier; optionally use the local-merchant branch.
-5. Explain the illustrative $61 resolution and show the deterministic $40 authorization limit.
-6. The owner approves once. The workflow resumes and verifies the order confirmation.
-7. Advance through clearly labeled simulated shipment/receipt events. Reconcile the full 100-unit receipt for the shortest successful path.
-8. Show the completed outcome, inventory update, audit evidence, and one human decision. Briefly show the shortage/recovery branch if time permits.
-
-Do not silently compress a real shipping delay or call an order “received” because a PO was submitted. Label the full demo run when simulated. A 97-unit receipt must retain the remaining obligation until its resolution is demonstrated.
-
-Fallbacks must be deterministic and visibly labeled. Never present replayed evidence as a fresh live verification. Rehearse the complete story, including decline, failed verification, and unavailable-tool behavior.
+The approximately 90-second judging script was moved on 2026-10-05 to [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md). It is not a claim that every step is live. Do not call an order received because a purchase was submitted. A short receipt must retain the remaining obligation. Fallbacks stay labeled. Current execution status is in [README.md](README.md).
 
 ## 21. Recommended data model
 
@@ -617,7 +590,7 @@ Store monetary values with currency and safe numeric types; distinguish units fr
 2. **Build the deterministic core.** Inventory math, money math, authorization, approval binding, deduplication, idempotency, and persisted state come before elaborate agent prompts.
 3. **Complete the narrow loop with adapters.** Make trigger, approval, execution, confirmation, receipt, and reconciliation work end to end with labeled fixtures.
 4. **Add scoped extraction and retrieval.** Preserve provenance, minimize data before model/tool disclosure, and validate outputs.
-5. **Integrate meaningful sponsor roles.** Prioritize the tools needed by the loop; verify each dependency before relying on it in judging.
+5. **Integrate meaningful sponsor roles.** Prioritize the tools needed by the loop and verify each dependency before relying on it. The earlier “in judging” wording is in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md).
 6. **Polish the Action Inbox and trust panel.** Clear outcomes, concise evidence, one meaningful decision, understandable uncertainty, and recovery paths.
 7. **Rehearse and verify.** Exercise success, denial, duplicate events, restart/resume, altered terms, tool failure, stale evidence, and shortage resolution.
 8. **Expand only after the loop is reliable.** Add Inventory Detective depth, merchant negotiation, then opportunity/staffing previews.

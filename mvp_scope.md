@@ -1,6 +1,6 @@
 # MVP scope
 
-This file is the current product boundary, not a deadline. Requirements are in [prd.md](prd.md). The reorder fixture is in [demo_spec.md](demo_spec.md). Philosophy and engineering rules are in [project_context.md](project_context.md). What the code does today is in [README.md](README.md). Hosting direction is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+This file is the current product boundary, not a deadline. Requirements are in [prd.md](prd.md). The reorder fixture is in [demo_spec.md](demo_spec.md). Philosophy and engineering rules are in [project_context.md](project_context.md). What the code does today is in [README.md](README.md). Hosting direction is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Later work is in [docs/ROADMAP.md](docs/ROADMAP.md). Historical hackathon material is in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md). Document ownership is in [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md).
 
 The reorder loop below is the core. The four previews are in the local demo and must stay functional. Production email, commerce, payments, and a real merchant network stay later releases. Vercel is the host. The dark daily brief was verified there. Hosted sessions are not durable across a redeploy.
 

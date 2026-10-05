@@ -1,6 +1,6 @@
 # Demo specification
 
-This is the reorder dataset and screen copy. Calculations in the app must match this file. Requirements are in [prd.md](prd.md). The hackathon boundary is in [mvp_scope.md](mvp_scope.md). The four other previews use their own fixtures in code and tests; they do not change these reorder numbers.
+This is the reorder dataset and screen copy. Calculations in the app must match this file. Requirements are in [prd.md](prd.md). The MVP boundary is in [mvp_scope.md](mvp_scope.md). Historical hackathon material is in [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md). The four other previews use their own fixtures in code and tests; they do not change these reorder numbers.
 
 Fictional data only. Purchases and deliveries are simulated. No private inbox is read, and no real order is sent.
 

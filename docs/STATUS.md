@@ -1,6 +1,6 @@
 # smolstuff current synchronization review
 
-Reviewed October 4, 2026 against live main `d48c344` (the merged documentation review plus the subsequent local-demo/package update), then the dark UI synchronization branch. This file supersedes docs/REVIEW.md for current status; that first review is historical. Current docs use lowercase prd.md, mvp_scope.md and demo_spec.md, and the app/package/service is smolstuff.
+Reviewed October 4, 2026 against live main `d48c344` (the merged documentation review plus the subsequent local-demo/package update), then the dark UI synchronization branch. This file supersedes docs/REVIEW.md for the status recorded here; that first review is historical. Later commits are not re-certified by this page until a new inspection is written. Document ownership is in [DOCUMENT_AUTHORITY.md](DOCUMENT_AUTHORITY.md). Current docs use lowercase prd.md, mvp_scope.md and demo_spec.md, and the app/package/service is smolstuff.
 
 ## Vision and implementation
 

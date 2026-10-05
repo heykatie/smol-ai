@@ -112,6 +112,9 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | [mvp_scope.md](mvp_scope.md) | Current product boundary |
 | [project_context.md](project_context.md) | Product philosophy, architecture intent, and [engineering rules](project_context.md#25-engineering-rules) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting direction. A hosted session is not durable until a redeploy keeps it |
+| [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) | Which document owns each topic |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Future and post-MVP work, not current evidence |
+| [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md) | Historical hackathon, sponsor, and demo-script context |
 
 If a reorder number disagrees, `demo_spec.md` wins. If the documents disagree about what is built, this README, the code, and the tests win. If they disagree about what is required, `prd.md` wins.
 
