@@ -126,6 +126,7 @@ class InboxApp:
                 )
                 if not started.replayed:
                     self._record_supplier_research(store)
+                    self._record_zoowork(store)
                 return
             plan = self._plan()
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
@@ -339,6 +340,21 @@ class InboxApp:
         if not os.environ.get("TAVILY_API_KEY", "").strip() or not self._claim_sponsor_call():
             return
         attempt = research_supplier(allow_network=True)
+        store.record_integration(
+            attempt.provider,
+            attempt.task,
+            attempt.result,
+            attempt.effect,
+            attempt.status,
+        )
+
+    def _record_zoowork(self, store) -> None:
+        if not os.environ.get("ZOOWORK_API_KEY", "").strip() or not self._claim_sponsor_call():
+            return
+        from smolstuff.zoowork import explain_supplier_delay
+        from smolstuff.fixtures import SUPPLIER_EMAIL
+
+        attempt = explain_supplier_delay(SUPPLIER_EMAIL)
         store.record_integration(
             attempt.provider,
             attempt.task,

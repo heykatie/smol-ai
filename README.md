@@ -30,7 +30,7 @@ Integration status: application wiring verified by this inspection; previous acc
 | --- | --- |
 | Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $189 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
-| ZooWork | A models read and an empty agent create succeeded, and that agent was deleted. No operations task has run. |
+| ZooWork | Wired. One local task explained the synthetic supplier delay and did not change the order. Public calls stay off unless the sponsor switch and both limits are set. The key is on Vercel and is not in the repo. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |
@@ -56,7 +56,7 @@ These remain requirements or later work. They are not available in the demo:
 
 - A hosted session that survives a redeploy
 - Live mailbox, Shopify, payment, or browser-verification integrations
-- A verified Novita extraction, ZooWork operations task, BAND handoff, or Moss retrieval inside the Action Inbox
+- A verified Novita extraction, a public ZooWork task, a BAND handoff, or Moss retrieval inside the Action Inbox
 - Returns, account onboarding, multiple privacy modes, and analytics dashboards
 
 The purchase store can record a short receipt without closing the workflow. That branch is not a button on the submitted demo. The demo receipt control receives the full order.
