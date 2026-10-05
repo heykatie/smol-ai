@@ -1,69 +1,36 @@
-# MVP scope
+# smolstuff release scope
 
-This file is the build boundary for the solo hackathon demo. The broader product vision stays in [project_context.md](project_context.md). If this file and that vision disagree, this file wins for what gets built now.
+This file summarizes [PRD.md](PRD.md). It separates implemented behavior from required and optional work. It does not override the PRD. [DEMO_SPEC.md](DEMO_SPEC.md) owns core fixture values; [docs/IMPLEMENTATION_CONTRACT.md](docs/IMPLEMENTATION_CONTRACT.md) owns technical behavior. The broader vision stays in [project_context.md](project_context.md).
 
-## One workflow
+## Inspected baseline
 
-One fictional retailer. One product: the workshop supply pack. Two suppliers. Synthetic sales and inventory only.
+At commit `2dc9093610c874179bc14a870ae3b9ad8f0f72b0`, Python and SQLite run one simulated procurement case for a fictional retailer, one SKU, and two seeded suppliers. No live mailbox, model, search, merchant, or sponsor calls are implemented. A hosting manifest is present; deployment has not been verified by this review.
 
-1. Simulate a permitted supplier email: lead time changed from 14 days to 35 days.
-2. Extract that fact into a validated structure. The rest of the message is data and cannot change policy.
-3. Calculate a rolling average of recent unit sales, days of supply, and reorder risk in ordinary Python.
-4. Check seeded warehouse stock and the open purchase order before choosing an alternative supplier.
-5. Prepare an illustrative $61 purchase. Autonomous purchases are allowed only under $40, so this one waits for approval.
-6. Show one action card: recommendation, calculation, evidence, and why approval is required.
-7. On approval, resume the saved workflow, submit a simulated order, and record a matching simulated confirmation.
-8. Offer one labeled demo control to simulate receipt of the full order.
-9. Reconcile that receipt, update on-hand inventory, and show the completed workflow with a short activity history.
+The public path is Start interactive demo → lead-time extraction → inventory risk and internal checks → seeded $61 recommendation → one approval or decline → simulated purchase and matching confirmation → full receipt → reconciliation and closure. Confirmation leaves available stock at 21; receipt changes it to 121. Refresh resumes while the database remains available. Duplicate signals, approvals, and receipts have regression coverage.
 
-An order confirmation does not complete the workflow. Completion requires the receipt and the reconciliation.
+A 97-unit receipt branch is implemented in the core and action handler and tested, but the awaiting-receipt page renders only a full-receipt button. Calling the short action leaves three units owed and stock at 118; receiving the remaining three completes at 121. It is not currently a discoverable public UI branch. This is receipt reconciliation, not the separate usage-investigation preview.
 
-## Forecasting
+## P0 — next release requirements
 
-Use only:
+1. Preserve and verify the complete core loop above, isolated visitor state, exact fixture math, idempotency, failure states, and honest execution labels.
+2. Provide a self-guided public dashboard and meaningful evidence. Verify mobile, keyboard, errors, refresh, and host persistence before claiming release completion.
+3. Add at least one useful, validated AI or managed-agent task with visible evidence and bounded costs. A missing integration remains a disclosed unmet requirement; local parsing is not a live AI task.
+4. Apply the security and execution boundaries in the implementation contract before adding any outbound capability. All demo business actions remain simulated.
 
-- a rolling average of recent unit sales
-- available store inventory
-- reservations
-- confirmed inbound timing
-- supplier lead time
-- a fixed safety-stock setting
-- a target-stock quantity, rounded up to pack size and then to the supplier minimum
+## P1 — functional previews after P0
 
-Say when a reorder is needed and why the proposed quantity is 100. Do not add seasonality, machine-learning forecasts, or extra precision.
+Implement workshop feasibility, Inventory Detective usage investigation, local merchant sale rescue, and staffing coverage using PRD FR-06 through FR-09. Each exposed control must change persisted scenario state, display deterministic values, and meet its acceptance criteria. Keep scenarios isolated from the procurement fixture. Incomplete previews are labeled planned and have no controls implying working behavior.
 
-## How it is built
+Useful additional sponsor integrations and an exposed short-receipt path are P1. Logical agent roles can be ordinary functions; do not create extra agents merely to fill a diagram.
 
-- Reuse the existing Python core and SQLite workflow store.
-- Keep permissions and arithmetic out of any model.
-- Keep workflow state in SQLite so a browser refresh resumes it.
-- One approval click creates one order. A second click returns that order.
-- Label every simulated email, order, confirmation, and receipt.
-- No sponsor integration is live in this MVP. ZooWork, BAND, Moss, Tavily, browser verification, Novita, and Entire are planned, not connected. The demo uses local adapters.
+## P2 — real-business product
 
-## Remaining plan
+Automatic connected-mailbox triage with no routine uploads; production inventory/POS and supplier data; configurable privacy/autonomy onboarding; real external messages and purchases; participating merchant agents; advanced forecasting; returns and accounting. This remains essential product direction, with separate permission and operational gates. The public demo does not prove it works.
 
-1. Core reorder workflow: implemented.
-2. Public self-guided demo: isolated visitor sessions, Start Demo and Reset Demo, synthetic data, no outbound purchases or messages.
-3. Execution records: each demo-adapter run stores provider, task, result, effect, timestamp, and simulated/replayed/live status. The decision panel and Built with line read those records.
-4. A live sponsor call is added only when a workflow step needs it. Planned tools stay in this README, not in the product UI.
-5. Extra workflows and a demo video wait until the deployed demo is reliable.
+## Forecasting boundary
 
-## Not in this build
+The core fixture uses the simple mean of ten complete days, zero safety stock, zero warehouse/open PO units, and Supplier B's 100-unit minimum. It does not optimize target stock or support weighted/seasonal forecasts. General replenishment must define coverage horizon, pack rounding, time-phased inbound and cash limits before implementation. No speculative formula should silently replace the fixture.
 
-Merchant negotiation, staffing, opportunity feasibility, returns and refunds, advanced forecasting, account onboarding, multiple privacy modes, production payments, live email or Shopify, analytics dashboards, and live supplier-page checks.
+## Definition of done
 
-A labeled short-receipt branch is included. Receiving 97 of 100 keeps the missing 3 units open and does not invent a cause. The rehearsed path is still the full receipt.
-
-## Done when
-
-From a fresh page you can:
-
-1. Start the app.
-2. Simulate the supplier email.
-3. Read the reorder recommendation.
-4. Approve once.
-5. Simulate the receipt.
-6. See reconciled inventory and a completed workflow.
-
-Also verified: the inventory math, the $40 threshold, decline, refresh/resume, and duplicate-click protection.
+Use PRD release acceptance and the requirement-to-test mapping in the implementation contract. Never mark a release complete from tests alone: verify the exposed browser journey and hosted persistence, record integration evidence, and disclose unmet gates. The 50 baseline tests passed during the October 4, 2026 review; future changes require fresh results.

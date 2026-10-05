@@ -1,12 +1,12 @@
-# smol.ai — Master Project Context
+# smolstuff — Product Vision and Context
 
-> Project source of truth for Claude, Cursor, and other coding assistants.
-> Updated October 3, 2026. All business examples are fictional and use synthetic data.
+> Product vision for Claude, Cursor, and other coding assistants. Read [PRD.md](PRD.md) and [MVP_SCOPE.md](MVP_SCOPE.md) first for current release requirements.
+> Updated October 4, 2026. All business examples are fictional and use synthetic data.
 > This document defines product intent, architecture, scope, and implementation guidance; it does not claim the features are already built. It incorporates the latest zero-chores and automatic-ingestion decisions. Older suggestions requiring routine manual email selection or approval at every step are superseded.
 
 ## 1. Product summary and vision
 
-**smol.ai is a privacy-first autonomous operations agent that quietly handles routine operational work for very small businesses, escalating only the decisions that require human authority or judgment.**
+**smolstuff is a privacy-first autonomous operations agent that quietly handles routine operational work for very small businesses, escalating only the decisions that require human authority or judgment.**
 
 It watches permitted business signals, understands their operational impact, investigates, finds a workable resolution, checks owner-defined policy, executes within granted authority, verifies results, reconciles business state, and closes the workflow. It should complete operational cycles rather than stop at recommendations.
 
@@ -69,7 +69,7 @@ Build one excellent closed loop before adding breadth. The product addresses com
 
 ## 3. Zero-chores product principle
 
-smol.ai must reduce operational work rather than create another layer of AI management.
+smolstuff must reduce operational work rather than create another layer of AI management.
 
 During one-time setup, the owner defines:
 
@@ -100,7 +100,7 @@ The Action Inbox surfaces meaningful exceptions, opportunities, decisions, and c
 Each action card should answer:
 
 - What happened, why does it matter, and when is a decision needed?
-- What did smol.ai already investigate?
+- What did smolstuff already investigate?
 - What resolution is recommended, with cost, timing, and business impact?
 - What is verified, inferred, or unknown?
 - Which policy allows the action or requires approval?
@@ -125,7 +125,7 @@ Decision needed: Approve $61 purchase
 [Review evidence] [Approve $61] [Decline / choose another option]
 ```
 
-Provide an expandable **Why smol.ai can do this** panel showing accessed sources, fields passed to models/tools, permitted actions, blocked access, policy results, and approval history. Distinguish provider access granted to the connector from data actually retrieved or disclosed. Make privacy claims from recorded behavior, not decorative badges.
+Provide an expandable **Why smolstuff can do this** panel showing accessed sources, fields passed to models/tools, permitted actions, blocked access, policy results, and approval history. Distinguish provider access granted to the connector from data actually retrieved or disclosed. Make privacy claims from recorded behavior, not decorative badges.
 
 All quantities, prices, suppliers, and forecasts in examples are synthetic demo fixtures, not verified quotes or any real business's operating data.
 
@@ -206,9 +206,9 @@ Approve an exact sender or domain once, subject to category restrictions. Truste
 
 For a newly identified business sender, offer **Allow future messages**, **Allow this message only**, or **Never allow**. Deduplicate these requests. Never inspect prohibited content merely to determine whether it is prohibited; configure the gate's permitted inputs explicitly.
 
-For mixed personal/business inboxes, support a dedicated operations mailbox, business alias, or provider-side automatic routing. Sender/category filtering inside smol.ai must not be presented as provider-enforced mailbox isolation if the actual connector scope is broader.
+For mixed personal/business inboxes, support a dedicated operations mailbox, business alias, or provider-side automatic routing. Sender/category filtering inside smolstuff must not be presented as provider-enforced mailbox isolation if the actual connector scope is broader.
 
-The hackathon may simulate an arriving message. Label the event as simulated while preserving the automatic UX: the owner does not have to upload it or start the workflow.
+The hackathon simulates an arriving message with Start interactive demo. After that demonstration trigger, the workflow runs without upload or classification. The production product must begin from a permitted connector event or background poll without the owner starting each case.
 
 ## 7. Supplier intelligence and business memory
 
@@ -275,7 +275,7 @@ Logical responsibilities:
 | Margin / Cash Agent | Explain economic tradeoffs using deterministic financial calculations. |
 | Verifier | Check transaction-critical claims and actual outcomes against evidence. |
 
-These are logical roles, not a requirement to deploy nine independent agents. Use two or three meaningful agents for the MVP and ordinary functions where they are clearer. Persist coordination, decisions, and pending work outside transient model context.
+These are logical roles, not a requirement to deploy nine independent agents. Use ordinary functions for the deterministic baseline. Add logical agent handoffs only where useful and verified; the current code does not deploy independent agents. Persist coordination, decisions, and pending work outside transient model context.
 
 ## 9. Stateful workflows and genuine completion
 
@@ -415,12 +415,11 @@ Example request:
   "item_requirement": "compatible workshop supply pack",
   "quantity": 1,
   "deadline": "customer-required same-day deadline",
-  "max_acquisition_cost": 82,
   "radius_miles": 8
 }
 ```
 
-Keep the internal ceiling private where disclosure is unnecessary. Share only fields required to obtain a useful quote. Offers should include item/variant, quantity, price, fees, fulfillment location, timing, expiry, and counterparty identity.
+The outgoing request above excludes the internal acquisition ceiling. Store that ceiling in local policy only and validate the outbound payload before disclosure. Share only fields required to obtain a useful quote. Offers should include item/variant, quantity, price, fees, fulfillment location, timing, expiry, and counterparty identity.
 
 Evaluate compatibility, availability, travel/transfer time, total cost, seller trust, evidence freshness, and contribution. Allow bounded counteroffers for this specific transaction. Limit rounds, quantities, price range, time, and data disclosure.
 
@@ -544,25 +543,23 @@ Prefer a few real, coherent integrations over seven decorative logos. Clearly id
 
 ### Required vertical slice
 
-Build **automatic supplier signal → stockout investigation → verified alternative → policy/approval → execution → confirmation → receipt → reconciliation → closure**.
+Target **permitted supplier signal → stockout investigation → alternative with evidence → policy/approval → execution → confirmation → receipt → reconciliation → closure**. In the current demo the signal, offer, and business actions are synthetic; no live verification is performed. PRD and MVP_SCOPE define release priority; this section does not impose extra independent gates.
 
 Required pieces:
 
 - One fictional demo business, one generic focal SKU, store/warehouse locations, synthetic sales history, and supplier fixtures.
 - A configured email boundary and automatic arrival trigger, with simulation labeled when used.
 - Structured extraction, source evidence, deterministic inventory/economic calculations, and a policy engine.
-- Meaningful agent handoff and one verified alternative source where integration access permits.
+- At least one useful validated AI/managed-agent task for the next release; further coordination/research is added where needed. The existing seeded offer remains synthetic.
 - Action Inbox, evidence/privacy panel, one approval checkpoint, and durable resume.
 - Purchase, confirmation, receipt, and reconciliation adapters; simulated physical events clearly labeled.
 - Audit trail, failure/recovery states, and a resettable deterministic fallback.
 
-### Optional additions, in order
+### P1 functional previews
 
-1. A partial-receipt Inventory Detective branch using the same dataset.
-2. Two participating/simulated local merchant agents and one bounded negotiation.
-3. An opportunity card and staffing forecast preview showing how the shared engine expands.
+After P0 is reliable, implement workshop feasibility, Inventory Detective usage investigation, local merchant sale rescue, and staffing coverage against PRD FR-06–FR-09. The implemented short-receipt handler is separate from the cause-investigation preview. Any exposed preview must be functional and persisted; incomplete features remain visibly planned.
 
-Keep full mailbox production integration, broad Shopify write coverage, live payments, a real merchant network, advanced forecasting, and complete returns/accounting integrations outside the initial MVP unless the core loop is already reliable. Roadmap cards must be visibly identified as previews.
+Keep full mailbox production integration, broad Shopify write coverage, live payments, a real merchant network, advanced forecasting, and complete returns/accounting integrations outside the initial MVP unless the core loop is already reliable. Unimplemented roadmap cards must be visibly identified as planned; working previews must meet their acceptance criteria.
 
 ### Approximately 90-second demo
 
@@ -618,13 +615,13 @@ Store monetary values with currency and safe numeric types; distinguish units fr
 7. **Rehearse and verify.** Exercise success, denial, duplicate events, restart/resume, altered terms, tool failure, stale evidence, and shortage resolution.
 8. **Expand only after the loop is reliable.** Add Inventory Detective depth, merchant negotiation, then opportunity/staffing previews.
 
-No application framework or database vendor is fixed by this context. Prefer the simplest stack compatible with the existing repository and sponsor integrations. Do not replace working project conventions without a concrete need.
+The inspected baseline uses Python, the standard-library HTTP server, and SQLite. Reuse that stack for incremental work; production persistence and hosting require separate decisions. Prefer the simplest stack compatible with the existing repository and sponsor integrations. Do not replace working project conventions without a concrete need.
 
 Coding assistants should preserve the current product decisions, distinguish requirements from assumptions, inspect existing implementation before redesigning it, and work in small verifiable increments. Use typed schemas and replaceable integration boundaries. Keep model prompts, deterministic authorization, and executors separate. Do not invent business facts, live integrations, quotes, or completion evidence.
 
 ## 23. Acceptance criteria
 
-The MVP is complete when it can demonstrate:
+These describe target behavior, not verified implementation status. PRD defines release gates. The product should demonstrate:
 
 - A permitted supplier signal automatically starts the workflow without manual selection or prompting.
 - Blocked/unrelated email content is not passed to downstream agents; extracted claims retain source evidence.
@@ -644,10 +641,10 @@ The MVP is complete when it can demonstrate:
 
 At every implementation decision, ask:
 
-1. Can a normal small-business owner configure smol.ai once and then largely forget about it?
+1. Can a normal small-business owner configure smolstuff once and then largely forget about it?
 2. Can one business problem enter automatically and reach a verified resolution?
 3. Does the system interrupt only when human authority or judgment is needed?
-4. Can the owner understand what happened, what smol.ai did, what data it used, what it was not permitted to access, and why a decision is required?
+4. Can the owner understand what happened, what smolstuff did, what data it used, what it was not permitted to access, and why a decision is required?
 5. Did the resolution improve the business outcome without creating hidden work, unauthorized commitments, or unresolved obligations?
 
 If not, simplify the workflow before adding features.
@@ -656,8 +653,8 @@ Track verified workflows resolved, owner time and interruptions per resolution, 
 
 The longer-term product connects inventory, procurement, opportunities, local sale rescue, staffing, and returns into a shared operating layer. Before a promise, it determines whether the business can fulfill it. After a problem, it works to preserve the outcome. Both use the same bounded authority and evidence model.
 
-**Product vision:** smol.ai gives very small businesses the operational support of a larger team, while keeping data access limited, authority explicit, and everyday effort low.
+**Product vision:** smolstuff gives very small businesses the operational support of a larger team, while keeping data access limited, authority explicit, and everyday effort low.
 
 **Pitch:** “Small businesses don't need another AI assistant. They need the operations team they can't afford to hire.”
 
-**Trust promise:** “Most AI products ask small-business owners for more trust. smol.ai is designed to require less.”
+**Trust promise:** “Most AI products ask small-business owners for more trust. smolstuff is designed to require less.”
