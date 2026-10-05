@@ -63,6 +63,14 @@ The HTTP checks comprised nine passing checks before redeploy and eight passing 
 
 Reorder state persistence is verified within these synthetic scenarios. The broader hosted experience does not pass because dashboard and preview rendering remain broken. Local-file guards in `InboxApp` are a candidate cause requiring failing regression tests and a code fix; this verification did not change them. Backup/restore, retention, authenticated tenant isolation, and shared hosted spend enforcement remain unverified or unresolved.
 
+## Postgres rendering fix — October 4, 2026 (America/Los_Angeles)
+
+Requirements: FR-05 saved-state persistence, FR-06 workshop results, FR-09 staffing results, and the daily brief's session status/evidence. Five new real-Postgres behavior tests reproduced hidden preview results, missing completed dashboard/evidence, ignored saved lead-time facts, and owner-versus-other-visitor rendering when no local session file exists.
+
+`InboxApp` now checks for either a surviving local file or session-scoped persisted database rows before loading saved previews, dashboard cards/evidence, reorder status, and supplier facts. Stores and permission rules remain unchanged. Existing WSGI/session entry points already recognize Postgres sessions. The staffing regression uses Saturday with the workshop enabled for the expected 14-hour result.
+
+Local verification: **102 passed, no skips**, Python 3.14.7, pytest 9.1.1, psycopg 3.3.6, isolated local Postgres; no paid provider calls. Diff whitespace passed. Hosted rendering and post-deploy persistence will be recorded after deployment and browser/HTTP checks; prior hosted failures remain historical until those checks pass.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.

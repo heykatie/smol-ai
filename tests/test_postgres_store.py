@@ -114,3 +114,66 @@ def test_postgres_concurrent_approvals_create_one_decision(pg_conn):
         thread.join()
     row = store._conn.execute("SELECT COUNT(*) AS n FROM approvals").fetchone()
     assert int(row["n"]) == 1
+
+
+@pytest.fixture
+def postgres_inbox(pg_conn, tmp_path, monkeypatch):
+    from smolstuff.inbox import InboxApp
+
+    monkeypatch.setenv("DATABASE_URL", "dbname=smolstuff_pytest")
+    monkeypatch.setenv("SMOL_SPONSOR_CALLS", "0")
+    return InboxApp(str(tmp_path / "sessions" / ("a" * 32 + ".sqlite3")), session_id="a" * 32)
+
+
+@pytest.mark.parametrize("scenario,action,fields,expected", [
+    ("workshop", "workshop_check", {"attendees": ["20"], "days_until": ["7"]}, "Expected contribution: $700"),
+    ("staffing", "staffing_calculate", {"day": ["saturday"], "owner_hours": ["6"], "workshop": ["1"]}, "Workload hours: 14"),
+])
+def test_postgres_preview_get_displays_saved_result_without_session_file(postgres_inbox, scenario, action, fields, expected):
+    from pathlib import Path
+    from app import _page
+
+    app = postgres_inbox
+    app.route(action, dict(fields, scenario=[scenario]))
+    assert not Path(app.path).exists()
+    assert expected in _page(str(Path(app.path).parent), app.session_id, scenario)
+    assert expected in app.view(scenario)
+
+
+def test_postgres_daily_brief_shows_completed_reorder_and_evidence_without_session_file(postgres_inbox):
+    from pathlib import Path
+    from app import _page
+
+    app = postgres_inbox
+    app.apply("simulate_email")
+    app.apply("approve")
+    app.apply("receive_full")
+    assert not Path(app.path).exists()
+    page = _page(str(Path(app.path).parent), app.session_id, "home")
+    assert "Replenishment workflow completed" in page
+    assert "Receipt demo adapter" in page
+    assert '<span>completed<strong>1</strong></span>' in page
+
+
+def test_postgres_reorder_uses_saved_lead_time_without_session_file(postgres_inbox):
+    from pathlib import Path
+    from smolstuff.ops_demos import ScenarioStore
+
+    app = postgres_inbox
+    store = ScenarioStore(app.path, app.session_id)
+    try:
+        store.save("supplier_fact", {"previous": 14, "current": 50})
+    finally:
+        store.close()
+    assert not Path(app.path).exists()
+    assert app._plan().lead_time_days == 50
+
+
+def test_postgres_rendering_does_not_show_another_visitors_preview(postgres_inbox):
+    from smolstuff.inbox import InboxApp
+
+    app = postgres_inbox
+    app.route("workshop_check", {"scenario": ["workshop"], "attendees": ["20"], "days_until": ["7"]})
+    other = InboxApp(app.path, session_id="b" * 32)
+    assert "Expected contribution: $700" not in other.view("workshop")
+    assert "Expected contribution: $700" in app.view("workshop")

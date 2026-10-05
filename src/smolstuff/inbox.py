@@ -259,8 +259,11 @@ class InboxApp:
         self.apply(action)
         return fields.get("scenario", ["reorder"])[0]
 
+    def _has_saved_state(self) -> bool:
+        return os.path.exists(self.path) or _session_in_database(self.session_id)
+
     def _saved_page(self, name: str, renderer):
-        if not os.path.exists(self.path):
+        if not self._has_saved_state():
             return renderer(None)
         store = ScenarioStore(self.path, self.session_id)
         try:
@@ -270,7 +273,7 @@ class InboxApp:
 
     def _home(self) -> str:
         status, bucket, action = self._reorder_card()
-        if os.path.exists(self.path):
+        if self._has_saved_state():
             cards = load_cards(self.path, status, bucket, action, self.session_id)
             event_store = WorkflowStore(self.path, session_id=self.session_id)
             try:
@@ -288,7 +291,7 @@ class InboxApp:
             '<input type="hidden" name="action" value="simulate_email">'
             '<button class="primary" type="submit">Start interactive demo</button></form>'
         )
-        if not os.path.exists(self.path):
+        if not self._has_saved_state():
             return "Not started", "Not started", start
         store = WorkflowStore(self.path, session_id=self.session_id)
         try:
@@ -310,7 +313,7 @@ class InboxApp:
 
     def _plan(self):
         saved = None
-        if os.path.exists(self.path):
+        if self._has_saved_state():
             store = ScenarioStore(self.path, self.session_id)
             try:
                 saved = store.get("supplier_fact")
