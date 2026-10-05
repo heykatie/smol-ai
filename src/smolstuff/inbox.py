@@ -352,7 +352,11 @@ class InboxApp:
         )
 
     def _record_zoowork(self, store) -> None:
-        if not os.environ.get("ZOOWORK_API_KEY", "").strip() or not self._claim_sponsor_call():
+        if (
+            not os.environ.get("ZOOWORK_API_KEY", "").strip()
+            or not os.environ.get("ZOOWORK_AGENT_ID", "").strip()
+            or not self._claim_sponsor_call()
+        ):
             return
         from smolstuff.zoowork import explain_supplier_delay
         from smolstuff.fixtures import SUPPLIER_EMAIL

@@ -6,7 +6,7 @@ Source inspected at `7cd4647` includes the dark UI, Postgres storage option, and
 | --- | --- | --- | --- |
 | Email | Simulated arrival, optional constrained Novita lead-time output or parser fallback; no real mailbox | Automatic permitted-provider events/polling, triage and task extraction | Allowed arrival opens case without uploads; blocked body never reaches downstream; duplicate/revocation recovery |
 | Inventory/POS | Seeded fixture + receipt movements | Read authoritative stock/sales/inbound; scoped authorized corrections | Real scoped read with time/source; write/reconciliation tests before writes |
-| ZooWork | Wired behind the sponsor gate. One local explanation succeeded and did not change price or approval | Scoped managed-agent interpretation/planning where supported | Validated task output affects case; durable state/policy stays in app |
+| ZooWork | One stopped agent, smolstuff-clerk, is configured. Calls stay off until launch. A task cannot change price or approval | Scoped managed-agent interpretation/planning where supported | Validated task output affects case; durable state/policy stays in app |
 | BAND | Not wired in the inbox. No handoff has run | Meaningful handoff between distinct logical specialists or merchants | Receiving agent consumes findings and changes its next action |
 | Moss | Not wired in the inbox. A previous local query is not demo evidence | Permission-filtered evidence retrieval | Relevant cited retrieval; business filtering and deletion verified |
 | Tavily | Wired, and off unless sponsor calls and both limits are enabled. A previous search was reported and was not rerun here | Public supplier discovery | Real search result used by investigation; stock/ETA still tentative |

@@ -30,7 +30,7 @@ Integration status: application wiring verified by this inspection; previous acc
 | --- | --- |
 | Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $189 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
-| ZooWork | Wired. One local task explained the synthetic supplier delay and did not change the order. Public calls stay off unless the sponsor switch and both limits are set. Credential placement on Vercel was not verified by this cleanup; no secret belongs in the repo. |
+| ZooWork | One stopped agent, `smolstuff-clerk`, is configured. It explains a case and cannot change the order. Calls stay off until launch. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |

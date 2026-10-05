@@ -28,51 +28,30 @@ def explain_supplier_delay(
     message: str,
     transport: Optional[Callable] = None,
     key: Optional[str] = None,
+    agent_id: Optional[str] = None,
 ) -> ZooWorkAttempt:
-    """Ask ZooWork for an explanation. The caller keeps the calculated decision."""
+    """Ask the configured ZooWork agent for an explanation. The caller keeps the decision."""
     secret = (key if key is not None else os.environ.get("ZOOWORK_API_KEY", "")).strip()
-    if not secret:
+    configured_agent = (agent_id if agent_id is not None else os.environ.get("ZOOWORK_AGENT_ID", "")).strip()
+    if not secret or not configured_agent:
         return _fallback("ZooWork is not configured. No agent task was started.")
     send = transport or _http
-    agent_id = None
     try:
-        created = send(
-            "POST",
-            "/agents",
-            {
-                "resource": {
-                    "name": "smolstuff-explainer",
-                    "persona": {
-                        "docs": [{
-                            "name": "AGENTS.md",
-                            "content": (
-                                "Explain the supplier delay in one sentence. "
-                                "Do not change prices, quantities, or approval."
-                            ),
-                        }]
-                    },
-                }
-            },
-            secret,
-        )
-        agent_id = str(created.get("agent_id") or created.get("resource", {}).get("agent_id") or "")
-        if not agent_id:
-            return _fallback("ZooWork did not return an agent id. The calculated order is unchanged.")
-        send("POST", "/agents/{0}/start".format(agent_id), None, secret)
+        send("POST", "/agents/{0}/start".format(configured_agent), None, secret)
         session = send(
             "POST",
-            "/agents/{0}/sessions".format(agent_id),
+            "/agents/{0}/sessions".format(configured_agent),
             {"initial_events": [{"type": "user.message", "content": message[:2000]}]},
             secret,
         )
         session_id = str(session.get("session_id") or session.get("id") or "")
         summary = _assistant_text(session)
-        if agent_id and session_id and not summary:
+        if session_id and not summary:
             for _ in range(6):
                 time.sleep(2)
                 later = send(
                     "GET",
-                    "/agents/{0}/sessions/{1}/events".format(agent_id, session_id),
+                    "/agents/{0}/sessions/{1}/events".format(configured_agent, session_id),
                     None,
                     secret,
                 )
@@ -91,12 +70,6 @@ def explain_supplier_delay(
         )
     except (OSError, URLError, HTTPError, ValueError, KeyError, TypeError) as error:
         return _fallback(_safe_error(error))
-    finally:
-        if agent_id:
-            try:
-                send("DELETE", "/agents/{0}".format(agent_id), None, secret)
-            except (OSError, URLError, HTTPError, ValueError):
-                pass
 
 
 def _assistant_text(payload: dict) -> str:
