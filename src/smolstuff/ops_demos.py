@@ -321,7 +321,7 @@ def _money(value: Decimal) -> str:
 
 
 class ScenarioStore:
-    """Persisted mini-demo state in the visitor's SQLite file."""
+    """Session-scoped preview state in SQLite or configured Postgres."""
 
     def __init__(self, path: str, session_id: str = "local", connection=None) -> None:
         self.path = path

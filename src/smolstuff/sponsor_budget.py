@@ -1,7 +1,9 @@
-"""Durable counters for anonymous sponsor calls.
+"""File-backed call-count limits for anonymous sponsor tasks.
 
 Calls stay off unless the process is explicitly enabled and both limits are set.
-The counters live in SQLite so a retry or a new process cannot reset them.
+Counters persist only while their shared SQLite file survives. They do not
+provide a cap across separate files, Vercel instances, or redeploys, and they
+do not measure monetary spend. One task may make multiple provider requests.
 """
 
 from __future__ import annotations

@@ -1,7 +1,9 @@
 """WSGI entry point for Vercel.
 
 Local development still uses `python -m smolstuff.inbox`.
-This app is the Vercel entry. A production response was verified for the dark daily brief. Session files on Vercel are temporary and are not durable across redeploys.
+Workflow and preview rows use Postgres when DATABASE_URL is configured,
+otherwise SQLite. Local session markers and sponsor counters remain temporary
+files on Vercel. See docs/STATUS.md for recorded hosted checks and their limits.
 """
 
 import os

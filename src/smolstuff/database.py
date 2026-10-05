@@ -13,7 +13,7 @@ def database_url() -> str:
 
 
 def postgres_connection():
-    """Return a Postgres connection, or None when Neon is not configured."""
+    """Return a Postgres connection, or None when DATABASE_URL is empty."""
     url = database_url()
     if not url:
         return None
@@ -27,7 +27,7 @@ def postgres_connection():
 
 
 def persisted_session(session_id: str) -> bool:
-    """True when this visitor already has rows in Neon."""
+    """True when this visitor has workflow or preview rows in configured Postgres."""
     if not database_url() or not session_id:
         return False
     connection = postgres_connection()

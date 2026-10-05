@@ -773,7 +773,7 @@ def serve(path: str, host: str = HOST, port: int = PORT) -> None:
 
 
 def make_session_handler(directory: str):
-    """One SQLite file per visitor cookie. Visitors do not share a workflow."""
+    """Visitor sessions use local SQLite files or configured Postgres rows."""
     root = Path(directory)
     root.mkdir(parents=True, exist_ok=True)
 

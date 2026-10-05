@@ -17,6 +17,10 @@ Documentation verification for this cleanup: 78 local Markdown link targets acro
 
 Remaining production gates include authenticated identity/roles, real connectors, exact authority and reservation semantics, approved paid-call budgets with hosted enforcement, retention/erasure and backup/restore. A single recorded redeploy check does not close those gates.
 
+## Source-description follow-up — October 4, 2026
+
+At source baseline `e7d65bb`, corrected storage and sponsor-limit docstrings in `app.py`, `workflow.py`, `ops_demos.py`, `inbox.py`, `sponsor_budget.py`, and `database.py`. All six edited files parsed successfully; syntax trees were identical after removing docstrings, confirming no executable code changed. Sponsor limits count task attempts; one ZooWork task can issue multiple provider requests. Diff whitespace and local Markdown links were checked. No runtime tests, paid calls, hosted state changes, or deployment were performed.
+
 ## Earlier synchronization review — historical evidence
 
 The sections below describe the earlier review scope. The source/evidence table above supersedes older storage, quota, and provider-wiring statements; historical browser/test results are retained without rerunning them.

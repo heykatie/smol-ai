@@ -1,6 +1,7 @@
 """Persisted purchase workflow.
 
-The SQLite file is the source of truth. An approval covers one terms hash.
+The relational store is the source of truth: SQLite without DATABASE_URL,
+Postgres when configured (or an explicitly supplied connection). An approval covers one terms hash.
 Submitting the same purchase twice returns the original simulated order.
 """
 
