@@ -1,0 +1,69 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M47PK8HGCNYP2DA53CCK982T",
+  "session_id": "235df4fb-e530-4310-b205-a5833437de56",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-06T04:13:07.49557Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "save_step_count": 1,
+  "files_touched": [
+    "skills-lock.json",
+    "src/smolstuff.egg-info/PKG-INFO",
+    "src/smolstuff.egg-info/SOURCES.txt",
+    "src/smolstuff.egg-info/dependency_links.txt",
+    "src/smolstuff.egg-info/requires.txt",
+    "src/smolstuff.egg-info/top_level.txt"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "e244eb1ccaed",
+  "compact_transcript_start": 0,
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-06T04:13:07.366494Z",
+    "agent_lines": 86,
+    "agent_removed": 0,
+    "human_added": 6590,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 6676,
+    "total_lines_changed": 7191,
+    "agent_percentage": 1.1959393686552635,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 4206,
+      "user_lines_removed": 0,
+      "agent_lines_added": 86,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".agents/skills/neon-postgres/SKILL.md": 280,
+        ".agents/skills/neon-postgres/references/full-text-search.md": 99,
+        ".agents/skills/neon-postgres/references/hybrid-search.md": 90,
+        ".agents/skills/neon-postgres/references/lakebase-search-drizzle.md": 172,
+        ".agents/skills/neon-postgres/references/vector-search.md": 137,
+        ".agents/skills/neon/SKILL.md": 486,
+        ".agents/skills/neon/references/auth.md": 12,
+        ".agents/skills/neon/references/claimable-neon.md": 117,
+        ".agents/skills/neon/references/function-triggers.md": 53,
+        ".agents/skills/neon/references/logs-loki.md": 61,
+        ".agents/skills/neon/references/parse-env.md": 32,
+        ".agents/skills/neon/references/sdk.md": 7,
+        ".agents/skills/zoowork-managed-agents/SKILL.md": 238,
+        ".agents/skills/zoowork-managed-agents/references/deploy-your-agent.md": 371,
+        ".agents/skills/zoowork-managed-agents/references/developer-api.md": 268,
+        ".agents/skills/zoowork-managed-agents/references/events-and-streaming.md": 496,
+        ".agents/skills/zoowork-managed-agents/references/not-supported.md": 306,
+        ".agents/skills/zoowork-managed-agents/references/python-sdk.md": 255,
+        ".agents/skills/zoowork-managed-agents/references/skill-registry.md": 126,
+        ".agents/skills/zoowork-managed-agents/references/typescript-sdk.md": 595,
+        ".claude/settings.local.json": 5
+      }
+    }
+  ]
+}
