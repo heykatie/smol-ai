@@ -257,3 +257,9 @@ Verification: **131 passed, 3 skipped**, including provider order, parser recove
 Groq now uses the official Python SDK (groq>=1.0,<2, declared in pyproject.toml), installed locally. Requests retain the strict schema, 2,000-character excerpt, 10-second timeout and zero automatic retries. SDK API errors become generic fallback errors; clients close after use. OpenRouter and the parser remain backups; sponsor gates are unchanged.
 
 Verification: the SDK transport test failed before implementation. The final suite passed with 132 passed, 3 skipped, and git diff --check passed. One live call through the updated app adapter extracted the fictional supplier fixture from 14 to 35 days. This confirms local adapter connectivity, not a persisted live workflow, browser verification or Vercel deployment. No billing or public execution settings changed.
+
+### Supplier source disclosures — 2026-10-06
+
+The reorder packet now includes native View supplier message and View supplier offer disclosures before the recommendation explanation. The message is explicitly fictional and shows accepted extraction or parser fallback evidence. The offer is explicitly seeded, with fixture quantity, minimum order, price breakdown and delivery estimate; no live supplier verification is claimed. Existing workflow and authority behavior are unchanged.
+
+Verification: the focused disclosure test failed before implementation; the suite then passed with 133 passed, 3 skipped. In a fresh local preview on port 8766 with sponsor calls disabled, both disclosures opened, the offer toggled with Enter, and the 390px mobile layout had no horizontal overflow. No deployment or hosted browser check was performed for this change.
