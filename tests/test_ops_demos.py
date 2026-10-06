@@ -24,11 +24,17 @@ def test_default_workshop_is_feasible_with_a_minimum_order():
 
     assert result["shortage"] == 2
     assert result["purchase"] == 10
-    assert result["procurement_cash"] == "200.00"
+    # Procurement buys only the bottleneck 70-pack line ($14), not a sealed kit.
+    assert result["procurement_cash"] == "140.00"
     assert result["materials_consumed"] == "400.00"
     assert result["contribution"] == "700.00"
     assert result["inventory_after"] == 8
     assert result["verdict"] == "feasible_with_conditions"
+    assert len(result["bom"]) == 3
+    pack = next(item for item in result["bom"] if item["bottleneck"])
+    assert pack["sku"] == "DEMO-SKU-WS-PACK"
+    assert pack["purchase"] == 10
+    assert pack["after_units"] == 8
 
 
 def test_no_shortage_does_not_force_a_minimum_order():

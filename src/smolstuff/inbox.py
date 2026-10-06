@@ -29,9 +29,12 @@ from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
 from smolstuff.demo_ui import (
     shell, error_page,
     apply_ops,
+    build_inventory_snapshot,
     dashboard_page,
     detective_page,
     empty_cards,
+    empty_inventory_snapshot,
+    inventory_page,
     load_cards,
     rescue_page,
     staffing_page,
@@ -242,6 +245,8 @@ class InboxApp:
     def view(self, scenario: str = "home") -> str:
         if scenario == "reorder":
             return self.page()
+        if scenario == "inventory":
+            return self._inventory()
         if scenario == "workshop":
             return self._saved_page("workshop", workshop_page)
         if scenario == "detective":
@@ -258,6 +263,11 @@ class InboxApp:
             return fields.get("scenario", ["home"])[0]
         self.apply(action)
         return fields.get("scenario", ["reorder"])[0]
+
+    def _inventory(self) -> str:
+        if not self._has_saved_state():
+            return inventory_page(empty_inventory_snapshot())
+        return inventory_page(build_inventory_snapshot(self.path, self.session_id))
 
     def _has_saved_state(self) -> bool:
         return os.path.exists(self.path) or _session_in_database(self.session_id)
@@ -894,6 +904,8 @@ def _blank_scenario(scenario: str) -> str:
         return rescue_page(None)
     if scenario == "staffing":
         return staffing_page(None)
+    if scenario == "inventory":
+        return inventory_page(empty_inventory_snapshot())
     if scenario == "reorder":
         return _EMPTY_PAGE
     return dashboard_page(empty_cards())
@@ -936,7 +948,7 @@ def open_session(directory: str, cookie_header: str):
     return uuid.uuid4().hex, True
 
 
-_KNOWN_SCENARIOS = {"reorder", "workshop", "detective", "rescue", "staffing"}
+_KNOWN_SCENARIOS = {"reorder", "inventory", "workshop", "detective", "rescue", "staffing"}
 
 
 def _scenario_location(scenario: str) -> str:

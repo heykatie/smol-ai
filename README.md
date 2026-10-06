@@ -10,7 +10,7 @@ This README describes what the code does now. Requirements, fixtures, scope, and
 
 ## What runs today
 
-A dark, responsive Daily brief with one simulated procurement workflow and four separate functional previews. All screens share the smolstuff navigation, typography, controls, evidence styles, and synthetic-data notice. No fake live monitoring or business-impact metrics are displayed.
+A dark, responsive Daily brief with one simulated procurement workflow, four separate functional previews, and an Inventory tab that shows session stock after decisions. All screens share the smolstuff navigation, typography, controls, evidence styles, and synthetic-data notice. No fake live monitoring or business-impact metrics are displayed.
 
 | Step | Behavior |
 | --- | --- |
@@ -37,14 +37,14 @@ Integration status: application wiring verified by this inspection; previous acc
 
 The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. With `DATABASE_URL`, those call-count limits are shared in Postgres. Without it, they share one local budget file. They are not a provider-wide spend cap.
 
-Confirmation does not complete the workflow. Completion is the reconciled receipt.
+Confirmation does not complete the workflow. Completion is the reconciled receipt. The **Inventory** nav tab is a market-public keyboard-shop catalog (~492 SKUs) ordered Product → Category (desktop) → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue. Columns are sortable; the filter searches the catalog. Product shows name + differentiators; Issue combines workflow state with the problem link (Lead-time risk / Event shortfall / Count mismatch). Unavailable expands damaged + returns + display. Phone view keeps Product / Status / Available / Issue. Quiet linear switch starts at available 21 (Available + Lead-time risk); an approved order is Incoming / Waiting with inbound 100; a full receive is Available / Done at available 121. Workshop feasibility uses a per-seat **BOM** (not one sealed kit SKU). Detective tracks sample strips.
 
 The same session can open four more synthetic workflows from the daily brief. They do not change the reorder product's 21 units.
 
 | Workflow | What it does |
 | --- | --- |
-| Can we take this on? | Workshop feasibility. Default: 20 attendees, 18 kits, buy the minimum 10, contribution $700, 8 kits left. A two-day event with missing kits is blocked. |
-| Where did the missing stock go? | Inventory Detective for a separate 20-unit count. It does not invent a cause. Confirming workshop use can correct 3 units and leave 1 unresolved until a matching recount. |
+| Can we take this on? | Workshop feasibility via per-seat BOM (70-pack + film + pullers). Default: 20 attendees, 18 seats available, buy 10 bottleneck packs, contribution $700, 8 seats left. A two-day event with missing packs is blocked. |
+| Where did the missing stock go? | Inventory Detective for 10-switch sample strips (system 20). It does not invent a cause. Confirming workshop use can correct 3 units and leave 1 unresolved until a matching recount. |
 | Save the sale | Two merchant simulators. Default contributions are $21 and $27. A $90 selling price recommends neither. |
 | Plan the right coverage | Historical averages and a 15-minute workload model. Saving a plan does not schedule a person. |
 

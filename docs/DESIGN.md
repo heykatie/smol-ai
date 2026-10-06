@@ -4,7 +4,7 @@ Confirmed direction: **modern, clean, sleek, dark mode, stylish and gently cute*
 
 ## Shared system
 
-`src/smolstuff/ui_theme.py` owns CSS tokens. `demo_ui.shell` owns page title, navigation, skip link, workspace frame and demo/privacy notice. Dashboard, reorder (including empty/approval/receipt/completion), workshop, detective, sale rescue, staffing and recoverable errors use this shell. Do not introduce another page-specific light theme or duplicate token definitions.
+`src/smolstuff/ui_theme.py` owns CSS tokens. `demo_ui.shell` owns page title, navigation, skip link, workspace frame and demo/privacy notice. Dashboard, inventory, reorder (including empty/approval/receipt/completion), workshop, detective, sale rescue, staffing and recoverable errors use this shell. Do not introduce another page-specific light theme or duplicate token definitions.
 
 | Token | Value / purpose |
 | --- | --- |
@@ -18,7 +18,7 @@ Confirmed direction: **modern, clean, sleek, dark mode, stylish and gently cute*
 | Shape | 20px cards, 24px hero, 11px controls, restrained pill statuses |
 | Spacing | 16px card gap, 20–24px card padding, generous content margins |
 
-Desktop uses a left navigation rail and two-column dashboard cards. Below 760px navigation wraps across the top, cards become one column and counts use two columns. Content and buttons wrap; evidence uses pre-wrap and overflow wrapping. Keep empty groups out of the main card list while retaining accurate zero counts. A fresh visitor sees five discoverable demos rather than long empty status sections.
+Desktop uses a left navigation rail and two-column dashboard cards. Below 760px navigation wraps across the top, cards become one column and counts use two columns. Content and buttons wrap; evidence uses pre-wrap and overflow wrapping. Keep empty groups out of the main card list while retaining accurate zero counts. A fresh visitor sees five discoverable demos plus an Inventory tab rather than long empty status sections.
 
 ## Interaction and accessibility
 
@@ -34,9 +34,10 @@ The owner must know what is being authorized. Reorder shows quantity, counterpar
 
 ## Acceptance for this UI change
 
-- All six routes and empty/error screens share the dark frame, typography and controls.
+- All seven routes (daily brief, inventory, reorder, four previews) and empty/error screens share the dark frame, typography and controls.
 - Reorder remains $189, one approval, stock 21 until receipt and 121 after full receipt.
-- Workshop shows $700 contribution/eight kits left; detective preserves the original count and resolves on recount; merchant defaults show $21/$27; staffing Saturday with workshop shows 14 workload hours/two blocks.
+- Inventory tab uses one dense scannable catalog table with sticky product column + sticky header, ordered identity → availability → quantities → ops: **Product** (name + merchandising differentiators) / **Category** (desktop short labels: Desk mats / Configs) / **Status** / **Available** / **Reserved** / **Incoming** / **In transit** / **Unavailable** / **Last counted** / **Issue**. Column headers are sortable: Category by short label; Status by severity (Out of stock → Available); qty columns numeric; Last counted by date; Issue by sidebar demo order (Reorder → Workshop → Detective) then workflow. **Issue** combines workflow pills (Decide / Waiting / Active / Done; Idle browse rows show —) with the open problem link (Lead-time risk / Event shortfall / Count mismatch). SKU, full category, list/cost live in **Details**. Filter matches `data-search` on catalog rows only. **Status** pills: Available / Incoming / Unavailable / In transit / Out of stock. Zero holds render as —. Below 760px, phone keeps Product / Status / Available / Issue. ~492 fictional SKUs. Quiet linear: available 21 / Available / Lead-time risk; after approve Incoming / Waiting; after receipt available 121, Available / Done.
+- Workshop shows $700 contribution / eight complete seats left after BOM consume; detective preserves the original count and resolves on recount; merchant defaults show $21/$27; staffing Saturday with workshop shows 14 workload hours/two blocks.
 - All routes reflow without horizontal page overflow at 390px and 320px; input/button content remains legible.
 - Keyboard can reach navigation, forms and evidence; focus is visible and skip link reaches main content.
 - Session counts derive from persisted state and simulation/provider labels remain accurate.

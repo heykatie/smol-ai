@@ -11,12 +11,46 @@ from decimal import Decimal, ROUND_CEILING
 from typing import Optional
 
 
+# Per-seat bill of materials. Costs still sum to $20 so contribution stays $700.
+# Complete seats available = min(on_hand / per_seat) = 18 with seeded stock.
+WORKSHOP_BOM = (
+    {
+        "sku": "DEMO-SKU-WS-PACK",
+        "name": "Akko CS Piano 70-pack",
+        "per_seat": 1,
+        "store": 14,
+        "warehouse": 4,
+        "unit_cost": Decimal("14.00"),
+        "bottleneck": True,
+    },
+    {
+        "sku": "DEMO-SKU-WS-FILM",
+        "name": "IXPE switch film sheet",
+        "per_seat": 1,
+        "store": 22,
+        "warehouse": 18,
+        "unit_cost": Decimal("2.50"),
+        "bottleneck": False,
+    },
+    {
+        "sku": "DEMO-SKU-WS-TOOL",
+        "name": "Keycap + switch puller duo",
+        "per_seat": 1,
+        "store": 20,
+        "warehouse": 15,
+        "unit_cost": Decimal("3.50"),
+        "bottleneck": False,
+    },
+)
+
 WORKSHOP_FIXTURE = {
     "attendees": 20,
     "days_until": 7,
     "price": Decimal("1500"),
-    "available_kits": 18,
-    "kit_cost": Decimal("20"),
+    "available_kits": min(
+        (item["store"] + item["warehouse"]) // item["per_seat"] for item in WORKSHOP_BOM
+    ),
+    "kit_cost": sum((item["unit_cost"] for item in WORKSHOP_BOM), Decimal("0")),
     "moq": 10,
     "pack_size": 10,
     "delivery_days": 3,
@@ -62,16 +96,43 @@ def assess_workshop(attendees: int, days_until: int) -> dict:
         raise ValueError("Attendees must be positive and the event cannot be in the past.")
     fixture = WORKSHOP_FIXTURE
     required = attendees
-    shortage = max(0, required - fixture["available_kits"])
+    bom_lines = []
+    seat_capacity = None
+    for item in WORKSHOP_BOM:
+        on_hand = item["store"] + item["warehouse"]
+        seats = on_hand // item["per_seat"]
+        if seat_capacity is None or seats < seat_capacity:
+            seat_capacity = seats
+        bom_lines.append(
+            {
+                "sku": item["sku"],
+                "name": item["name"],
+                "per_seat": item["per_seat"],
+                "on_hand": on_hand,
+                "store": item["store"],
+                "warehouse": item["warehouse"],
+                "unit_cost": _money(item["unit_cost"]),
+                "required_units": required * item["per_seat"],
+                "bottleneck": bool(item["bottleneck"]),
+            }
+        )
+    available = int(seat_capacity if seat_capacity is not None else 0)
+    shortage = max(0, required - available)
     if shortage == 0:
         purchase = 0
     else:
         packs = (shortage + fixture["pack_size"] - 1) // fixture["pack_size"]
         purchase = max(packs * fixture["pack_size"], fixture["moq"])
-    procurement_cash = fixture["kit_cost"] * purchase
+    # Procurement buys only the bottleneck BOM line (switch seat packs).
+    bottleneck_cost = next(item["unit_cost"] for item in WORKSHOP_BOM if item["bottleneck"])
+    procurement_cash = bottleneck_cost * purchase
     materials = fixture["kit_cost"] * required
     contribution = fixture["price"] - materials - fixture["labor"] - fixture["other_costs"]
-    inventory_after = fixture["available_kits"] + purchase - required
+    inventory_after = available + purchase - required
+    for line in bom_lines:
+        buy = purchase if line["bottleneck"] else 0
+        line["purchase"] = buy
+        line["after_units"] = line["on_hand"] + buy - line["required_units"]
     delivery_ok = shortage == 0 or days_until >= fixture["delivery_days"]
     if (
         not fixture["calendar_available"]
@@ -98,6 +159,7 @@ def assess_workshop(attendees: int, days_until: int) -> dict:
         "verdict": verdict,
         "phase": "assessed",
         "consumed": False,
+        "bom": bom_lines,
     }
 
 
@@ -133,7 +195,7 @@ def confirm_workshop_evidence(case: dict) -> dict:
     updated = dict(case)
     updated["evidence_confirmed"] = True
     updated["history"] = list(case.get("history", [])) + [
-        "Simulated evidence confirms {0} kits were consumed. Attendance alone did not prove that.".format(
+        "Simulated evidence confirms {0} practice switch strips were consumed. Attendance alone did not prove that.".format(
             DETECTIVE_FIXTURE["attendance"]
         )
     ]
