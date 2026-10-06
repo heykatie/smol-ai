@@ -93,6 +93,15 @@ class IntegrationEvent:
     status: str
 
 
+@dataclass(frozen=True)
+class InventoryMovementView:
+    sku: str
+    delta: int
+    reason: str
+    created_at: str
+    origin: str
+
+
 _INTEGRATION_STATUSES = frozenset({"live", "simulated", "replayed"})
 _SECRET_TEXT = re.compile(
     r"(api[_-]?key|secret|token|password|zwp_|sk-|sk_|tvly-|band_|bearer\s)",
@@ -443,6 +452,64 @@ class WorkflowStore:
 
     def count_movements(self) -> int:
         return self._count("inventory_movements")
+
+    def stock_on_hand(self, sku: str, baseline: Decimal) -> Decimal:
+        """Baseline plus session receipt movements for one SKU."""
+        if not isinstance(baseline, Decimal):
+            raise TypeError("On-hand baseline must be Decimal.")
+        if self._session_scoped:
+            row = self._conn.execute(
+                """
+                SELECT COALESCE(SUM(movement.delta), 0) AS n
+                FROM inventory_movements AS movement
+                JOIN receipts ON receipts.id = movement.receipt_id
+                WHERE movement.sku = ? AND receipts.session_id = ?
+                """,
+                (sku, self.session_id),
+            ).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT COALESCE(SUM(delta), 0) AS n FROM inventory_movements WHERE sku = ?",
+                (sku,),
+            ).fetchone()
+        return baseline + Decimal(row["n"])
+
+    def list_inventory_movements(self, sku: Optional[str] = None) -> Tuple[InventoryMovementView, ...]:
+        """Receipt-backed stock changes for this session, newest first."""
+        if self._session_scoped:
+            query = """
+                SELECT movement.sku, movement.delta, movement.reason,
+                       movement.created_at, movement.origin
+                FROM inventory_movements AS movement
+                JOIN receipts ON receipts.id = movement.receipt_id
+                WHERE receipts.session_id = ?
+            """
+            params: tuple = (self.session_id,)
+            if sku is not None:
+                query += " AND movement.sku = ?"
+                params = (self.session_id, sku)
+            query += " ORDER BY movement.created_at DESC, movement.id DESC"
+        else:
+            query = """
+                SELECT sku, delta, reason, created_at, origin
+                FROM inventory_movements
+            """
+            params = ()
+            if sku is not None:
+                query += " WHERE sku = ?"
+                params = (sku,)
+            query += " ORDER BY created_at DESC, id DESC"
+        rows = self._conn.execute(query, params).fetchall()
+        return tuple(
+            InventoryMovementView(
+                sku=row["sku"],
+                delta=int(row["delta"]),
+                reason=row["reason"],
+                created_at=row["created_at"],
+                origin=row["origin"],
+            )
+            for row in rows
+        )
 
     def record_integration(
         self, provider: str, task: str, result: str, effect: str, status: str

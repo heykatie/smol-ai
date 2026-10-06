@@ -1,5 +1,13 @@
 # smolstuff implementation status and verification evidence
 
+## Inventory tab — October 5, 2026 (America/Los_Angeles)
+
+Requirement: after decisions, owners should see stock actually update (PRD confirmation ≠ receipt; mvp_scope reconciled inventory). Inventory reader should expose SKU/location quantities (IMPLEMENTATION_CONTRACT).
+
+`/?scenario=inventory` is a dense multi-location market-public catalog (**492 SKUs**) sized to a specialty keyboard shop’s public inventory shape: Switches 12 (11 hub + BOM pack), Keycaps 31, Keyboards 9, Desk mats 28, Keyboard configs 405, Tools 7 — audited against a public Notion hub + kit-config workbook scale, with fictionalized names/prices (not imported rows). Column order is industry-style: **Product** (name + merchandising differentiators) → **Category** (desktop short labels: Desk mats / Configs) → **Status** → **Available** → **Reserved** → **Incoming** → **In transit** → **Unavailable** → **Last counted** → **Issue**. Headers are sortable (Category by short label; Status by severity; Last counted by date; Issue by sidebar demo order then workflow); catalog filter uses catalog-row `data-search` only. **Issue** merges workflow state with the open problem link (Lead-time risk / Event shortfall / Count mismatch); Idle browse rows show —. **Unavailable** expands to damaged / returns / display. **Status** pills: Available / Incoming / Unavailable / In transit / Out of stock. SKU, full category, list/unit cost are in row Details. Phone view: Product / Status / Available / Issue. Browse SKUs carry seeded holds; demo SKUs stay at 0 quantity holds. Each row expands to category attrs plus per-location buckets. Quiet linear switch keeps PRD economics ($2.49 list / $1.82 cost, available 21). Workshop feasibility uses a **per-seat BOM** (Akko CS Piano 70-pack bottleneck + IXPE film + puller duo; seat cost still $20 → contribution $700; 8 seats left). Detective tracks **10-switch sample strips**. Layout still passes a 100-SKU render test. Not a live POS ledger (D2 still open).
+
+Local verification: `tests/test_inventory_tab.py` + `tests/test_ops_demos.py` + inbox regressions. No paid provider calls. Not yet redeployed or browser-checked on Vercel.
+
 ## Production smoke and local ZooWork cost sample — October 5, 2026 (America/Los_Angeles)
 
 ### 1) Production smoke (`https://smolstuff.vercel.app`)

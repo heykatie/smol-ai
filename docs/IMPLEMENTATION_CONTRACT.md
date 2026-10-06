@@ -7,16 +7,17 @@ Updated October 4, 2026. **Current implementation** sections describe the last v
 ```text
 Browser GET/POST /
   -> inbox.make_session_handler: smol_session cookie -> session-scoped store (SQLite locally; Postgres with DATABASE_URL)
-  -> InboxApp.route: reorder or one of four persisted synthetic previews
+  -> InboxApp.route: reorder, inventory read model, or one of four persisted synthetic previews
   -> extract.resolve_lead_time: optional Novita -> validated LeadTimeFact or parser fallback
   -> research.research_supplier: optional Tavily sources or labeled fallback
   -> reorder.plan_reorder: seeded inputs -> inventory/money math -> policy result
   -> WorkflowStore: persisted action, approval and transitions
   -> simulated execution -> confirmation -> receipt + inventory movement
+  -> inventory tab: session baseline + movements and separate preview stocks (read-only)
   -> shared demo_ui.shell + ui_theme: persisted progress, preview state and evidence -> dark HTML
 ```
 
-`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses transactions and unique constraints through SQLite or the Postgres adapter selected by `DATABASE_URL`. Local session markers remain file-backed. Sponsor call counters use Postgres when `DATABASE_URL` is set, otherwise a shared local SQLite file. `inbox.py` combines rendering and HTTP handling. Optional Novita extraction, Tavily research, and ZooWork explanation clients are wired behind the local sponsor-call gate. `ops_demos.py` owns the four deterministic preview scenarios and ScenarioStore; `demo_ui.py` renders/routes previews, and `ui_theme.py` owns the shared dark style. There is no connector worker, generic email task extractor, vector retrieval inside the inbox, independent agent runtime, or live inventory/POS adapter.
+`fixtures.py` supplies stock, supplier offer, sales history and policy. `inventory.py` calculates supply; `money.py` rounds Decimal amounts to cents; `policy.py` separates not-ready evidence from missing authority; `terms.py` hashes purchase terms; `lifecycle.py` defines legal states. `workflow.py` uses transactions and unique constraints through SQLite or the Postgres adapter selected by `DATABASE_URL`. Local session markers remain file-backed. Sponsor call counters use Postgres when `DATABASE_URL` is set, otherwise a shared local SQLite file. `inbox.py` combines rendering and HTTP handling. Optional Novita extraction, Tavily research, and ZooWork explanation clients are wired behind the local sponsor-call gate. `ops_demos.py` owns the four deterministic preview scenarios and ScenarioStore; `demo_ui.py` renders/routes previews and the inventory board, and `ui_theme.py` owns the shared dark style. There is no connector worker, generic email task extractor, vector retrieval inside the inbox, independent agent runtime, or live inventory/POS adapter.
 
 Current tables: workflows, actions, approvals, executions, confirmations, receipts, inventory_movements, integration_events, workflow_transitions, scenario_state (phase and JSON payload by scenario key), and sponsor_calls when the sponsor gate is used. Stock is a caller-supplied fixture baseline plus stored movements, not a synchronized inventory ledger. Policy is supplied by Python; actions store policy result/reasons but not a complete versioned policy snapshot. Local visitor files or session-scoped Postgres rows provide demo separation; neither is production authorization or tenant isolation. Sponsor call counters use Postgres when `DATABASE_URL` is set; they remain call-count limits, not a monetary spending cap. See [STATUS.md](STATUS.md) for source inspection versus recorded runtime evidence.
 
