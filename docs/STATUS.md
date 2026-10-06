@@ -1,5 +1,18 @@
 # smolstuff implementation status and verification evidence
 
+## Local sponsor-verification baseline — October 6, 2026
+
+Fixed a reorder rendering crash caused by an unfilled `proofs` template field. The field is empty pending the separate supplier-evidence UI work.
+
+Local verification: **119 passed, 3 skipped** using `.venv` Python. Existing tests cover sponsor-disabled behavior, call-count limits, replay protection and provider fallbacks with mocked calls. No fresh live provider calls or hosted verification were performed in this pass.
+
+## Bounded local sponsor checks — October 6, 2026
+
+Owner authorized one Tavily search and one Novita extraction using fictional inputs, with at most two attempts total. A temporary local SQLite budget enforced the cap; no private settings, hosted configuration or public-demo sponsor switch changed.
+
+- **Tavily: live adapter check succeeded**, 20:18:51 UTC. The existing basic-search adapter searched generic wholesale keyboard-switch lead times and minimum orders, and accepted public links from `darshion.com/productcategory/keyboard-manufacturers` and `marketresearchfuture.com/reports/mechanical-keyboard-market-1215`. These are research links, not verification of the fictional Supplier B offer. No purchase terms or authority changed; this standalone check did not persist a workflow event or verify the UI.
+- **Novita: not configured**, zero requests. `NOVITA_API_KEY` was absent from the loaded local environment. Extraction and a persisted live workflow remain unverified. Total provider attempts: **1**. No retries, Moss calls, or hosted checks were made. Actual billed credits were not inspected.
+
 ## Demo tour vs practice-owner catalog split — October 5, 2026 (America/Los_Angeles)
 
 Requirement: clear surface split (SECURITY access model; owner-confirmed product decision).
@@ -218,3 +231,29 @@ The UI-sync review recorded 64 passing tests. A later repository edit reported 8
 - 41 local Markdown links, fenced JSON/fences and diff whitespace checked. Distribution metadata version reconciled to the already-declared runtime 0.2.0.
 
 Unmet release gates remain explicit: fresh useful AI operations-task evidence, public paid-call budgets/request controls, deployment/persistent hosted storage, and production identity/connectors/authority/retention. This change establishes a consistent local UI and documentation; it does not close those gates.
+
+### Novita follow-up — October 6, 2026
+
+After the owner confirmed saving the key locally and on Vercel, the remaining approved local extraction was attempted at **20:24:34 UTC**. The configured Novita endpoint returned **HTTP 403**. No usable extraction was returned, and no retry was made. The HTTP status alone does not establish the cause. The key was loaded privately and was not printed. A temporary local one-attempt budget was used; no hosted settings changed or hosted check ran. Across this verification sequence: **two provider attempts total** (one successful Tavily search, one refused Novita extraction). Novita remains live-unverified; existing parser fallback tests pass. Actual billed credits were not inspected.
+
+## Groq → Gemini → parser wiring — October 6, 2026
+
+Owner requested this provider order. The optional `groq_gemini_parser` extraction mode is wired into persisted reorder processing. Each configured provider is attempted once and requires its own existing quota claim; failure, invalid output or disagreement moves to the next provider, then the parser. Disabled calls or exhausted quota use the parser without another network attempt. Sanitized failed attempts and the accepted result appear in tool activity; the extraction note names the accepted provider. Synthetic economics and authority are unchanged. Existing Novita behavior and regression tests are preserved when the selector is unset.
+
+Local `.env` selector is configured; neither new API key is present. No new model calls, quota increases, Vercel changes or deployment were performed. Verification: **127 passed, 3 skipped**, including new mocked provider-order, timeout/error fallback, conflicting output, quota blocking, persisted evidence, replay and request-shape tests. Live Groq/Gemini and hosted behavior remain unverified. The existing 119-test baseline and rendering fix are part of this local change set.
+
+### Gemini configuration and local verification — October 6, 2026
+
+The local `GEMINI_API_KEY` is configured; `GROQ_API_KEY` remains missing. A fictional-email Gemini request returned HTTP 400. Inspection found the adapter sent JSON Schema via the narrower `responseSchema` field. A failing request-shape regression test was added, and the adapter now uses `responseJsonSchema`. All **9 extraction-chain tests pass**. One corrected live request returned **HTTP 403**, so no validated Gemini extraction exists yet. The status alone does not establish the account/access cause. Two requests were attempted in this follow-up; no automatic retries, hosted setting changes, or hosted checks were made. The local parser remains the fallback. Keys and raw error responses were not printed; actual billed usage was not inspected.
+
+## Groq → OpenRouter → parser — October 6, 2026
+
+The owner saved both keys privately and selected OpenRouter instead of Gemini. Local `.env` now selects `groq_openrouter_parser`; keys were checked for presence without printing values. OpenRouter defaults to `openrouter/free`, requests structured output, and rejects paid-model overrides. Separate quota claims, validation, sanitized failure records and the local parser remain in place. Gemini is not called in this mode; previous modes and regression tests remain available.
+
+Verification: **131 passed, 3 skipped**, including provider order, parser recovery, paid-model rejection and schema request tests. A first Groq check and a subsequent diagnostic request both returned HTTP 403; no readable JSON error established the cause. OpenRouter's first request produced a JSONDecodeError, a diagnostic request returned a completion, and a corrected structured-output request returned validated **14 → 35** day facts. Five provider requests total in this pass (two Groq, three OpenRouter), with no automatic retry loop. This is a successful standalone OpenRouter adapter check, not a persisted live workflow or hosted/browser certification. The owner's $100 OpenRouter key limit was not changed or consumed through paid-model routing; actual account billing was not inspected. No Vercel settings, public sponsor switch, or deployment changed.
+
+### Groq SDK connection fix — 2026-10-06
+
+Groq now uses the official Python SDK (groq>=1.0,<2, declared in pyproject.toml), installed locally. Requests retain the strict schema, 2,000-character excerpt, 10-second timeout and zero automatic retries. SDK API errors become generic fallback errors; clients close after use. OpenRouter and the parser remain backups; sponsor gates are unchanged.
+
+Verification: the SDK transport test failed before implementation. The final suite passed with 132 passed, 3 skipped, and git diff --check passed. One live call through the updated app adapter extracted the fictional supplier fixture from 14 to 35 days. This confirms local adapter connectivity, not a persisted live workflow, browser verification or Vercel deployment. No billing or public execution settings changed.

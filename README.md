@@ -15,7 +15,7 @@ A dark, responsive Daily brief with one simulated procurement workflow, four sep
 | Step | Behavior |
 | --- | --- |
 | Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. This is a demonstration trigger, not a live mailbox subscription. |
-| Extraction | Novita is wired. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are set. Otherwise a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
+| Extraction | Optional Groq → OpenRouter → local parser chain is selected by `SMOL_EXTRACTION_PROVIDER=groq_openrouter_parser`; legacy Novita remains available when unset. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are set. Otherwise a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
 | Recommendation | Order 100 quiet linear switches from Supplier B because that is the minimum. $182 merchandise + $7 shipping = $189. That is more than the 17.5-unit immediate shortage. It is not a forecast. |

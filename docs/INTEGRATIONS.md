@@ -33,3 +33,21 @@ Transport status and business validity are separate: HTTP success with malformed
 5. Enable public calls only after approved budget, rate limits, privacy controls and fallback are verified. Keep real purchases/messages disabled for this demo.
 
 Current app provider settings are `NOVITA_API_KEY`, optional `NOVITA_MODEL`, `TAVILY_API_KEY`, `ZOOWORK_API_KEY`, and `ZOOWORK_AGENT_ID`. ZooWork is wired behind the same sponsor gate; Moss and BAND remain placeholders without inbox adapters. Sponsor counters use Postgres when `DATABASE_URL` is set; they remain call-count limits, not a monetary cap. No actual secret values belong in documentation. Exact additional IDs/key names are not invented in this doc. Retrieve them from selected providers' official documentation during implementation. Do not add redundant providers solely to increase sponsor logos.
+
+## Optional extraction chain — October 6, 2026
+
+Set `SMOL_EXTRACTION_PROVIDER=groq_gemini_parser` to use Groq, then Gemini, then the free local lead-time parser. Novita is not called in this mode. Missing credentials skip that provider. Each attempted request requires a separate existing sponsor-budget claim; disabled calls or exhausted quota go directly to the parser. Requests have a 10-second timeout and no retries. Failed or invalid attempts are recorded without raw responses or exception text; the accepted provider and facts are recorded by the existing workflow. Output must contain exactly two integer lead-time fields and agree with the parser when the fixture is parseable. Prices, SKU mapping and approval remain deterministic.
+
+Private settings: `GROQ_API_KEY`, optional `GROQ_MODEL` (default `openai/gpt-oss-20b`); `GEMINI_API_KEY`, optional `GEMINI_MODEL` (default `gemini-3.5-flash-lite`). Add the same selector and keys to Vercel before deploying this code. Keep `SMOL_SPONSOR_CALLS` off on `/try`; adding keys does not authorize anonymous model calls. No new budget is enabled by this setup. Free-tier eligibility and quotas are provider-specific; billing-enabled accounts may incur charges.
+
+Create Groq credentials at https://console.groq.com/keys and Gemini credentials at https://aistudio.google.com/apikey. Enter secrets privately in `.env` and Vercel Environment Variables, never in source or chat. Restart the local server after changes. Practice-owner authentication remains unshipped; controlled local verification is separate from public-demo enablement.
+
+## Active local extraction chain — October 6, 2026
+
+The owner selected **Groq → OpenRouter → local parser** instead of Gemini. Set `SMOL_EXTRACTION_PROVIDER=groq_openrouter_parser`. The existing Gemini mode and Novita regression coverage remain available, but Gemini and Novita are not called in this mode. Local configuration selects this mode; hosted configuration has not been inspected or changed.
+
+Required private keys: `GROQ_API_KEY` and `OPENROUTER_API_KEY`. `OPENROUTER_MODEL` defaults to `openrouter/free`; the adapter rejects any override that is neither this free router nor a `:free` model. It requests schema-constrained output and independently validates the two integer facts. OpenRouter's free router may select different underlying models. No paid-model fallback, plugins, or extra tools are requested. The owner's $100 key limit does not enable paid models or expand the app's call-count budgets. Failures retain sanitized evidence and fall through to the parser.
+
+For Vercel, save `SMOL_EXTRACTION_PROVIDER=groq_openrouter_parser` alongside the keys before deploying the code. Keep public `/try` calls disabled. Controlled local provider checks do not establish hosted execution or authenticated practice-owner readiness.
+
+Groq transport uses the official Python SDK declared in pyproject.toml. Automatic SDK retries are disabled to keep one application quota reservation per request. Local adapter extraction succeeded on 2026-10-06; see STATUS.md for verification scope.

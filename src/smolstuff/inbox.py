@@ -154,7 +154,7 @@ class InboxApp:
                         "replayed",
                     )
                     return
-                attempt = self._extract_supplier_fact()
+                attempt = self._extract_supplier_fact(store)
                 plan = plan_reorder(attempt.fact)
                 self._save_supplier_fact(attempt)
                 started = store.start_purchase(DEMO_SIGNAL_KEY, plan.proposal, EXAMPLE_POLICY)
@@ -525,7 +525,18 @@ class InboxApp:
             attempt.status,
         )
 
-    def _extract_supplier_fact(self):
+    def _extract_supplier_fact(self, store=None):
+        if os.environ.get("SMOL_EXTRACTION_PROVIDER") in ("groq_gemini_parser", "groq_openrouter_parser"):
+            from smolstuff.extraction_chain import extract_with_fallback
+            from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL, WORKSHOP_SKU
+
+            def record(provider, result, status):
+                if store is not None:
+                    store.record_integration(provider, "Extract supplier lead time from a synthetic email",
+                                             result, "No model fact accepted; fallback continues.", status)
+
+            return extract_with_fallback(SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU,
+                                         self._claim_sponsor_call, record)
         from smolstuff.extract import call_novita, resolve_lead_time
         from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL, WORKSHOP_SKU
 
@@ -579,6 +590,7 @@ def render_inbox(
         note=escape(note),
         status_class=status_class,
         status_label=escape(status_label),
+        proofs="",
         actions=actions,
         evidence=_evidence(plan, progress, order, events),
         built_with=_built_with(events),
@@ -958,9 +970,11 @@ def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tupl
 
 
 def _extraction_note(events) -> str:
-    extraction = next((event for event in events if event.task.startswith("Extract")), None)
+    extraction = next((event for event in reversed(events) if event.task.startswith("Extract")
+                       and (event.status == "live" or (event.provider == "Lead-time parser"
+                                                      and event.status != "replayed"))), None)
     if extraction is not None and extraction.status == "live":
-        return "<p>Arrived through the configured monitoring rule. Lead times came from a schema-checked Novita call. Prices and the spending limit did not.</p>"
+        return "<p>Arrived through the configured monitoring rule. Lead times came from a schema-checked {0} call. Prices and the spending limit did not.</p>".format(escape(extraction.provider))
     return "<p>Arrived through the configured monitoring rule. Read by the local parser fallback. Not a verified live model call.</p>"
 
 
