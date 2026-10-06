@@ -590,7 +590,7 @@ def render_inbox(
         note=escape(note),
         status_class=status_class,
         status_label=escape(status_label),
-        proofs="",
+        proofs=_supplier_sources(plan, events),
         actions=actions,
         evidence=_evidence(plan, progress, order, events),
         built_with=_built_with(events),
@@ -885,6 +885,24 @@ def _default_draft_body(plan: ReorderPlan) -> str:
         total=total,
         days=plan.delivery_days,
     )
+
+
+def _supplier_sources(plan, events) -> str:
+    from smolstuff.fixtures import SUPPLIER_EMAIL
+
+    return (
+        '<div class="supplier-sources">'
+        '<details><summary>View supplier message</summary>'
+        '<p>Fictional supplier message · synthetic demo evidence.</p>'
+        '<pre>{message}</pre>{extraction}</details>'
+        '<details><summary>View supplier offer</summary>'
+        '<p>Seeded offer, not a live web check.</p>'
+        '<p>Supplier B · Quiet linear switch · {quantity} units. '
+        'Minimum order: {quantity} units. {price}. Estimated delivery: {days} days.</p>'
+        '<p>These fixture terms are separate from model extraction. '
+        'Purchases and supplier confirmations remain simulated.</p></details></div>'
+    ).format(message=escape(SUPPLIER_EMAIL), extraction=_extraction_note(events),
+             quantity=plan.quantity, price=escape(_price_breakdown(plan)), days=plan.delivery_days)
 
 
 def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tuple], events) -> str:

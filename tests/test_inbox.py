@@ -395,3 +395,17 @@ def _post(port: int, action: str) -> str:
     )
     with urlopen(request) as response:
         return response.read().decode("utf-8")
+
+
+def test_supplier_sources_are_accessible_disclosures(tmp_path, monkeypatch):
+    monkeypatch.setenv("SMOL_SPONSOR_CALLS", "0")
+    app = InboxApp(str(tmp_path / "sources.sqlite3"))
+    app.apply("simulate_email")
+    page = app.page()
+    assert "<summary>View supplier message</summary>" in page
+    assert "<summary>View supplier offer</summary>" in page
+    assert "Fictional supplier message" in page
+    assert "Seeded offer, not a live web check." in page
+    assert "Read by the local parser fallback" in page
+    assert page.index("View supplier message") < page.index("Why this recommendation")
+    assert "$189" in page
