@@ -6,6 +6,19 @@ from decimal import Decimal
 from html import escape
 from typing import Optional
 
+PRACTICE_BANNER = (
+    '<p class="sim-banner" role="note">'
+    "<strong>Demo tour.</strong> "
+    "Practice run with simulated inbox, purchase, and money. "
+    "Not a live shop catalog."
+    "</p>"
+)
+
+# Demo-tour surface (try without signup). Product home is `/`; practice-owner login is later.
+SANDBOX_PREFIX = "/try"
+INVENTORY_MODE_SANDBOX = "sandbox"
+INVENTORY_MODE_OWNER = "owner"
+
 from smolstuff.ops_demos import (
     RESCUE_FIXTURE,
     ScenarioStore,
@@ -27,37 +40,130 @@ from smolstuff.ops_demos import (
 from smolstuff.ui_theme import STYLE
 
 
+def sandbox_href(scenario: str = "", **params: str) -> str:
+    """Build a sandbox URL under `/try`."""
+    query = []
+    if scenario and scenario != "home":
+        query.append("scenario={0}".format(scenario))
+    for key, value in params.items():
+        if value:
+            query.append("{0}={1}".format(key, value))
+    if not query:
+        return SANDBOX_PREFIX
+    return "{0}?{1}".format(SANDBOX_PREFIX, "&".join(query))
+
+
 def shell(title: str, body: str) -> str:
-    nav = [("Daily brief", "/", "✦"), ("Inventory", "/?scenario=inventory", "▣"),
-           ("Reorder", "/?scenario=reorder", "↗"),
-           ("Workshop feasibility", "/?scenario=workshop", "◇"),
-           ("Inventory Detective", "/?scenario=detective", "⌕"),
-           ("Sale rescue", "/?scenario=rescue", "♡"),
-           ("Staffing coverage", "/?scenario=staffing", "☷")]
-    links = "".join('<a href="{href}"{active}><span class="nav-icon" aria-hidden="true">{icon}</span>{label}</a>'.format(
-        href=href, active=' aria-current="page"' if title == label else "",
-        icon=icon, label=escape(label)) for label, href, icon in nav)
-    home = "" if title == "Daily brief" else '<a class="home" href="/">← Daily brief</a>'
-    return ("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+    """Demo-tour chrome — try-without-signup surface only."""
+    nav = [
+        ("Daily brief", sandbox_href(), "✦"),
+        ("Inventory", sandbox_href("inventory"), "▣"),
+        ("Reorder", sandbox_href("reorder"), "↗"),
+        ("Workshop feasibility", sandbox_href("workshop"), "◇"),
+        ("Inventory Detective", sandbox_href("detective"), "⌕"),
+        ("Sale rescue", sandbox_href("rescue"), "♡"),
+        ("Staffing coverage", sandbox_href("staffing"), "☷"),
+    ]
+    links = "".join(
+        '<a href="{href}"{active}><span class="nav-icon" aria-hidden="true">{icon}</span>{label}</a>'.format(
+            href=href,
+            active=' aria-current="page"' if title == label else "",
+            icon=icon,
+            label=escape(label),
+        )
+        for label, href, icon in nav
+    )
+    home = (
+        ""
+        if title == "Daily brief"
+        else '<a class="home" href="{0}">← Daily brief</a>'.format(sandbox_href())
+    )
+    return (
+        "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         '<meta name="theme-color" content="#101115">'
         '<title>smolstuff — {title}</title><style>{style}</style></head>'
         '<body><a class="skip" href="#content">Skip to content</a><div class="app-layout">'
-        '<aside class="rail"><a class="brand" href="/" aria-label="smolstuff daily brief">'
+        '<aside class="rail"><a class="brand" href="{sandbox}" aria-label="smolstuff demo tour">'
         '<span class="brand-mark" aria-hidden="true">:)</span>smolstuff</a>'
-        '<div><p class="rail-label">Your operations</p><nav aria-label="Main navigation">{nav}</nav></div>'
-        '<div class="rail-note"><strong>Small but mighty.</strong>One less thing for you to carry. You keep the final say.</div></aside>'
-        '<main id="content" tabindex="-1"><header class="top"><span class="workspace"><strong>Your workspace</strong> / {title}</span>'
-        '<span class="demo-tag">Interactive demo</span>{home}</header>{body}'
-        '<footer class="footer-note">Fictional business data. Purchases, messages, and deliveries are simulated. '
-        'This demo does not monitor a real inbox. Provider calls are labeled in the evidence.</footer>'
-        '</main></div></body></html>').format(title=escape(title), style=STYLE, nav=links, home=home, body=body)
+        '<div><p class="rail-label">Demo tour</p><nav aria-label="Main navigation">{nav}</nav></div>'
+        '<div class="rail-note"><strong>Try without signup.</strong> '
+        "Demo workflows and a small demo catalog. No sponsor calls here.</div></aside>"
+        '<main id="content" tabindex="-1"><header class="top">'
+        '<span class="workspace"><strong>Demo tour</strong> / {title}</span>'
+        '<span class="demo-tag">Demo tour</span>{home}'
+        '<a class="home" href="/">Product home</a></header>{body}'
+        '<footer class="footer-note">Fictional demo data. Purchases, messages, and deliveries are simulated. '
+        "This tour does not monitor a real inbox. The full specialty-shop catalog belongs "
+        "on the practice-owner app after login (not shipped yet). Sponsor calls stay off here.</footer>"
+        "</main></div></body></html>"
+    ).format(
+        title=escape(title),
+        style=STYLE,
+        nav=links,
+        home=home,
+        body=body,
+        sandbox=SANDBOX_PREFIX,
+    )
+
+
+def product_home_page() -> str:
+    """Public product stub. `/try` is the demo tour; practice-owner login comes later."""
+    body = (
+        '<section class="hero"><span class="hero-spark" aria-hidden="true">✧</span>'
+        '<p class="kicker">smolstuff</p>'
+        "<h1>Operations help that keeps you in charge.</h1>"
+        '<p class="lede">Connect the signals, see what needs a decision, and act within limits you set. '
+        "Two surfaces: a public demo tour now, and a practice-owner app with seeded shop data after login.</p>"
+        '<div class="card-actions decision-actions">'
+        '<a class="open" href="{sandbox}">Start demo tour →</a>'
+        "</div></section>"
+        '<p class="sim-banner" role="note"><strong>Two surfaces.</strong> '
+        "<strong>Demo tour</strong> (`/try`) = no login, simulated workflows, small demo catalog, "
+        "no paid calls. <strong>Practice owner</strong> = login, dense seeded specialty-shop inventory, "
+        "real working features, sponsor calls under budget. Practice-owner sign-in is not shipped yet.</p>"
+        '<div class="grid">'
+        "<article><h3>Demo tour</h3>"
+        "<p>Walk reorder and four practice loops on demo products and demo data. "
+        "Inventory shows only the tour SKUs (not a full shop assortment). Reset anytime.</p>"
+        '<a class="open" href="{sandbox}">Open demo tour →</a></article>'
+        "<article><h3>Practice owner</h3>"
+        "<p>Real login and a seeded tenant with the full specialty-shop catalog "
+        "(~492 fictional SKUs), disposable demo connectors, and capped sponsor calls.</p>"
+        '<p class="note">Sign in is not available on this build. Dense inventory attaches here when login ships.</p></article>'
+        "</div>"
+    ).format(sandbox=SANDBOX_PREFIX)
+    return (
+        "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+        '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<meta name="theme-color" content="#101115">'
+        "<title>smolstuff</title><style>{style}</style></head>"
+        '<body><a class="skip" href="#content">Skip to content</a><div class="app-layout">'
+        '<aside class="rail"><a class="brand" href="/" aria-label="smolstuff home">'
+        '<span class="brand-mark" aria-hidden="true">:)</span>smolstuff</a>'
+        '<div><p class="rail-label">Product</p><nav aria-label="Main navigation">'
+        '<a href="/" aria-current="page"><span class="nav-icon" aria-hidden="true">✦</span>Home</a>'
+        '<a href="{sandbox}"><span class="nav-icon" aria-hidden="true">▣</span>Demo tour</a>'
+        "</nav></div>"
+        '<div class="rail-note"><strong>Small but mighty.</strong>'
+        "One less thing for you to carry. You keep the final say.</div></aside>"
+        '<main id="content" tabindex="-1"><header class="top">'
+        '<span class="workspace"><strong>smolstuff</strong> / Home</span></header>{body}'
+        '<footer class="footer-note">No real business accounts on this page. '
+        "Use the demo tour to explore with fictional data. Practice-owner login is next.</footer>"
+        "</main></div></body></html>"
+    ).format(style=STYLE, sandbox=SANDBOX_PREFIX, body=body)
 
 
 def error_page(message: str = "That action or value could not be accepted.") -> str:
-    return shell("Check your input", '<h1>Let’s try that again.</h1><article class="alert" role="alert"><p>{}</p>'
-                 '<p>Return to the daily brief, open the workflow, and check the values before submitting.</p>'
-                 '<a class="open" href="/">Back to daily brief</a></article>'.format(escape(message)))
+    return shell(
+        "Check your input",
+        '<h1>Let’s try that again.</h1><article class="alert" role="alert"><p>{0}</p>'
+        "<p>Return to the sandbox daily brief, open the workflow, and check the values before submitting.</p>"
+        '<a class="open" href="{1}">Back to sandbox</a></article>'.format(
+            escape(message), SANDBOX_PREFIX
+        ),
+    )
 
 
 def _hidden(scenario: str) -> str:
@@ -66,10 +172,16 @@ def _hidden(scenario: str) -> str:
 
 def _button(scenario: str, action: str, label: str, kind: str = "primary") -> str:
     return (
-        '<form method="post" action="/">'
+        '<form method="post" action="{action_url}">'
         "{hidden}<input type=\"hidden\" name=\"action\" value=\"{action}\">"
         '<button class="{kind}" type="submit">{label}</button></form>'
-    ).format(hidden=_hidden(scenario), action=escape(action), kind=escape(kind), label=escape(label))
+    ).format(
+        action_url=SANDBOX_PREFIX,
+        hidden=_hidden(scenario),
+        action=escape(action),
+        kind=escape(kind),
+        label=escape(label),
+    )
 
 
 _BUCKET_CLASS = {
@@ -80,70 +192,232 @@ _BUCKET_CLASS = {
 }
 
 
-def dashboard_page(cards: list, events=()) -> str:
+def _dashboard_next_step(card: dict) -> str:
+    """Plain next-step line for launcher cards (owner language, not phase jargon)."""
+    href = str(card.get("href") or "")
+    bucket = str(card.get("bucket") or "")
+    scenario = href.split("=")[-1] if "=" in href else ""
+    if bucket == "Needs your decision":
+        return {
+            "reorder": "Next: approve or decline the $189 practice order.",
+            "workshop": "Next: say yes to the customer commitment, or adjust the ask.",
+            "detective": "Next: choose how to handle the count gap.",
+            "rescue": "Next: compare neighbor offers to the sale target.",
+            "staffing": "Next: review the hours estimate and remember it if useful.",
+        }.get(scenario, "Next: open this demo and choose what to do.")
+    if bucket == "In progress":
+        return {
+            "reorder": "Next: confirm receipt so stock can update.",
+            "workshop": "Next: finish materials prep or complete the event.",
+            "detective": "Next: finish the count check or recount.",
+            "rescue": "Next: decide if a neighbor offer saves the sale.",
+            "staffing": "Next: finish the coverage estimate.",
+        }.get(scenario, "Next: continue this practice run.")
+    if bucket == "Completed":
+        return "Done for this session. Open to review, or reset inside the demo."
+    return {
+        "reorder": "Best place to start — one approval, then a verified receipt.",
+        "workshop": "Check whether you can take a build-night booking.",
+        "detective": "Look at a count mismatch without guessing a cause.",
+        "rescue": "See if nearby shops can cover a missing part.",
+        "staffing": "Estimate Saturday hours — not who works the shift.",
+    }.get(scenario, "Open this practice demo.")
+
+
+def _product_needs_attention(product: dict) -> bool:
+    """Catalog rows that should surface on the owner attention path."""
+    totals = product.get("totals") or {}
+    if int(totals.get("inbound", 0) or 0) > 0:
+        return True
+    if int(totals.get("in_transfer", 0) or 0) > 0:
+        return True
+    if int(totals.get("damaged", 0) or 0) > 0:
+        return True
+    if int(totals.get("returns_pending", 0) or 0) > 0:
+        return True
+    if product.get("status_class") in ("decision", "waiting", "progress"):
+        return True
+    stock_label, _, _ = _stock_condition(totals)
+    return stock_label == "Out of stock"
+
+
+def inventory_attention_count(snapshot: Optional[dict] = None) -> int:
+    products = (snapshot or empty_inventory_snapshot()).get("products") or ()
+    return sum(1 for product in products if _product_needs_attention(product))
+
+
+def dashboard_page(cards: list, events=(), *, inventory_attention: int = 0) -> str:
     groups = {"Needs your decision": [], "In progress": [], "Completed": [], "Not started": []}
     for card in cards:
         groups.setdefault(card["bucket"], []).append(card)
     order = ("Needs your decision", "In progress", "Not started", "Completed")
+    reorder = next(
+        (card for card in cards if "scenario=reorder" in str(card.get("href", ""))),
+        None,
+    )
     sections = [
-        '<section class="hero"><span class="hero-spark" aria-hidden="true">✧</span><p class="kicker">Daily brief · small but mighty</p><h1>A little less on your plate.</h1><p class="lede">A home for the details, decisions, and follow-through. Explore your operations team with five hands-on demos.</p></section>',
-        '<p class="note">Counts come from this session only.</p>',
+        '<section class="hero"><span class="hero-spark" aria-hidden="true">✧</span>'
+        '<p class="kicker">Demo tour</p>'
+        "<h1>Start here. Follow one decision through.</h1>"
+        '<p class="lede">Five hands-on demo workflows on demo data. Begin with reorder — supplier delay, '
+        "one approval, then stock that actually updates on the small tour catalog.</p>"
+        "</section>",
+        PRACTICE_BANNER,
+    ]
+    if inventory_attention > 0:
+        sections.append(
+            '<article class="card attention-card" id="inventory-attention">'
+            '<p class="status waiting">Needs attention</p>'
+            "<h2>{count} catalog lines need a look</h2>"
+            "<p>Incoming, in-transit, damaged/returns, out of stock, or an open demo issue. "
+            "Open the filtered inventory list to work them.</p>"
+            '<div class="card-actions">'
+            '<a class="open" href="{href}">'
+            "Review inventory →</a>"
+            "</div></article>".format(
+                count=inventory_attention,
+                href=escape(sandbox_href("inventory", view="attention")),
+            )
+        )
+    if reorder is not None:
+        sections.append(
+            '<article class="card decision-card launch-primary">'
+            '<p class="status {tone}">{status}</p>'
+            "<h2 class=\"launch-title\">{title}</h2>"
+            "<p>{description}</p>"
+            '<p class="consequence">{next}</p>'
+            '<div class="card-actions decision-actions">'
+            '<a class="open" href="{href}" aria-label="Open {title}">Open reorder →</a>'
+            "{action}"
+            "</div></article>".format(
+                tone=_BUCKET_CLASS.get(reorder["bucket"], "idle"),
+                status=escape(reorder["status"]),
+                title=escape(reorder["title"]),
+                description=escape(reorder["description"]),
+                next=escape(_dashboard_next_step(reorder)),
+                href=escape(reorder["href"]),
+                action=reorder.get("action", ""),
+            )
+        )
+    sections.append('<p class="note">Session counts below. Other demos are optional after reorder.</p>')
+    sections.append(
         '<p class="counts">{0}</p>'.format(
             "".join(
-                "<span>{1}<strong>{0}</strong></span>".format(len(groups[name]), escape(name).lower())
+                "<span>{1}<strong>{0}</strong></span>".format(
+                    len(groups[name]), escape(name).lower()
+                )
                 for name in order
             )
-        ),
-    ]
+        )
+    )
     for name in order:
-        items = groups.get(name, [])
+        items = [
+            card
+            for card in groups.get(name, [])
+            if "scenario=reorder" not in str(card.get("href", ""))
+        ]
         if not items:
             continue
-        sections.append("<h2>{0} ({1})</h2>".format("Explore your operations" if name == "Not started" else escape(name), len(items)))
+        heading = {
+            "Not started": "More practice demos",
+            "Needs your decision": "Needs your decision",
+            "In progress": "In progress",
+            "Completed": "Completed",
+        }.get(name, name)
+        sections.append("<h2>{0} ({1})</h2>".format(escape(heading), len(items)))
         sections.append('<div class="grid">')
         for card in items:
             tone = _BUCKET_CLASS.get(card["bucket"], "idle")
             sections.append(
-                "<article><div class=\"card-top\"><span class=\"card-icon\" aria-hidden=\"true\">{icon}</span><p class=\"status {tone}\">{status}</p></div><h3>{title}</h3><p>{description}</p>"
-                '<div class="card-actions"><a class="open" href="{href}" aria-label="Open {title}">Open →</a>{action}</div></article>'.format(
+                "<article><div class=\"card-top\"><span class=\"card-icon\" aria-hidden=\"true\">{icon}</span>"
+                '<p class="status {tone}">{status}</p></div><h3>{title}</h3><p>{description}</p>'
+                '<p class="note card-next">{next}</p>'
+                '<div class="card-actions"><a class="open" href="{href}" aria-label="Open {title}">Open →</a>'
+                "{action}</div></article>".format(
                     tone=tone,
-                    icon={"reorder": "↗", "workshop": "◇", "detective": "⌕", "rescue": "♡", "staffing": "☷"}.get(card["href"].split("=")[-1], "✦"),
+                    icon={
+                        "workshop": "◇",
+                        "detective": "⌕",
+                        "rescue": "♡",
+                        "staffing": "☷",
+                    }.get(card["href"].split("=")[-1], "✦"),
                     status=escape(card["status"]),
                     title=escape(card["title"]),
                     description=escape(card["description"]),
+                    next=escape(_dashboard_next_step(card)),
                     href=escape(card["href"]),
                     action=card.get("action", ""),
                 )
             )
         sections.append("</div>")
-    sections.append(
-        "<p class=\"note\">Collaboration inquiries and custom orders are future variants of the workshop feasibility engine. They are not separate workflows.</p>"
-    )
-    sections.append("<h2>What ran</h2>")
+    sections.append("<h2>Tool activity this session</h2>")
     if events:
-        sections.append("<ul class=\"activity\">")
+        sections.append('<ul class="activity">')
         for event in events:
             sections.append(
                 "<li><strong>{0}</strong> · {1}. {2} {3}</li>".format(
-                    escape(event.provider), escape(event.status), escape(event.result), escape(event.effect)
+                    escape(event.provider),
+                    escape(event.status),
+                    escape(event.result),
+                    escape(event.effect),
                 )
             )
         sections.append("</ul>")
     else:
-        sections.append("<p class=\"note empty\">No tool has run in this session. No sponsor call is claimed.</p>")
+        sections.append(
+            '<p class="note empty">No tools have run in this session yet.</p>'
+        )
     return shell("Daily brief", "".join(sections))
+
+
+def _preview_hero(kicker: str, headline: str, lede: str) -> str:
+    return (
+        '<section class="hero decision-hero">'
+        '<p class="kicker">{kicker}</p>'
+        "<h1>{headline}</h1>"
+        '<p class="lede">{lede}</p>'
+        "</section>"
+    ).format(kicker=escape(kicker), headline=escape(headline), lede=escape(lede))
+
+
+def _workshop_decision(saved: dict) -> tuple[str, str, str]:
+    labels = {
+        "feasible": ("done", "Feasible"),
+        "feasible_with_conditions": ("waiting", "Feasible with a purchase"),
+        "blocked": ("decision", "Blocked"),
+    }
+    tone, status = labels.get(saved["verdict"], ("idle", saved["verdict"]))
+    if saved["verdict"] == "blocked":
+        decision = "Do not promise this workshop yet — timing or economics fail the check."
+    elif int(saved.get("purchase", 0) or 0) > 0:
+        decision = (
+            "Buy {0} bottleneck switch packs so you can take the {1}-seat booking."
+        ).format(saved["purchase"], saved["required"])
+    else:
+        decision = "You already have enough seat materials for this booking."
+    consequence = (
+        "Expected contribution: ${0}. Complete seats left after the event: {1}."
+    ).format(saved["contribution"], saved["inventory_after"])
+    return tone, status, '<p class="decision">{0}</p><p class="consequence">{1}</p>'.format(
+        escape(decision), escape(consequence)
+    )
 
 
 def workshop_page(saved: Optional[dict], message: str = "") -> str:
     attendees = WORKSHOP_FIXTURE["attendees"] if saved is None else saved.get("attendees", 20)
     days_until = WORKSHOP_FIXTURE["days_until"] if saved is None else saved.get("days_until", 7)
     body = [
-        "<h1>Can we take this on?</h1>",
-        "<p>Check materials, timing, staffing, and profitability before making a customer promise. "
-        "Materials are a <strong>bill of materials per seat</strong> "
-        "(switch 70-pack + film sheet + puller duo), not one sealed kit SKU and not the quiet linear reorder line.</p>",
-        "<article class=\"card\"><p>Inquiry: Could you run a keyboard build night for 20 people next week, including all materials, for $1,500?</p>",
-        "<form method=\"post\" action=\"/\">{0}".format(_hidden("workshop")),
+        PRACTICE_BANNER,
+        _preview_hero(
+            "Workshop · build night",
+            "Can we take this on?",
+            "A customer wants a paid build night. Check seats, cash, and timing before you promise — "
+            "materials are per seat (switch pack + film + pullers), not one sealed kit.",
+        ),
+        '<article class="card decision-card">',
+        "<p>Inquiry: Could you run a keyboard build night for 20 people next week, "
+        "including all materials, for $1,500?</p>",
+        "<form method=\"post\" action=\"{0}\">{1}".format(SANDBOX_PREFIX, _hidden("workshop")),
         "<label>Attendees <input name=\"attendees\" type=\"number\" min=\"1\" value=\"{0}\"></label>".format(attendees),
         "<label>Days until the event <input name=\"days_until\" type=\"number\" min=\"0\" value=\"{0}\"></label>".format(days_until),
         "<button class=\"primary\" name=\"action\" value=\"workshop_check\">Check feasibility</button></form>",
@@ -151,24 +425,47 @@ def workshop_page(saved: Optional[dict], message: str = "") -> str:
     if message:
         body.append("<p>{0}</p>".format(escape(message)))
     if saved and saved.get("verdict"):
-        labels = {
-            "feasible": "Feasible",
-            "feasible_with_conditions": "Feasible with conditions",
-            "blocked": "Blocked",
-        }
-        body.append("<p class=\"status\">{0}</p>".format(labels.get(saved["verdict"], saved["verdict"])))
+        tone, status, decision_html = _workshop_decision(saved)
+        body.append(
+            '<p class="status {tone}">{status}</p>{decision}'.format(
+                tone=tone, status=escape(status), decision=decision_html
+            )
+        )
+        body.append('<div class="card-actions decision-actions">')
+        phase = saved.get("phase")
+        if saved["verdict"] != "blocked" and phase == "assessed":
+            body.append(_button("workshop", "workshop_approve", "Approve simulated commitment"))
+        if phase == "approved" and saved.get("purchase", 0) > 0:
+            body.append(_button("workshop", "workshop_receive", "Simulate materials received"))
+        if (phase == "approved" and saved.get("purchase", 0) == 0) or phase == "materials_in":
+            body.append(_button("workshop", "workshop_complete", "Simulate event completion"))
+        body.append("</div>")
+        if phase == "approved" and saved.get("purchase", 0) > 0:
+            body.append("<p class=\"note\">Commitment saved. Next: simulate the materials arriving.</p>")
+        if (phase == "approved" and saved.get("purchase", 0) == 0) or phase == "materials_in":
+            body.append("<p class=\"note\">Seat materials are ready. Next: simulate the event finishing.</p>")
+        if phase == "completed":
+            body.append(
+                "<p>Event reconciled. Seat materials consumed once. "
+                "Complete seats left: {0}. Contribution: ${1}.</p>".format(
+                    escape(str(saved["inventory_after"])),
+                    escape(str(saved["contribution"])),
+                )
+            )
+        body.append('<details class="why-details"><summary>Why this recommendation</summary>')
         body.append(
             "<ul><li>Required seats: {required}</li><li>Seat shortage: {shortage}</li>"
-            "<li>Buy bottleneck packs: {purchase}</li><li>Procurement cash: ${procurement_cash}</li>"
+            "<li>Buy bottleneck packs: {purchase}</li><li>Purchase cash: ${procurement_cash}</li>"
             "<li>Materials consumed: ${materials_consumed}</li><li>Expected contribution: ${contribution}</li>"
             "<li>Complete seats after event: {inventory_after}</li></ul>".format(
                 **{key: escape(str(saved[key])) for key in (
-                    "required", "shortage", "purchase", "procurement_cash", "materials_consumed", "contribution", "inventory_after"
+                    "required", "shortage", "purchase", "procurement_cash",
+                    "materials_consumed", "contribution", "inventory_after",
                 )}
             )
         )
         if saved.get("bom"):
-            body.append("<p><strong>Bill of materials</strong></p><ul>")
+            body.append("<p><strong>Seat materials</strong></p><ul>")
             for line in saved["bom"]:
                 body.append(
                     "<li>{name} ({sku}): need {need}, on hand {on_hand}, buy {buy}, after {after}</li>".format(
@@ -181,23 +478,15 @@ def workshop_page(saved: Optional[dict], message: str = "") -> str:
                     )
                 )
             body.append("</ul>")
-        body.append("<p class=\"note\">Procurement buys only the bottleneck switch packs. "
-                    "Seat materials cost is still $20. Unused component stock stays in inventory.</p>")
-        phase = saved.get("phase")
-        if saved["verdict"] != "blocked" and phase == "assessed":
-            body.append(_button("workshop", "workshop_approve", "Approve simulated commitment"))
-        if phase == "approved" and saved.get("purchase", 0) > 0:
-            body.append("<p>Preparations scheduled.</p>")
-            body.append(_button("workshop", "workshop_receive", "Simulate materials received"))
-        if (phase == "approved" and saved.get("purchase", 0) == 0) or phase == "materials_in":
-            body.append("<p>Preparations scheduled. Required seat materials are available.</p>")
-            body.append(_button("workshop", "workshop_complete", "Simulate event completion"))
-        if phase == "completed":
-            body.append("<p>Event reconciled. BOM consumed once. Complete seats left: {0}. Contribution: ${1}.</p>".format(
-                escape(str(saved["inventory_after"])), escape(str(saved["contribution"]))
-            ))
+        body.append(
+            "<p class=\"note\">You only buy the bottleneck switch packs. "
+            "Seat materials still cost $20. Unused component stock stays in inventory.</p>"
+        )
         if saved.get("history"):
-            body.append("<ol>{0}</ol>".format("".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])))
+            body.append("<ol>{0}</ol>".format(
+                "".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])
+            ))
+        body.append("</details>")
     body.append(_button("workshop", "workshop_reset", "Reset demo", "secondary"))
     body.append("</article>")
     return shell("Workshop feasibility", "".join(body))
@@ -206,48 +495,108 @@ def workshop_page(saved: Optional[dict], message: str = "") -> str:
 def detective_page(saved: Optional[dict], message: str = "") -> str:
     count = 16 if saved is None else saved.get("physical_count", 16)
     body = [
-        "<h1>Where did the missing stock go?</h1>",
-        "<p>Investigate discrepancies without inventing an explanation. This tracks "
-        "<strong>10-switch sample strips</strong> guests use during workshops. "
-        "It is not the quiet linear switch reorder SKU.</p>",
-        "<article><form method=\"post\" action=\"/\">{0}".format(_hidden("detective")),
+        PRACTICE_BANNER,
+        _preview_hero(
+            "Detective · sample strips",
+            "Where did the missing stock go?",
+            "System says 20 sample strips; the shelf count says 16. "
+            "Investigate without inventing a cause — these are workshop try strips, not the quiet linear reorder line.",
+        ),
+        '<article class="card decision-card">',
+        "<form method=\"post\" action=\"{0}\">{1}".format(SANDBOX_PREFIX, _hidden("detective")),
         "<label>Physical count <input name=\"physical_count\" type=\"number\" min=\"0\" value=\"{0}\"></label>".format(count),
         "<button class=\"primary\" name=\"action\" value=\"detective_check\">Investigate discrepancy</button></form>",
     ]
     if message:
         body.append("<p>{0}</p>".format(escape(message)))
     if saved and saved.get("phase"):
-        body.append("<ul>")
-        body.append("<li>Discrepancy: {0} units.</li>".format(saved["discrepancy"]))
-        body.append("<li>Fact: system quantity started at 20. Recorded workshop usage is 9. Attendance was 12.</li>")
-        body.append("<li>Possible explanation: {0} more workshop units, only if consumption is confirmed. Attendance does not prove that.</li>".format(saved["hypothesis_units"]))
-        body.append("<li>Missing evidence: one unit is still unexplained if those {0} units are verified.</li>".format(saved["hypothesis_units"]))
-        body.append("<li>System inventory now: {0}. Unresolved: {1}. Days of supply for this scenario: {2}.</li>".format(
-            saved["system_inventory"], saved["unresolved"], saved.get("days_of_supply", "")
-        ))
-        body.append("</ul>")
-        if saved.get("discrepancy", 0) <= 0 and not saved.get("corrected"):
-            body.append("<p>The count matches system inventory. No correction is offered.</p>")
-        elif not saved.get("evidence_confirmed"):
+        if saved.get("closed"):
+            tone, status = "done", "Closed"
+            decision = "Counts agree after recount. Keep the earlier count and correction in history."
+            consequence = "Case closed. No further inventory write-off."
+        elif saved.get("corrected"):
+            tone, status = "progress", "Corrected — recount next"
+            decision = "Workshop usage correction applied. Record a recount to close the case."
+            consequence = (
+                "System inventory now {0}. Unresolved: {1}."
+            ).format(saved["system_inventory"], saved["unresolved"])
+        elif saved.get("evidence_confirmed"):
+            tone, status = "waiting", "Evidence ready"
+            decision = (
+                "Approve a {0}-unit workshop-usage correction — only the confirmed uses."
+            ).format(saved["hypothesis_units"])
+            consequence = "Attendance alone is not proof. One unit may still stay unexplained."
+        elif saved.get("discrepancy", 0) <= 0:
+            tone, status = "done", "No mismatch"
+            decision = "The count matches system inventory."
+            consequence = "No correction is offered."
+        else:
+            tone, status = "decision", "Needs evidence"
+            decision = (
+                "Confirm workshop consumption before changing inventory "
+                "({0} units unexplained)."
+            ).format(saved["discrepancy"])
+            consequence = (
+                "Possible explanation: {0} more workshop uses — only if confirmed."
+            ).format(saved["hypothesis_units"])
+        body.append(
+            '<p class="status {tone}">{status}</p>'
+            '<p class="decision">{decision}</p>'
+            '<p class="consequence">{consequence}</p>'.format(
+                tone=tone,
+                status=escape(status),
+                decision=escape(decision),
+                consequence=escape(consequence),
+            )
+        )
+        body.append('<div class="card-actions decision-actions">')
+        if saved.get("discrepancy", 0) > 0 and not saved.get("evidence_confirmed"):
             body.append(_button("detective", "detective_confirm", "Simulate confirming workshop consumption"))
-        elif not saved.get("corrected"):
+        elif saved.get("evidence_confirmed") and not saved.get("corrected"):
             body.append(_button(
                 "detective",
                 "detective_correct",
                 "Approve {0}-unit workshop-usage correction".format(saved["hypothesis_units"]),
             ))
-        elif not saved.get("closed"):
+        elif saved.get("corrected") and not saved.get("closed"):
             body.append(
-                "<form method=\"post\" action=\"/\">{0}".format(_hidden("detective"))
+                "<form method=\"post\" action=\"{0}\">{1}".format(
+                    SANDBOX_PREFIX, _hidden("detective")
+                )
                 + "<label>Recount <input name=\"recount\" type=\"number\" min=\"0\" value=\"{0}\"></label>".format(
                     saved["system_inventory"]
                 )
                 + "<button class=\"primary\" name=\"action\" value=\"detective_recount\">Record recount</button></form>"
             )
-        else:
-            body.append("<p>Discrepancy closed. The earlier count and the correction stay in the history.</p>")
+        body.append("</div>")
+        body.append('<details class="why-details"><summary>Why this recommendation</summary><ul>')
+        body.append("<li>Discrepancy: {0} units.</li>".format(escape(str(saved["discrepancy"]))))
+        body.append(
+            "<li>Fact: system quantity started at 20. Recorded workshop usage is 9. "
+            "Attendance was 12.</li>"
+        )
+        body.append(
+            "<li>Possible explanation: {0} more workshop units, only if consumption is confirmed. "
+            "Attendance does not prove that.</li>".format(escape(str(saved["hypothesis_units"])))
+        )
+        body.append(
+            "<li>Missing evidence: one unit is still unexplained if those {0} units are verified.</li>".format(
+                escape(str(saved["hypothesis_units"]))
+            )
+        )
+        body.append(
+            "<li>System inventory now: {0}. Unresolved: {1}. Days of supply for this scenario: {2}.</li>".format(
+                escape(str(saved["system_inventory"])),
+                escape(str(saved["unresolved"])),
+                escape(str(saved.get("days_of_supply", ""))),
+            )
+        )
+        body.append("</ul>")
         if saved.get("history"):
-            body.append("<ol>{0}</ol>".format("".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])))
+            body.append("<ol>{0}</ol>".format(
+                "".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])
+            ))
+        body.append("</details>")
     body.append(_button("detective", "detective_reset", "Reset demo", "secondary"))
     body.append("</article>")
     return shell("Inventory Detective", "".join(body))
@@ -256,50 +605,101 @@ def detective_page(saved: Optional[dict], message: str = "") -> str:
 def rescue_page(saved: Optional[dict], message: str = "") -> str:
     price = "119" if saved is None else saved.get("selling_price", "119")
     body = [
-        "<h1>Save the sale</h1>",
-        "<p>Find a viable local fulfillment option when your own stock cannot meet a deadline. These are merchant simulators, not live merchants or agents.</p>",
-        "<article><form method=\"post\" action=\"/\">{0}".format(_hidden("rescue")),
+        PRACTICE_BANNER,
+        _preview_hero(
+            "Sale rescue · local fill",
+            "Save the sale",
+            "A walk-in needs a part you don’t have in time. "
+            "Ask practice neighbor shops — simulators only, not live merchants or agents.",
+        ),
+        '<article class="card decision-card">',
+        "<form method=\"post\" action=\"{0}\">{1}".format(SANDBOX_PREFIX, _hidden("rescue")),
         "<label>Customer selling price <input name=\"selling_price\" value=\"{0}\"></label>".format(escape(str(price))),
         "<button class=\"primary\" name=\"action\" value=\"rescue_offers\">Request simulated merchant offers</button></form>",
     ]
     if message:
         body.append("<p>{0}</p>".format(escape(message)))
     if saved and saved.get("offers"):
+        acceptable = [offer for offer in saved["offers"] if offer.get("acceptable")]
+        phase = saved.get("phase")
+        if phase == "completed":
+            tone, status = "done", "Completed"
+            decision = "Customer fulfillment reconciled for this practice run."
+            consequence = "Contribution ${0}. This was not a real purchase.".format(
+                saved.get("final_contribution", "")
+            )
+        elif phase == "transferred":
+            tone, status = "progress", "Transferred"
+            decision = "Simulate handing the part to the customer to finish the loop."
+            consequence = "Stock moved between practice merchants; sale not closed yet."
+        elif phase == "authorized":
+            tone, status = "progress", "Authorized"
+            decision = "Simulate the transfer from the chosen practice merchant."
+            consequence = "No binding transaction until transfer and fulfillment complete."
+        elif acceptable and phase in ("quoted", "negotiated"):
+            best = max(acceptable, key=lambda item: Decimal(item["contribution"]))
+            tone, status = "waiting", "Choose a path"
+            decision = (
+                "Authorize {0} — contribution ${1}. No binding transaction yet."
+            ).format(best["name"], best["contribution"])
+            consequence = "Or counter another simulator before you commit."
+        elif phase == "quoted":
+            tone, status = "decision", "No viable offer"
+            decision = (
+                "No simulator meets the ${0} minimum contribution and fulfillment rules."
+            ).format(RESCUE_FIXTURE["minimum_contribution"])
+            consequence = "Try another selling price, or reset the demo."
+        else:
+            tone, status = "idle", phase or "In progress"
+            decision = "Review the practice offers below."
+            consequence = "Contribution must stay above the floor after fees."
+        body.append(
+            '<p class="status {tone}">{status}</p>'
+            '<p class="decision">{decision}</p>'
+            '<p class="consequence">{consequence}</p>'.format(
+                tone=tone,
+                status=escape(status),
+                decision=escape(decision),
+                consequence=escape(consequence),
+            )
+        )
+        body.append('<div class="card-actions decision-actions">')
+        if acceptable and phase in ("quoted", "negotiated"):
+            body.append(_button("rescue", "rescue_authorize", "Authorize simulated fulfillment"))
+        if phase == "authorized":
+            body.append(_button("rescue", "rescue_transfer", "Simulate transfer"))
+        if phase == "transferred":
+            body.append(_button("rescue", "rescue_fulfill", "Simulate customer fulfillment"))
+        body.append("</div>")
+        body.append('<details class="why-details" open><summary>Practice merchant offers</summary>')
         for offer in saved["offers"]:
-            body.append("<p><strong>{0}</strong> acquisition ${1}, transfer ${2}, contribution ${3}. {4}</p>".format(
-                escape(offer["name"]), escape(offer["acquisition"]), escape(offer["transfer"]),
-                escape(offer["contribution"]), escape(offer.get("note", offer["status"]))
-            ))
-            if saved.get("phase") == "quoted":
+            body.append(
+                "<p><strong>{0}</strong> acquisition ${1}, transfer ${2}, contribution ${3}. {4}</p>".format(
+                    escape(offer["name"]),
+                    escape(offer["acquisition"]),
+                    escape(offer["transfer"]),
+                    escape(offer["contribution"]),
+                    escape(offer.get("note", offer["status"])),
+                )
+            )
+            if phase == "quoted":
                 body.append(
-                    "<form method=\"post\" action=\"/\">{hidden}<input type=\"hidden\" name=\"action\" value=\"rescue_counter\">"
+                    "<form method=\"post\" action=\"{action}\">{hidden}"
+                    "<input type=\"hidden\" name=\"action\" value=\"rescue_counter\">"
                     "<input type=\"hidden\" name=\"merchant_id\" value=\"{mid}\">"
                     "<label>Counteroffer <input name=\"counter_price\" value=\"{floor}\"></label>"
                     "<button class=\"secondary\" type=\"submit\">Submit counteroffer</button></form>".format(
-                        hidden=_hidden("rescue"), mid=escape(offer["id"]), floor=escape(offer["floor"])
+                        action=SANDBOX_PREFIX,
+                        hidden=_hidden("rescue"),
+                        mid=escape(offer["id"]),
+                        floor=escape(offer["floor"]),
                     )
                 )
-        acceptable = [offer for offer in saved["offers"] if offer.get("acceptable")]
-        if acceptable and saved.get("phase") in ("quoted", "negotiated"):
-            best = max(acceptable, key=lambda item: Decimal(item["contribution"]))
-            body.append("<p>Recommended simulator: {0}, contribution ${1}. No binding transaction yet.</p>".format(
-                escape(best["name"]), escape(best["contribution"])
-            ))
-            body.append(_button("rescue", "rescue_authorize", "Authorize simulated fulfillment"))
-        elif saved.get("phase") == "quoted":
-            body.append("<p>No simulator meets the ${0} minimum contribution and the fulfillment rules.</p>".format(
-                escape(str(RESCUE_FIXTURE["minimum_contribution"]))
-            ))
-        if saved.get("phase") == "authorized":
-            body.append(_button("rescue", "rescue_transfer", "Simulate transfer"))
-        if saved.get("phase") == "transferred":
-            body.append(_button("rescue", "rescue_fulfill", "Simulate customer fulfillment"))
-        if saved.get("phase") == "completed":
-            body.append("<p>Fulfillment reconciled. Contribution ${0}. This was not a real purchase.</p>".format(
-                escape(str(saved.get("final_contribution", "")))
-            ))
         if saved.get("history"):
-            body.append("<ol>{0}</ol>".format("".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])))
+            body.append("<ol>{0}</ol>".format(
+                "".join("<li>{0}</li>".format(escape(line)) for line in saved["history"])
+            ))
+        body.append("</details>")
     body.append(_button("rescue", "rescue_reset", "Reset demo", "secondary"))
     body.append("</article>")
     return shell("Sale rescue", "".join(body))
@@ -310,30 +710,85 @@ def staffing_page(saved: Optional[dict], message: str = "") -> str:
     owner = "6" if saved is None else saved.get("owner_hours", "6")
     workshop = False if saved is None else bool(saved.get("workshop"))
     body = [
-        "<h1>Plan the right coverage</h1>",
-        "<p>Estimate workload before scheduling the team. This is a planning estimate, not an hourly schedule, and it does not choose which person works.</p>",
-        "<article><form method=\"post\" action=\"/\">{0}".format(_hidden("staffing")),
-        "<label>Day <select name=\"day\"><option value=\"tuesday\"{0}>Tuesday</option><option value=\"saturday\"{1}>Saturday</option></select></label>".format(
-            " selected" if day == "tuesday" else "", " selected" if day == "saturday" else ""
+        PRACTICE_BANNER,
+        _preview_hero(
+            "Staffing · coverage hours",
+            "Plan the right coverage",
+            "Estimate how many hours the day needs before you schedule anyone. "
+            "This does not pick who works the shift.",
         ),
-        "<label>Workshop <input type=\"checkbox\" name=\"workshop\" value=\"1\"{0}> Add four staff-hours</label>".format(
-            " checked" if workshop else ""
+        '<article class="card decision-card">',
+        "<form method=\"post\" action=\"{0}\">{1}".format(SANDBOX_PREFIX, _hidden("staffing")),
+        "<label>Day <select name=\"day\"><option value=\"tuesday\"{0}>Tuesday</option>"
+        "<option value=\"saturday\"{1}>Saturday</option></select></label>".format(
+            " selected" if day == "tuesday" else "",
+            " selected" if day == "saturday" else "",
         ),
-        "<label>Owner capacity in hours <input name=\"owner_hours\" value=\"{0}\"></label>".format(escape(str(owner))),
+        "<label>Workshop <input type=\"checkbox\" name=\"workshop\" value=\"1\"{0}> "
+        "Add four staff-hours</label>".format(" checked" if workshop else ""),
+        "<label>Owner capacity in hours <input name=\"owner_hours\" value=\"{0}\"></label>".format(
+            escape(str(owner))
+        ),
         "<button class=\"primary\" name=\"action\" value=\"staffing_calculate\">Calculate coverage</button></form>",
     ]
     if message:
         body.append("<p>{0}</p>".format(escape(message)))
     if saved and saved.get("workload_hours"):
-        body.append("<ul><li>History: {0}</li><li>Expected transactions: {1}</li><li>Pickups: {2}</li><li>Workload hours: {3}</li><li>Hours beyond owner capacity: {4}</li><li>Four-hour blocks, rounded up: {5}</li></ul>".format(
-            escape(str(saved["history"])), escape(str(saved["expected_transactions"])), saved["pickups"],
-            escape(str(saved["workload_hours"])), escape(str(saved["extra_hours"])), saved["coverage_blocks"],
-        ))
-        body.append("<p class=\"note\">Each transaction and pickup is 15 minutes, plus one baseline hour. A workshop adds four staff-hours. The owner assigns people.</p>")
+        blocks = int(saved.get("coverage_blocks", 0) or 0)
+        day_label = str(saved.get("day", day)).title()
+        if blocks <= 0:
+            tone, status = "done", "Owner can cover"
+            decision = "No extra coverage blocks needed for {0}.".format(day_label)
+            consequence = "Workload hours: {0}. Stay within owner capacity.".format(
+                saved["workload_hours"]
+            )
+        else:
+            tone, status = "waiting", "Needs coverage"
+            decision = (
+                "Plan {0} extra four-hour coverage block{1} for {2}."
+            ).format(blocks, "" if blocks == 1 else "s", day_label)
+            consequence = (
+                "Workload hours: {0}. Hours beyond owner capacity: {1}."
+            ).format(saved["workload_hours"], saved["extra_hours"])
+        body.append(
+            '<p class="status {tone}">{status}</p>'
+            '<p class="decision">{decision}</p>'
+            '<p class="consequence">{consequence}</p>'.format(
+                tone=tone,
+                status=escape(status),
+                decision=escape(decision),
+                consequence=escape(consequence),
+            )
+        )
+        body.append('<div class="card-actions decision-actions">')
         if not saved.get("saved"):
             body.append(_button("staffing", "staffing_save", "Save simulated coverage plan"))
         else:
-            body.append("<p>Saved recommendation for {0}. This is not an employee schedule.</p>".format(escape(saved["day"])))
+            body.append(
+                "<p>Saved recommendation for {0}. This is not an employee schedule.</p>".format(
+                    escape(str(saved["day"]))
+                )
+            )
+        body.append("</div>")
+        body.append('<details class="why-details"><summary>Why this recommendation</summary>')
+        body.append(
+            "<ul><li>History: {0}</li><li>Expected transactions: {1}</li>"
+            "<li>Pickups: {2}</li><li>Workload hours: {3}</li>"
+            "<li>Hours beyond owner capacity: {4}</li>"
+            "<li>Four-hour blocks, rounded up: {5}</li></ul>".format(
+                escape(str(saved["history"])),
+                escape(str(saved["expected_transactions"])),
+                escape(str(saved["pickups"])),
+                escape(str(saved["workload_hours"])),
+                escape(str(saved["extra_hours"])),
+                escape(str(saved["coverage_blocks"])),
+            )
+        )
+        body.append(
+            "<p class=\"note\">Each transaction and pickup is 15 minutes, plus one baseline hour. "
+            "A workshop adds four staff-hours. You still assign people yourself.</p>"
+        )
+        body.append("</details>")
     body.append(_button("staffing", "staffing_reset", "Reset demo", "secondary"))
     body.append("</article>")
     return shell("Staffing coverage", "".join(body))
@@ -347,6 +802,7 @@ WORKFLOW_FROM_LABEL = {
     "Not investigated": "Idle",
     "Decision needed": "Needs decision",
     "Assessed": "Needs decision",
+    "Approved": "In progress",
     "Awaiting receipt": "Waiting",
     "Materials inbound": "Waiting",
     "In progress": "In progress",
@@ -408,7 +864,7 @@ WORKFLOW_DETAIL_HELP = {
 STOCK_CONDITION = {
     "Available": (
         "done",
-        "Available — promiseable units on hand; no inbound or unavailable holds.",
+        "Available — promiseable units on hand (some may also be held as damaged/returns/display).",
     ),
     "Incoming": (
         "progress",
@@ -416,11 +872,11 @@ STOCK_CONDITION = {
     ),
     "Unavailable": (
         "waiting",
-        "Unavailable — on hand but not for sale (damaged, returns pending, or display).",
+        "Unavailable — on hand only as damaged, returns, or display; nothing promiseable.",
     ),
     "In transit": (
         "progress",
-        "In transit — units moving between locations.",
+        "In transit — units moving between locations; nothing promiseable yet.",
     ),
     "Out of stock": (
         "decision",
@@ -441,7 +897,12 @@ def _workflow_status(phase_label: str) -> tuple[str, str, str]:
 
 
 def _stock_condition(totals: dict) -> tuple[str, str, str]:
-    """Derive compact stock-condition pill from quantity buckets (not workflow)."""
+    """Derive compact stock-condition pill from quantity buckets (not workflow).
+
+    Status describes whether you can promise stock, not whether any holds exist.
+    Partial damaged/returns still show as Available when sellable units remain;
+    Unavailable means on-hand only as holds (Available column is 0).
+    """
     available = int(totals.get("available", totals.get("sellable", 0)) or 0)
     inbound = int(totals.get("inbound", 0) or 0)
     damaged = int(totals.get("damaged", 0) or 0)
@@ -450,16 +911,16 @@ def _stock_condition(totals: dict) -> tuple[str, str, str]:
     in_transfer = int(totals.get("in_transfer", 0) or 0)
     held = damaged + returns_pending + display_demo
 
-    if available <= 0 and inbound <= 0:
-        pill = "Out of stock"
-    elif inbound > 0:
+    if inbound > 0:
         pill = "Incoming"
+    elif available > 0:
+        pill = "Available"
     elif held > 0:
         pill = "Unavailable"
     elif in_transfer > 0:
         pill = "In transit"
     else:
-        pill = "Available"
+        pill = "Out of stock"
     tone, tip = STOCK_CONDITION[pill]
     return pill, tone, tip
 
@@ -675,7 +1136,8 @@ def _stock_totals(locations: list, *, last_counted: str = "") -> dict:
 
 
 def inventory_page(snapshot: dict) -> str:
-    """Dense multi-location catalog table sized for many SKUs, not one card each."""
+    """Multi-location catalog table. Sandbox = small tour set; owner = dense seeded shop."""
+    mode = snapshot.get("mode") or INVENTORY_MODE_SANDBOX
     products = _sorted_catalog(snapshot["products"])
     movements = snapshot["movements"]
     total_available = sum(item["totals"].get("available", item["totals"]["sellable"]) for item in products)
@@ -687,23 +1149,34 @@ def inventory_page(snapshot: dict) -> str:
         for item in products
     )
     total_transfer = sum(item["totals"].get("in_transfer", 0) for item in products)
-    attention = sum(
-        1
-        for item in products
-        if item["status_class"] in ("decision", "waiting", "progress")
-        or item["totals"]["inbound"] > 0
-        or item["totals"].get("damaged", 0) > 0
-        or item["totals"].get("returns_pending", 0) > 0
-        or item["totals"].get("in_transfer", 0) > 0
-    )
+    attention = sum(1 for item in products if _product_needs_attention(item))
+    if mode == INVENTORY_MODE_OWNER:
+        lede = (
+            "Specialty-shop catalog positions first, then availability and open work. "
+            "Expand a product for pricing, attributes, and location split."
+        )
+        catalog_note = (
+            "Fictional specialty-shop assortment (~492 SKUs) for the practice-owner app. "
+        )
+    else:
+        lede = (
+            "Demo-tour catalog — focal reorder SKU, workshop/detective lines, and a few sample rows. "
+            "Expand a product for pricing, attributes, and location split. "
+            "The dense specialty-shop assortment belongs on the practice-owner surface after login."
+        )
+        catalog_note = (
+            "Small demo catalog for the public tour (not a live shop assortment). "
+        )
     body = [
         "<h1>Inventory</h1>",
-        '<p class="lede">Catalog positions first, then availability and open work. '
-        "Expand a product for pricing, attributes, and location split.</p>",
-        '<p class="note">Fictional specialty-shop assortment (~492 SKUs). '
-        "<strong>Available</strong> can sell; <strong>Reserved</strong> is committed; "
+        '<p class="lede">{0}</p>'.format(lede),
+        '<p class="note">{0}'.format(catalog_note)
+        + "<strong>Available</strong> can sell; <strong>Reserved</strong> is committed "
+        "(hover a number for why — web/counter hold, deposit, workshop, etc.); "
         "<strong>Incoming</strong> / <strong>In transit</strong> are not sellable yet; "
-        "<strong>Unavailable</strong> expands damaged, returns, and display. "
+        "Dashes mean none for that bucket. "
+        "<strong>Unavailable</strong> status means nothing promiseable (holds only); "
+        "the Unavailable column expands damaged, returns, and display. "
         "<strong>Status</strong> summarizes availability; <strong>Issue</strong> is workflow state "
         "plus the open problem link when a demo is attached. Click a column header to sort.</p>",
         '<p class="counts">'
@@ -712,7 +1185,9 @@ def inventory_page(snapshot: dict) -> str:
         "<span>incoming<strong>{inbound}</strong></span>"
         "<span>in transit<strong>{transfer}</strong></span>"
         "<span>unavailable<strong>{unsellable}</strong></span>"
-        "<span>needs attention<strong>{attention}</strong></span>"
+        '<a class="count-link" href="{brief_attention}" '
+        'title="Open daily brief — owner attention for today">'
+        "needs attention<strong>{attention}</strong></a>"
         "</p>".format(
             skus=len(products),
             available=total_available,
@@ -720,17 +1195,25 @@ def inventory_page(snapshot: dict) -> str:
             transfer=total_transfer,
             unsellable=total_unsellable,
             attention=attention,
+            brief_attention=escape(sandbox_href() + "#inventory-attention"),
+        ),
+        '<p class="note" id="attention-filter-note" hidden>'
+        '<strong>Showing lines that need attention.</strong> '
+        '<a href="{all_skus}">Show all SKUs</a> · '
+        '<a href="{brief_attention}">Back to daily brief</a></p>'.format(
+            all_skus=escape(sandbox_href("inventory")),
+            brief_attention=escape(sandbox_href() + "#inventory-attention"),
         ),
         '<div class="catalog-toolbar">'
         '<label for="inventory-filter">Filter catalog'
         '<input id="inventory-filter" type="search" name="q" autocomplete="off" '
-        'placeholder="Search name, SKU, category, brand, or status" '
+        'placeholder="Search name, Item ID, SKU, barcode, category, or status" '
         'aria-controls="inventory-catalog"></label>'
         '<p class="note" id="inventory-filter-count">{count} showing</p></div>'.format(
             count=len(products)
         ),
         '<p class="note catalog-mobile-hint">Phone view: Product, Status, Available, Issue. '
-        "Open Details for SKU, pricing, and locations.</p>",
+        "Open Details for Item ID, SKU, barcode, pricing, and locations.</p>",
         '<div class="catalog-wrap"><table class="catalog-table" id="inventory-catalog">'
         "<thead><tr>",
         _sort_th(
@@ -738,6 +1221,12 @@ def inventory_page(snapshot: dict) -> str:
             "product",
             classes="col-product",
             title="Product name and differentiators",
+        ),
+        _sort_th(
+            "Item ID",
+            "itemid",
+            classes="col-more col-itemid",
+            title="Internal item id (always present)",
         ),
         _sort_th(
             "Category",
@@ -763,7 +1252,7 @@ def inventory_page(snapshot: dict) -> str:
             "Reserved",
             "reserved",
             classes="num col-more",
-            title="Committed / reserved against demand",
+            title="Committed to an order or hold — hover a value for the reason; — means none",
             sort_type="number",
         ),
         _sort_th(
@@ -860,9 +1349,13 @@ def inventory_page(snapshot: dict) -> str:
         )
         diff_line = _product_diff_line(product)
         issue_label, issue_href, _issue_title = _issue_link(product)
-        search = "{0} {1} {2} {3} {4} {5} {6} {7} {8} unavailable {9}".format(
+        barcode = str(product.get("barcode") or "")
+        merchant_sku = str(product.get("merchant_sku") or "")
+        search = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} unavailable {11}".format(
             product["name"],
             product["sku"],
+            merchant_sku,
+            barcode,
             product.get("category", ""),
             product.get("description", ""),
             attr_search,
@@ -878,20 +1371,17 @@ def inventory_page(snapshot: dict) -> str:
             '<td class="num">{reserved}</td>'
             '<td class="num">{inbound}</td>'
             '<td class="num">{transfer}</td>'
-            '<td class="num">{unavail}</td></tr>'.format(
+            '<td class="num">{damaged}</td>'
+            '<td class="num">{returns}</td>'
+            '<td class="num">{display}</td></tr>'.format(
                 name=escape(row["name"]),
                 available=escape(_qty_cell(row.get("available", row.get("sellable", 0)))),
-                reserved=escape(_qty_cell(row.get("reserved", 0))),
+                reserved=escape(_qty_cell(row.get("reserved", 0), blank_zero=True)),
                 inbound=escape(_qty_cell(row.get("inbound", 0), blank_zero=True)),
                 transfer=escape(_qty_cell(row.get("in_transfer", 0), blank_zero=True)),
-                unavail=escape(
-                    _qty_cell(
-                        int(row.get("damaged", 0))
-                        + int(row.get("returns_pending", 0))
-                        + int(row.get("display_demo", 0)),
-                        blank_zero=True,
-                    )
-                ),
+                damaged=escape(_qty_cell(row.get("damaged", 0), blank_zero=True)),
+                returns=escape(_qty_cell(row.get("returns_pending", 0), blank_zero=True)),
+                display=escape(_qty_cell(row.get("display_demo", 0), blank_zero=True)),
             )
             for row in product["locations"]
         )
@@ -918,9 +1408,30 @@ def inventory_page(snapshot: dict) -> str:
         sort_issue = _issue_sort_rank(issue_label, workflow_label)
         # ISO dates sort as timestamps in JS; blank / — → 0 (oldest / never counted).
         sort_counted = str(last_counted) if str(last_counted) not in ("", "—") else ""
+        store_avail = 0
+        warehouse_avail = 0
+        for row in product.get("locations") or ():
+            qty = int(row.get("available", row.get("sellable", 0)) or 0)
+            if row.get("name") == "Front store":
+                store_avail = qty
+            elif row.get("name") == "Warehouse":
+                warehouse_avail = qty
+        available_tip = "Front store {0} · Warehouse {1}".format(
+            store_avail, warehouse_avail
+        )
+        reserved_reason = str(product.get("reserved_reason") or "").strip()
+        if int(reserved or 0) > 0 and reserved_reason:
+            reserved_tip = "Reserved for: {0}".format(reserved_reason)
+        elif int(reserved or 0) > 0:
+            reserved_tip = "Reserved / committed units"
+        else:
+            reserved_tip = "No reserved units"
+        needs_attention = "1" if _product_needs_attention(product) else "0"
         body.append(
             '<tr data-search="{search}" '
+            'data-attention="{attention}" '
             'data-sort-product="{sort_product}" '
+            'data-sort-itemid="{sort_itemid}" '
             'data-sort-category="{sort_category}" '
             'data-sort-status="{sort_status}" '
             'data-sort-available="{sort_available}" '
@@ -936,7 +1447,9 @@ def inventory_page(snapshot: dict) -> str:
             "<details><summary>Details</summary>"
             '<div class="product-detail">'
             '<dl class="product-prices">'
-            "<div><dt>SKU</dt><dd>{sku}</dd></div>"
+            "<div><dt>Item ID</dt><dd>{sku}</dd></div>"
+            "<div><dt>SKU</dt><dd>{merchant_sku}</dd></div>"
+            "<div><dt>Barcode</dt><dd>{barcode}</dd></div>"
             "<div><dt>Category</dt><dd>{category}</dd></div>"
             "<div><dt>List price</dt><dd>${list_price}</dd></div>"
             "<div><dt>Unit cost</dt><dd>${cost}</dd></div>"
@@ -952,22 +1465,27 @@ def inventory_page(snapshot: dict) -> str:
             '<th class="num" scope="col">Reserved</th>'
             '<th class="num" scope="col">Incoming</th>'
             '<th class="num" scope="col">In transit</th>'
-            '<th class="num" scope="col">Unavailable</th>'
+            '<th class="num" scope="col">Damaged</th>'
+            '<th class="num" scope="col">Returns</th>'
+            '<th class="num" scope="col">Display</th>'
             "</tr></thead><tbody>{detail}</tbody></table>"
             "</div></details></td>"
+            '<td class="col-more col-itemid">{sku}</td>'
             '<td class="col-more col-category" title="{category_full}">{category_short}</td>'
             '<td class="col-key">'
             '<p class="status row-status {stock_tone}" title="{stock_help}">{stock_label}</p>'
             "</td>"
-            '<td class="num col-key">{available}</td>'
-            '<td class="num col-more">{reserved}</td>'
+            '<td class="num col-key" title="{available_tip}">{available}</td>'
+            '<td class="num col-more" title="{reserved_tip}">{reserved}</td>'
             '<td class="{inbound_class} col-more">{inbound}</td>'
             '<td class="{transfer_class} col-more">{transfer}</td>'
             '<td class="num col-more unavail-cell">{unavail_cell}</td>'
             '<td class="date col-more">{last_counted}</td>'
             '<td class="col-key issue-col">{issue_cell}</td></tr>'.format(
                 search=escape(search, quote=True),
+                attention=needs_attention,
                 sort_product=escape(str(product["name"]).lower(), quote=True),
+                sort_itemid=escape(str(product["sku"]).lower(), quote=True),
                 sort_category=escape(category_short.lower(), quote=True),
                 sort_status=escape(str(sort_status), quote=True),
                 sort_available=escape(str(int(available or 0)), quote=True),
@@ -989,9 +1507,13 @@ def inventory_page(snapshot: dict) -> str:
                 category_short=escape(category_short),
                 category_full=escape(category, quote=True),
                 sku=escape(product["sku"]),
+                merchant_sku=escape(merchant_sku or "—"),
+                barcode=escape(barcode or "—"),
                 list_price=escape(str(list_price)),
                 available=escape(_qty_cell(available)),
-                reserved=escape(_qty_cell(reserved)),
+                available_tip=escape(available_tip, quote=True),
+                reserved=escape(_qty_cell(reserved, blank_zero=True)),
+                reserved_tip=escape(reserved_tip, quote=True),
                 inbound_class=inbound_class,
                 transfer_class=transfer_class,
                 inbound=escape(_qty_cell(inbound, blank_zero=True)),
@@ -1042,12 +1564,18 @@ _INVENTORY_CATALOG_SCRIPT = """
   var table = document.getElementById("inventory-catalog");
   var count = document.getElementById("inventory-filter-count");
   var empty = document.getElementById("inventory-empty");
+  var attentionNote = document.getElementById("attention-filter-note");
   if (!table || !table.tBodies || !table.tBodies[0]) return;
   // Only catalog rows — not nested location rows inside Details.
   var tbody = table.tBodies[0];
   var rows = Array.prototype.slice.call(tbody.rows);
   var sortKey = null;
   var sortDir = 1;
+  var params = new URLSearchParams(window.location.search || "");
+  var attentionOnly = params.get("view") === "attention";
+  var qParam = params.get("q") || "";
+  if (attentionNote) attentionNote.hidden = !attentionOnly;
+  if (input && qParam) input.value = qParam;
 
   function applyFilter() {
     var q = input ? (input.value || "").trim().toLowerCase() : "";
@@ -1055,7 +1583,9 @@ _INVENTORY_CATALOG_SCRIPT = """
     rows.forEach(function (row) {
       var hay = row.getAttribute("data-search") || "";
       var match = !q || hay.indexOf(q) !== -1;
+      if (attentionOnly && row.getAttribute("data-attention") !== "1") match = false;
       row.classList.toggle("is-hidden", !match);
+      row.classList.remove("catalog-focus");
       if (match) shown += 1;
     });
     if (count) count.textContent = shown + " showing";
@@ -1131,6 +1661,15 @@ _INVENTORY_CATALOG_SCRIPT = """
     });
   });
   applyFilter();
+  if (qParam) {
+    var focusRow = rows.find(function (row) {
+      return !row.classList.contains("is-hidden");
+    });
+    if (focusRow) {
+      focusRow.classList.add("catalog-focus");
+      if (focusRow.scrollIntoView) focusRow.scrollIntoView({ block: "nearest" });
+    }
+  }
 })();
 </script>
 """
@@ -1196,6 +1735,9 @@ def _product_card(
     role: str = "browse",
     attrs: dict | None = None,
     last_counted: str = "",
+    barcode: str = "",
+    merchant_sku: str = "",
+    reserved_reason: str = "",
 ) -> dict:
     return {
         "name": name,
@@ -1216,24 +1758,36 @@ def _product_card(
         "role": role,
         "attrs": dict(attrs or {}),
         "last_counted": last_counted,
+        "barcode": barcode or "",
+        "merchant_sku": merchant_sku or "",
+        "reserved_reason": reserved_reason or "",
     }
 
 
-def empty_inventory_snapshot() -> dict:
-    from smolstuff.fixtures import DEMO_CATALOG
+def empty_inventory_snapshot(*, mode: str = INVENTORY_MODE_SANDBOX) -> dict:
+    """Build a catalog snapshot. Sandbox = tour subset; owner = full seeded shop."""
+    from smolstuff.fixtures import SANDBOX_CATALOG, SEEDED_CATALOG
+
+    if mode == INVENTORY_MODE_OWNER:
+        catalog = SEEDED_CATALOG
+    else:
+        catalog = SANDBOX_CATALOG
+        mode = INVENTORY_MODE_SANDBOX
 
     products = []
-    for item in DEMO_CATALOG:
+    for item in catalog:
         damaged = int(item.get("damaged", 0))
+        damaged_warehouse = int(item.get("damaged_warehouse", 0))
         returns_pending = int(item.get("returns_pending", 0))
         display_demo = int(item.get("display_demo", 0))
         in_transfer = int(item.get("in_transfer", 0))
         last_counted = str(item.get("last_counted") or "")
-        # Store-side holds at Front store; in-transfer sits on Warehouse.
+        # Front store: sellable + reserved + floor holds. Warehouse: bulk + PO + xfer + carton damage.
         locations = [
             _stock_location(
                 "Front store",
                 available=int(item["store"]),
+                reserved=int(item.get("reserved_store", 0)),
                 damaged=damaged,
                 returns_pending=returns_pending,
                 display_demo=display_demo,
@@ -1241,7 +1795,10 @@ def empty_inventory_snapshot() -> dict:
             _stock_location(
                 "Warehouse",
                 available=int(item["warehouse"]),
+                reserved=int(item.get("reserved_warehouse", 0)),
+                inbound=int(item.get("inbound_warehouse", 0)),
                 in_transfer=in_transfer,
+                damaged=damaged_warehouse,
             ),
         ]
         if item["role"] == "reorder":
@@ -1253,7 +1810,7 @@ def empty_inventory_snapshot() -> dict:
         elif item["role"] == "workshop_bom":
             note = (
                 "Workshop BOM line. Seat materials = switch 70-pack ($14) + film ($2.50) + pullers ($3.50). "
-                "Bottleneck packs start at 14 store + 4 warehouse."
+                "Reserved for the upcoming 20-seat workshop; Available is what remains uncommitted."
             )
             status_label = "BOM ready"
         elif item["role"] == "detective":
@@ -1285,13 +1842,17 @@ def empty_inventory_snapshot() -> dict:
                 role=item["role"],
                 attrs=item.get("attrs") or {},
                 last_counted=last_counted,
+                barcode=str(item.get("barcode") or ""),
+                merchant_sku=str(item.get("merchant_sku") or ""),
+                reserved_reason=str(item.get("reserved_reason") or ""),
             )
         )
-    return {"products": products, "movements": []}
+    return {"products": products, "movements": [], "mode": mode}
 
 
-
-def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
+def build_inventory_snapshot(
+    path: str, session_id: str = "local", *, mode: str = INVENTORY_MODE_SANDBOX
+) -> dict:
     """Assemble session-scoped multi-location catalog for the inventory tab."""
     from smolstuff.fixtures import (
         DETECTIVE_SKU,
@@ -1303,7 +1864,7 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
     from smolstuff.ops_demos import DETECTIVE_FIXTURE, ScenarioStore
     from smolstuff.workflow import WorkflowStore
 
-    snapshot = empty_inventory_snapshot()
+    snapshot = empty_inventory_snapshot(mode=mode)
     products = {item["sku"]: item for item in snapshot["products"]}
     switch = products[WORKSHOP_SKU]
     detective_card = products[DETECTIVE_SKU]
@@ -1319,22 +1880,27 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
         inbound = 0
         if progress is not None and progress.unresolved_quantity > 0:
             inbound = progress.unresolved_quantity
+        prior_store = switch["locations"][0] if switch.get("locations") else {}
+        prior_wh = switch["locations"][1] if len(switch.get("locations") or []) > 1 else {}
         switch["locations"] = [
             _stock_location(
                 "Front store",
                 available=store_sellable,
+                reserved=int(prior_store.get("reserved", 0)),
                 inbound=inbound,
-                damaged=int(switch["locations"][0].get("damaged", 0)),
-                returns_pending=int(switch["locations"][0].get("returns_pending", 0)),
-                display_demo=int(switch["locations"][0].get("display_demo", 0)),
+                damaged=int(prior_store.get("damaged", 0)),
+                returns_pending=int(prior_store.get("returns_pending", 0)),
+                display_demo=int(prior_store.get("display_demo", 0)),
             ),
             _stock_location(
                 "Warehouse",
                 available=int(WAREHOUSE_ON_HAND),
-                damaged=int(switch["locations"][1].get("damaged", 0)),
-                returns_pending=int(switch["locations"][1].get("returns_pending", 0)),
-                in_transfer=int(switch["locations"][1].get("in_transfer", 0)),
-                display_demo=int(switch["locations"][1].get("display_demo", 0)),
+                reserved=int(prior_wh.get("reserved", 0)),
+                inbound=int(prior_wh.get("inbound", 0)),
+                damaged=int(prior_wh.get("damaged", 0)),
+                returns_pending=int(prior_wh.get("returns_pending", 0)),
+                in_transfer=int(prior_wh.get("in_transfer", 0)),
+                display_demo=int(prior_wh.get("display_demo", 0)),
             ),
         ]
         switch["totals"] = _stock_totals(
@@ -1359,6 +1925,12 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
             switch["note"] = (
                 "Reorder waiting for approval. Front store still {0}; warehouse {1}; no inbound yet."
             ).format(store_sellable, int(WAREHOUSE_ON_HAND))
+        elif workflow.state == WorkflowState.APPROVED:
+            switch["status_label"] = "Approved"
+            switch["status_class"] = _status_class_for_label("Approved")
+            switch["note"] = (
+                "Spend authorized. Submit the simulated order next. Front store still {0}; no inbound yet."
+            ).format(store_sellable)
         elif workflow.state in (
             WorkflowState.EXECUTING,
             WorkflowState.AWAITING_RECEIPT,
@@ -1435,6 +2007,7 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
                 _stock_location(
                     "Front store",
                     available=store_qty,
+                    reserved=int(store_hold.get("reserved", 0)),
                     damaged=int(store_hold.get("damaged", 0)),
                     returns_pending=int(store_hold.get("returns_pending", 0)),
                     display_demo=int(store_hold.get("display_demo", 0)),
@@ -1442,6 +2015,7 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
                 _stock_location(
                     "Warehouse",
                     available=warehouse_qty,
+                    reserved=int(warehouse_hold.get("reserved", 0)),
                     inbound=inbound,
                     damaged=int(warehouse_hold.get("damaged", 0)),
                     returns_pending=int(warehouse_hold.get("returns_pending", 0)),
@@ -1463,6 +2037,7 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
             _stock_location(
                 "Front store",
                 available=system,
+                reserved=int(store_hold.get("reserved", 0)),
                 damaged=int(store_hold.get("damaged", 0)),
                 returns_pending=int(store_hold.get("returns_pending", 0)),
                 display_demo=int(store_hold.get("display_demo", 0)),
@@ -1470,6 +2045,8 @@ def build_inventory_snapshot(path: str, session_id: str = "local") -> dict:
             _stock_location(
                 "Warehouse",
                 available=0,
+                reserved=int(warehouse_hold.get("reserved", 0)),
+                inbound=int(warehouse_hold.get("inbound", 0)),
                 in_transfer=int(warehouse_hold.get("in_transfer", 0)),
             ),
         ]
@@ -1664,10 +2241,10 @@ def empty_cards() -> list:
 
 def _start_form() -> str:
     return (
-        '<form method="post" action="/"><input type="hidden" name="scenario" value="reorder">'
+        '<form method="post" action="{0}"><input type="hidden" name="scenario" value="reorder">'
         '<input type="hidden" name="action" value="simulate_email">'
         '<button class="primary" type="submit">Start interactive demo</button></form>'
-    )
+    ).format(SANDBOX_PREFIX)
 
 
 def load_cards(path: str, reorder_status: str, reorder_bucket: str, reorder_action: str = "", session_id: str = "local") -> list:
@@ -1683,11 +2260,42 @@ def load_cards(path: str, reorder_status: str, reorder_bucket: str, reorder_acti
 
 def load_cards_from(workshop, detective, rescue, staffing, reorder_status, reorder_bucket, reorder_action) -> list:
     return [
-        {"title": "Reorder the quiet linear switches", "description": "Supplier delay, one approval, simulated receipt.", "href": "/?scenario=reorder", "status": reorder_status, "bucket": reorder_bucket, "action": reorder_action},
-        _card("Can we take this on?", "BOM seat check: 70-packs, film, and pullers for a 20-person build night.", "/?scenario=workshop", workshop, "Not checked"),
-        _card("Where did the missing stock go?", "Sample strips: count mismatch with no invented cause.", "/?scenario=detective", detective, "Not investigated"),
-        _card("Save the sale", "Two merchant simulators and a contribution check.", "/?scenario=rescue", rescue, "Not requested"),
-        _card("Plan the right coverage", "Workload estimate before anyone is scheduled.", "/?scenario=staffing", staffing, "Not calculated"),
+        {
+            "title": "Reorder the quiet linear switches",
+            "description": "A supplier delay puts stock at risk. Approve one practice order, then receive it so available inventory updates.",
+            "href": sandbox_href("reorder"),
+            "status": reorder_status,
+            "bucket": reorder_bucket,
+            "action": reorder_action,
+        },
+        _card(
+            "Can we take this workshop?",
+            "A customer asks for a 20-person build night. Check seats, cash, and timing before you promise.",
+            sandbox_href("workshop"),
+            workshop,
+            "Not checked",
+        ),
+        _card(
+            "Where did the sample strips go?",
+            "System says 20; the count says 16. Investigate without inventing a cause.",
+            sandbox_href("detective"),
+            detective,
+            "Not investigated",
+        ),
+        _card(
+            "Save today’s walk-in sale",
+            "A customer needs a part you don’t have. See if practice neighbor shops can help.",
+            sandbox_href("rescue"),
+            rescue,
+            "Not requested",
+        ),
+        _card(
+            "How much coverage do we need?",
+            "Estimate Saturday hours (with or without a workshop). This does not schedule people.",
+            sandbox_href("staffing"),
+            staffing,
+            "Not calculated",
+        ),
     ]
 
 
@@ -1705,8 +2313,20 @@ def _card(title: str, description: str, href: str, saved: Optional[dict], empty_
         status = "Completed"
     elif phase in ("assessed", "investigated", "quoted", "negotiated", "calculated"):
         bucket = "Needs your decision"
-        status = phase.replace("_", " ")
+        status = {
+            "assessed": "Ready to decide",
+            "investigated": "Needs evidence",
+            "quoted": "Offers ready",
+            "negotiated": "Offers ready",
+            "calculated": "Coverage calculated",
+        }.get(phase, "Needs a decision")
     else:
         bucket = "In progress"
-        status = phase.replace("_", " ")
+        status = {
+            "approved": "Commitment approved",
+            "materials_in": "Materials inbound",
+            "authorized": "Fulfillment authorized",
+            "transferred": "Transfer simulated",
+            "corrected": "Correction applied",
+        }.get(phase, phase.replace("_", " ").capitalize() or "In progress")
     return {"title": title, "description": description, "href": href, "status": status, "bucket": bucket}

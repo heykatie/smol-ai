@@ -223,7 +223,7 @@ Example minimized fact:
 ```json
 {
   "supplier_id": "supplier-a",
-  "sku": "DEMO-SKU-001",
+  "sku": "DEMO-ITM-001",
   "fact_type": "lead_time_change",
   "previous_lead_time_days": 14,
   "new_lead_time_days": 35,

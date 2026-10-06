@@ -144,10 +144,10 @@ def test_postgres_daily_brief_shows_completed_reorder_and_evidence_without_sessi
     from pathlib import Path
     from app import _page
 
+    from reorder_path import advance_reorder
+
     app = postgres_inbox
-    app.apply("simulate_email")
-    app.apply("approve")
-    app.apply("receive_full")
+    advance_reorder(app, through="receive_full")
     assert not Path(app.path).exists()
     page = _page(str(Path(app.path).parent), app.session_id, "home")
     assert "Replenishment workflow completed" in page

@@ -174,7 +174,7 @@ Acceptance for the primary fixture:
 
 | Input or output | Value |
 | --- | --- |
-| SKU | `DEMO-SKU-001`, quiet linear switch |
+| Item ID | `DEMO-ITM-001`, quiet linear switch |
 | Sales over ten complete days | `[1, 2, 0, 1, 1, 2, 1, 0, 2, 1]` |
 | Total / daily velocity | 11 units / 1.1 units per day |
 | Available / reserved / warehouse / open PO | 21 / 0 / 0 / 0 |

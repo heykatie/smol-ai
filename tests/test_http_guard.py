@@ -80,7 +80,7 @@ def test_malformed_post_does_not_change_state(tmp_path):
         connection = HTTPConnection("127.0.0.1", port)
         connection.request(
             "POST",
-            "/",
+            "/try",
             "not-a-length",
             {"Content-Length": "nope", "Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -105,14 +105,14 @@ def test_forged_cookie_cannot_skip_the_creation_limit(tmp_path, monkeypatch):
     forged = "c" * 32
     try:
         first = HTTPConnection("127.0.0.1", port)
-        first.request("POST", "/", "action=simulate_email", {"Content-Type": "application/x-www-form-urlencoded"})
+        first.request("POST", "/try", "action=simulate_email", {"Content-Type": "application/x-www-form-urlencoded"})
         first_response = first.getresponse()
         assert first_response.status == 303
         first_response.read()
         second = HTTPConnection("127.0.0.1", port)
         second.request(
             "POST",
-            "/",
+            "/try",
             "action=simulate_email",
             {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -123,7 +123,11 @@ def test_forged_cookie_cannot_skip_the_creation_limit(tmp_path, monkeypatch):
         assert second_response.status == 429
         second_response.read()
         assert not (root / "{0}.sqlite3".format(forged)).exists()
-        assert len(list(root.glob("*.sqlite3"))) == 1
+        sessions = [
+            path for path in root.glob("*.sqlite3")
+            if len(path.stem) == 32 and path.stem.isalnum()
+        ]
+        assert len(sessions) == 1
     finally:
         server.shutdown()
         thread.join(timeout=2)
@@ -141,7 +145,7 @@ def test_scenario_value_cannot_inject_a_response_header(tmp_path):
         connection = HTTPConnection("127.0.0.1", port)
         connection.request(
             "POST",
-            "/",
+            "/try",
             "action=simulate_email&scenario=x%0d%0aX-Injected:%20yes",
             {"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -149,7 +153,7 @@ def test_scenario_value_cannot_inject_a_response_header(tmp_path):
         response.read()
         assert response.status == 303
         assert response.getheader("X-Injected") is None
-        assert response.getheader("Location") == "/"
+        assert response.getheader("Location") == "/try"
     finally:
         server.shutdown()
         thread.join(timeout=2)
@@ -197,6 +201,13 @@ def test_localhost_answers_on_ipv4_and_ipv6(tmp_path):
     for address in ("127.0.0.1", "::1"):
         connection = HTTPConnection(address, port, timeout=2)
         connection.request("GET", "/")
+        response = connection.getresponse()
+        home = response.read().decode("utf-8")
+        assert response.status == 200
+        assert "Start demo tour" in home
+        connection.close()
+        connection = HTTPConnection(address, port, timeout=2)
+        connection.request("GET", "/try")
         response = connection.getresponse()
         page = response.read().decode("utf-8")
         assert response.status == 200

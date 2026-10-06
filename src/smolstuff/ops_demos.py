@@ -15,7 +15,7 @@ from typing import Optional
 # Complete seats available = min(on_hand / per_seat) = 18 with seeded stock.
 WORKSHOP_BOM = (
     {
-        "sku": "DEMO-SKU-WS-PACK",
+        "sku": "DEMO-ITM-WS-PACK",
         "name": "Akko CS Piano 70-pack",
         "per_seat": 1,
         "store": 14,
@@ -24,7 +24,7 @@ WORKSHOP_BOM = (
         "bottleneck": True,
     },
     {
-        "sku": "DEMO-SKU-WS-FILM",
+        "sku": "DEMO-ITM-WS-FILM",
         "name": "IXPE switch film sheet",
         "per_seat": 1,
         "store": 22,
@@ -33,7 +33,7 @@ WORKSHOP_BOM = (
         "bottleneck": False,
     },
     {
-        "sku": "DEMO-SKU-WS-TOOL",
+        "sku": "DEMO-ITM-WS-TOOL",
         "name": "Keycap + switch puller duo",
         "per_seat": 1,
         "store": 20,

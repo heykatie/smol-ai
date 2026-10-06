@@ -27,6 +27,8 @@ from smolstuff.inventory import SupplyAssessment, assess_supply
 from smolstuff.lifecycle import WorkflowState
 from smolstuff.reorder import ReorderPlan, build_demo_plan, plan_reorder
 from smolstuff.demo_ui import (
+    PRACTICE_BANNER,
+    SANDBOX_PREFIX,
     shell, error_page,
     apply_ops,
     build_inventory_snapshot,
@@ -34,9 +36,12 @@ from smolstuff.demo_ui import (
     detective_page,
     empty_cards,
     empty_inventory_snapshot,
+    inventory_attention_count,
     inventory_page,
     load_cards,
+    product_home_page,
     rescue_page,
+    sandbox_href,
     staffing_page,
     workshop_page,
 )
@@ -53,22 +58,47 @@ SHORT_RECEIPT_KEY = "demo-receipt-short"
 REST_RECEIPT_KEY = "demo-receipt-rest"
 HOST = "127.0.0.1"
 PORT = 8765
+_PREP_ACTIONS = (
+    "review_continue",
+    "negotiate_accept",
+    "negotiate_counter",
+    "draft_send",
+)
 _ACTIONS = (
     "simulate_email",
     "approve",
     "decline",
     "reset",
+    "submit_order",
     "confirm",
     "receive_full",
     "receive_short",
     "receive_rest",
-)
+) + _PREP_ACTIONS
+REORDER_PREP_KEY = "reorder_prep"
+REORDER_ITEM_ID = "DEMO-ITM-001"
 
-_PAGE = Template("""<h1>$headline</h1><p class="lede">$summary</p>
-<article class="card"><p class="status $status_class">$status_label</p>
-<p>$investigation</p><p class="decision">$decision</p><p class="note">$note</p>$actions
+_PAGE = Template(
+    PRACTICE_BANNER
+    + """
+<section class="hero decision-hero">
+<p class="kicker">Reorder · quiet linear switch</p>
+<h1>$headline</h1>
+<p class="lede">$summary</p>
+</section>
+<article class="card decision-card">
+<p class="status $status_class">$status_label</p>
+<p class="decision">$decision</p>
+<p class="consequence">$note</p>
+<div class="card-actions decision-actions">$actions</div>
+$proofs
+<details class="why-details"><summary>Why this recommendation</summary>
+<p>$investigation</p>
+</details>
 <details id="evidence"><summary>Review evidence</summary>$evidence</details>
-<p class="built-with"><strong>Built with</strong> $built_with</p></article>""")
+<p class="built-with"><strong>Built with</strong> $built_with</p>
+</article>"""
+)
 
 
 class InboxApp:
@@ -89,22 +119,30 @@ class InboxApp:
             order = store.current_order(workflow.workflow_id)
             events = store.list_integration_events()
             return render_inbox(
-                workflow, assess_supply(WORKSHOP_SUPPLY_PACK), order, progress, plan, events
+                workflow,
+                assess_supply(WORKSHOP_SUPPLY_PACK),
+                order,
+                progress,
+                plan,
+                events,
+                prep=self._get_prep(),
             )
         finally:
             store.close()
 
-    def apply(self, action: str) -> None:
+    def apply(self, action: str, fields: Optional[dict] = None) -> None:
         if action == "start":
             action = "simulate_email"
         if action not in _ACTIONS:
             raise ValueError("Unknown inbox action.")
+        fields = fields or {}
         baseline = WORKSHOP_SUPPLY_PACK.sellable_on_hand
         store = WorkflowStore(self.path, session_id=self.session_id)
         try:
             if action == "reset":
                 store.reset_signal(DEMO_SIGNAL_KEY)
-                ScenarioStore(self.path, self.session_id).reset("supplier_fact")
+                self._reset_scenario("supplier_fact")
+                self._reset_scenario(REORDER_PREP_KEY)
                 return
             if action == "simulate_email":
                 if store.find_by_dedup(DEMO_SIGNAL_KEY) is not None:
@@ -130,6 +168,17 @@ class InboxApp:
                 if not started.replayed:
                     self._record_supplier_research(store)
                     self._record_zoowork(store)
+                    self._save_prep(
+                        {
+                            "phase": "review",
+                            "countered": False,
+                            "counter_price": "",
+                            "draft_body": _default_draft_body(plan),
+                        }
+                    )
+                return
+            if action in _PREP_ACTIONS:
+                self._apply_prep(action, fields)
                 return
             plan = self._plan()
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
@@ -141,7 +190,12 @@ class InboxApp:
                     store.decline(workflow_id, actor="owner")
                 return
             if action == "approve":
-                self._approve(store, workflow, plan, baseline)
+                if self._get_prep().get("phase") != "ready":
+                    return
+                self._approve(store, workflow)
+                return
+            if action == "submit_order":
+                self._submit_order(store, workflow, plan)
                 return
             if action == "confirm":
                 confirmed = store.confirm(workflow_id, plan.proposal, baseline)
@@ -179,27 +233,45 @@ class InboxApp:
         finally:
             store.close()
 
-    def _approve(self, store, workflow, plan, baseline) -> None:
+    def _approve(self, store, workflow) -> None:
+        """Bind owner approval only. Submit and confirmation are separate steps."""
         workflow_id = workflow.workflow_id
         if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
             store.approve(workflow_id, actor="owner")
+            store.record_integration(
+                PURCHASE_ADAPTER,
+                "Record owner approval for the purchase terms",
+                "Approval bound to Supplier B, 100 units, $189.",
+                "Order is not submitted until the next step.",
+                "simulated",
+            )
+            return
+        if workflow.state == WorkflowState.APPROVED:
+            store.record_integration(
+                PURCHASE_ADAPTER,
+                "Record owner approval for the purchase terms",
+                "Approval already recorded.",
+                "Submit the order when ready.",
+                "replayed",
+            )
+
+    def _submit_order(self, store, workflow, plan) -> None:
+        workflow_id = workflow.workflow_id
         current = store.get(workflow_id)
-        executed = None
         if current.state in (WorkflowState.APPROVED, WorkflowState.AUTHORIZED):
             executed = store.execute(workflow_id, plan.proposal, EXAMPLE_POLICY)
             store.record_integration(
                 PURCHASE_ADAPTER,
                 "Submit the approved purchase",
                 executed.reason,
-                "No second order was created." if executed.replayed else "One simulated order is waiting for confirmation.",
+                "No second order was created."
+                if executed.replayed
+                else "One simulated order is waiting for confirmation.",
                 "replayed" if executed.replayed else "simulated",
             )
-            current = store.get(workflow_id)
-        if current.state == WorkflowState.EXECUTING:
-            confirmed = store.confirm(workflow_id, plan.proposal, baseline)
-            self._record_confirmation(store, confirmed)
             return
-        if executed is None and current.state in (
+        if current.state in (
+            WorkflowState.EXECUTING,
             WorkflowState.AWAITING_RECEIPT,
             WorkflowState.RECONCILING,
             WorkflowState.COMPLETED,
@@ -211,6 +283,67 @@ class InboxApp:
                 "The workflow stayed on its current step.",
                 "replayed",
             )
+
+    def _apply_prep(self, action: str, fields: dict) -> None:
+        prep = self._get_prep()
+        phase = prep.get("phase") or "review"
+        plan = self._plan()
+        if action == "review_continue" and phase == "review":
+            prep["phase"] = "negotiate"
+            prep.setdefault("draft_body", _default_draft_body(plan))
+            self._save_prep(prep)
+            return
+        if action == "negotiate_counter" and phase == "negotiate":
+            raw = fields.get("counter_price", ["180"])[0]
+            prep["countered"] = True
+            prep["counter_price"] = str(raw).strip() or "180"
+            prep["hold_reply"] = (
+                "Supplier B held the seeded offer at $189. "
+                "No discount on this practice fixture."
+            )
+            self._save_prep(prep)
+            return
+        if action == "negotiate_accept" and phase == "negotiate":
+            prep["phase"] = "draft"
+            prep.setdefault("draft_body", _default_draft_body(plan))
+            self._save_prep(prep)
+            return
+        if action == "draft_send" and phase == "draft":
+            body = fields.get("draft_body", [prep.get("draft_body") or _default_draft_body(plan)])[0]
+            prep["draft_body"] = str(body)
+            prep["phase"] = "ready"
+            prep["draft_sent"] = True
+            self._save_prep(prep)
+            return
+
+    def _get_prep(self) -> dict:
+        store = ScenarioStore(self.path, self.session_id)
+        try:
+            saved = store.get(REORDER_PREP_KEY)
+        finally:
+            store.close()
+        if saved:
+            return saved
+        return {
+            "phase": "review",
+            "countered": False,
+            "counter_price": "",
+            "draft_body": "",
+        }
+
+    def _save_prep(self, payload: dict) -> None:
+        store = ScenarioStore(self.path, self.session_id)
+        try:
+            store.save(REORDER_PREP_KEY, payload)
+        finally:
+            store.close()
+
+    def _reset_scenario(self, name: str) -> None:
+        store = ScenarioStore(self.path, self.session_id)
+        try:
+            store.reset(name)
+        finally:
+            store.close()
 
     def _record_confirmation(self, store, confirmed) -> None:
         if not confirmed.accepted and not confirmed.replayed:
@@ -261,7 +394,7 @@ class InboxApp:
         if action.startswith(("workshop_", "detective_", "rescue_", "staffing_")):
             apply_ops(self.path, action, fields, self.session_id)
             return fields.get("scenario", ["home"])[0]
-        self.apply(action)
+        self.apply(action, fields)
         return fields.get("scenario", ["reorder"])[0]
 
     def _inventory(self) -> str:
@@ -293,14 +426,20 @@ class InboxApp:
         else:
             cards = empty_cards()
             events = ()
-        return dashboard_page(cards, events)
+        if self._has_saved_state():
+            snap = build_inventory_snapshot(self.path, self.session_id)
+        else:
+            snap = empty_inventory_snapshot()
+        return dashboard_page(
+            cards, events, inventory_attention=inventory_attention_count(snap)
+        )
 
     def _reorder_card(self):
         start = (
-            '<form method="post" action="/"><input type="hidden" name="scenario" value="reorder">'
+            '<form method="post" action="{0}"><input type="hidden" name="scenario" value="reorder">'
             '<input type="hidden" name="action" value="simulate_email">'
             '<button class="primary" type="submit">Start interactive demo</button></form>'
-        )
+        ).format(SANDBOX_PREFIX)
         if not self._has_saved_state():
             return "Not started", "Not started", start
         store = WorkflowStore(self.path, session_id=self.session_id)
@@ -311,8 +450,14 @@ class InboxApp:
         if workflow is None:
             return "Not started", "Not started", start
         if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
-            review = '<a class="open" href="/?scenario=reorder">Review the $189 decision</a>'
+            review = (
+                '<a class="open" href="{0}">Review the $189 decision</a>'
+            ).format(escape(sandbox_href("reorder")))
             return "Decision needed", "Needs your decision", review
+        if workflow.state == WorkflowState.APPROVED:
+            return "Approved — submit order", "In progress", ""
+        if workflow.state == WorkflowState.EXECUTING:
+            return "Awaiting confirmation", "In progress", ""
         if workflow.state == WorkflowState.AWAITING_RECEIPT:
             return "Awaiting receipt", "In progress", ""
         if workflow.state == WorkflowState.COMPLETED:
@@ -421,9 +566,10 @@ def render_inbox(
     progress: FulfillmentView,
     plan: ReorderPlan,
     events,
+    prep: Optional[dict] = None,
 ) -> str:
     headline, summary, investigation, decision, note, status_label, status_class, actions = _status_copy(
-        progress, order, plan
+        progress, order, plan, prep or {}
     )
     return shell("Reorder", _PAGE.substitute(
         headline=escape(headline),
@@ -439,26 +585,29 @@ def render_inbox(
     ))
 
 
-def _status_copy(progress, order, plan: ReorderPlan):
+def _status_copy(progress, order, plan: ReorderPlan, prep: dict):
     state = progress.workflow_state
     on_hand = _units(progress.on_hand)
     if state == WorkflowState.WAITING_FOR_APPROVAL:
+        return _waiting_approval_copy(plan, prep)
+    if state == WorkflowState.APPROVED:
         total = _cash(plan.proposal_total())
         return (
-            "Supplier delay puts inventory at risk",
-            "You have about {0} days of stock. Your supplier now needs {1} days to replenish it.".format(
-                _whole_days(plan.days_of_supply), plan.lead_time_days
+            "Approved — submit the practice order",
+            "You authorized ${0} for {1} units from Supplier B.".format(total, plan.quantity),
+            "Approval is bound. The next step sends the simulated purchase. Stock stays {0} until receipt.".format(
+                _show_units(plan.available_now)
             ),
-            "There is about a {0}-day gap. Warehouse stock and existing orders cannot cover the gap. Supplier B offers an alternative with an estimated {1}-day delivery.".format(
-                _whole_days(plan.projected_gap_days), plan.delivery_days
+            "Submit the simulated order to Supplier B",
+            "No confirmation or stock change yet.",
+            "Approved",
+            "progress",
+            "".join(
+                [
+                    _form("submit_order", "Submit simulated order", "primary"),
+                    _form("reset", "Reset demo", "secondary"),
+                ]
             ),
-            "Order {0} units from Supplier B".format(plan.quantity),
-            "{0}. Minimum order: {1} units. This buys more than the immediate shortage. This purchase exceeds your below-$40 automatic spending limit. The other configured checks pass.".format(
-                _price_breakdown(plan), plan.quantity
-            ),
-            "Decision needed",
-            "waiting",
-            _decision_buttons(total),
         )
     if state == WorkflowState.EXECUTING and order is not None:
         return (
@@ -467,13 +616,13 @@ def _status_copy(progress, order, plan: ReorderPlan):
             "Available inventory is still {0}. Confirmation has not finished.".format(
                 _show_units(plan.available_now)
             ),
-            "This step does not complete the workflow.",
+            "Confirm the supplier match before receipt",
             "On hand is still {0}.".format(on_hand),
             "Purchase submitted",
             "executing",
             "".join(
                 [
-                    _form("confirm", "Resume simulated confirmation", "primary"),
+                    _form("confirm", "Confirm supplier match", "primary"),
                     _form("reset", "Reset demo", "secondary"),
                 ]
             ),
@@ -486,7 +635,7 @@ def _status_copy(progress, order, plan: ReorderPlan):
                 plan.delivery_days
             ),
             "Available inventory is still {0}.".format(_show_units(plan.available_now)),
-            "Stock has not changed.",
+            "Stock has not changed. Review the confirmation below, then simulate receipt.",
             "Awaiting receipt",
             "waiting",
             "".join(
@@ -496,6 +645,8 @@ def _status_copy(progress, order, plan: ReorderPlan):
                         "Simulate receiving {0} units".format(plan.quantity),
                         "primary",
                     ),
+                    '<a class="open" href="#confirmation">View confirmation</a>',
+                    '<a class="open" href="#receipt">Purchase receipt</a>',
                     _form("reset", "Reset demo", "secondary"),
                 ]
             ),
@@ -520,11 +671,13 @@ def _status_copy(progress, order, plan: ReorderPlan):
                         "Simulate receipt of the remaining {0}".format(progress.unresolved_quantity),
                         "primary",
                     ),
+                    '<a class="open" href="#receipt">View receipt</a>',
                     _form("reset", "Reset demo", "secondary"),
                 ]
             ),
         )
     if state == WorkflowState.COMPLETED:
+        inv_href = sandbox_href("inventory", q=REORDER_ITEM_ID)
         return (
             "Replenishment workflow completed",
             "{0} units received. Available inventory updated from {1} to {2}.".format(
@@ -534,10 +687,17 @@ def _status_copy(progress, order, plan: ReorderPlan):
                 plan.delivery_days
             ),
             "1 owner approval. Simulated receipt recorded. Inventory reconciled.",
-            "On hand is now {0}.".format(on_hand),
+            "On hand is now {0}. Open the catalog line to see Available at 121.".format(on_hand),
             "Completed",
             "completed",
-            _form("reset", "Reset demo", "secondary"),
+            "".join(
+                [
+                    '<a class="open" href="{0}">View Quiet linear switch in inventory</a>'.format(
+                        escape(inv_href)
+                    ),
+                    _form("reset", "Reset demo", "secondary"),
+                ]
+            ),
         )
     if state == WorkflowState.RECOVERY:
         return (
@@ -570,6 +730,148 @@ def _status_copy(progress, order, plan: ReorderPlan):
         state.value.replace("_", " "),
         state.value,
         _form("reset", "Reset demo", "secondary"),
+    )
+
+
+def _waiting_approval_copy(plan: ReorderPlan, prep: dict):
+    total = _cash(plan.proposal_total())
+    phase = prep.get("phase") or "review"
+    risk_summary = (
+        "You have about {0} days of stock. Your usual supplier now needs {1} days.".format(
+            _whole_days(plan.days_of_supply), plan.lead_time_days
+        )
+    )
+    investigation = (
+        "There is about a {0}-day gap. Warehouse stock and existing orders cannot cover it. "
+        "Supplier B can deliver in about {1} days. "
+        "Minimum order: {2} units. This buys more than the immediate shortage. "
+        "This purchase exceeds your below-$40 automatic spending limit. The other configured checks pass.".format(
+            _whole_days(plan.projected_gap_days),
+            plan.delivery_days,
+            plan.quantity,
+        )
+    )
+    if phase == "review":
+        packet = (
+            "Packet: about {gap}-day gap; Supplier B {qty} units at {breakdown}; "
+            "MOQ {qty} (above immediate shortage); policy blocks auto-buy below $40. "
+            "Stock stays {stock} until a simulated receipt."
+        ).format(
+            gap=_whole_days(plan.projected_gap_days),
+            qty=plan.quantity,
+            breakdown=_price_breakdown(plan),
+            stock=_show_units(plan.available_now),
+        )
+        return (
+            "Supplier delay puts inventory at risk",
+            risk_summary,
+            investigation,
+            "Review the purchase packet before you negotiate or approve",
+            packet,
+            "Review packet",
+            "waiting",
+            "".join(
+                [
+                    _form("review_continue", "Continue to terms", "primary"),
+                    _form("decline", "Decline this order", "secondary"),
+                    _form("reset", "Reset demo", "secondary"),
+                ]
+            ),
+        )
+    if phase == "negotiate":
+        countered = bool(prep.get("countered"))
+        hold = escape(str(prep.get("hold_reply") or ""))
+        counter_form = (
+            '<form method="post" action="{0}">'
+            '<input type="hidden" name="action" value="negotiate_counter">'
+            '<label>Counter total <input name="counter_price" value="{1}"></label>'
+            '<button class="secondary" type="submit">Send counteroffer</button></form>'
+        ).format(SANDBOX_PREFIX, escape(str(prep.get("counter_price") or "180")))
+        actions = [
+            _form("negotiate_accept", "Accept $189 terms", "primary"),
+        ]
+        if not countered:
+            actions.append(counter_form)
+        else:
+            actions.append("<p class=\"note\">{0}</p>".format(hold))
+        actions.extend(
+            [
+                _form("decline", "Decline this order", "secondary"),
+                _form("reset", "Reset demo", "secondary"),
+            ]
+        )
+        decision = (
+            "Supplier B held at $189 — accept to draft the purchase message"
+            if countered
+            else "Accept Supplier B’s seeded $189 terms, or try one counter"
+        )
+        return (
+            "Negotiate the seeded offer",
+            "Supplier B: {0} units · {1} · about {2}-day delivery.".format(
+                plan.quantity, _price_breakdown(plan), plan.delivery_days
+            ),
+            investigation,
+            decision,
+            "This practice fixture does not invent a discount. Money approval comes after the draft.",
+            "Negotiate",
+            "waiting",
+            "".join(actions),
+        )
+    if phase == "draft":
+        body = prep.get("draft_body") or _default_draft_body(plan)
+        draft_form = (
+            '<form method="post" action="{0}">'
+            '<input type="hidden" name="action" value="draft_send">'
+            '<label>Practice purchase message'
+            '<textarea name="draft_body" rows="8">{1}</textarea></label>'
+            '<button class="primary" type="submit">Send simulated draft</button></form>'
+        ).format(SANDBOX_PREFIX, escape(body))
+        return (
+            "Draft the purchase message",
+            "Lock the terms in a practice PO email before money approval.",
+            investigation,
+            "Send a simulated draft to Supplier B",
+            "Editable practice text only — nothing leaves this demo.",
+            "Draft message",
+            "progress",
+            "".join(
+                [
+                    draft_form,
+                    _form("decline", "Decline this order", "secondary"),
+                    _form("reset", "Reset demo", "secondary"),
+                ]
+            ),
+        )
+    # ready — money approval
+    return (
+        "Supplier delay puts inventory at risk",
+        risk_summary,
+        investigation,
+        "Order {0} units from Supplier B for ${1}".format(plan.quantity, total),
+        "{0}. Approving authorizes spend only — you still submit and confirm before receipt. "
+        "Stock stays {1} until you simulate receipt.".format(
+            _price_breakdown(plan), _show_units(plan.available_now)
+        ),
+        "Decision needed",
+        "waiting",
+        _decision_buttons(total),
+    )
+
+
+def _default_draft_body(plan: ReorderPlan) -> str:
+    total = _cash(plan.proposal_total())
+    return (
+        "To: Supplier B\n"
+        "Subject: Purchase order — Quiet linear switch\n\n"
+        "Please confirm {qty} units of Quiet linear switch at ${unit} each "
+        "plus ${ship} shipping (${total} total), estimated delivery {days} days.\n\n"
+        "— Practice shop (simulated)"
+    ).format(
+        qty=plan.quantity,
+        unit=_cash(plan.proposal.unit_price.amount),
+        ship=_cash(plan.proposal.fees.amount),
+        total=total,
+        days=plan.delivery_days,
     )
 
 
@@ -618,20 +920,36 @@ def _evidence(plan: ReorderPlan, progress: FulfillmentView, order: Optional[tupl
         "<h2>Policy</h2>",
         "<p>{0}</p>".format(escape(" ".join(plan.policy_result.reasons))),
     ]
+    sections.append('<h2 id="confirmation">Approval and confirmation</h2>')
     if order is not None:
-        sections.append("<h2>Approval and confirmation</h2>")
         sections.append(
-            "<p>Simulated order {0}. Idempotency key {1}.</p>".format(escape(order[0]), escape(order[1]))
+            "<p>Practice order {0}. Replay-safe reference {1}.</p>".format(
+                escape(order[0]), escape(order[1])
+            )
         )
+    else:
+        sections.append("<p>No simulated order has been submitted yet.</p>")
     if progress.confirmation_matched:
-        sections.append("<p>Confirmation matched the approved product, quantity, and total. Available inventory stayed at {0}.</p>".format(
-            escape(_show_units(plan.available_now))
-        ))
-    if progress.received_quantity:
-        sections.append("<h2>Receipt</h2>")
         sections.append(
-            "<p>Simulated receipt of {0} units. Available inventory is now {1}. Accelerated simulation: six days of sales were not subtracted.</p>".format(
+            "<p>Confirmation matched the approved product, quantity, and total. "
+            "Available inventory stayed at {0}.</p>".format(
+                escape(_show_units(plan.available_now))
+            )
+        )
+    elif order is not None:
+        sections.append("<p>Supplier confirmation has not been matched yet.</p>")
+    sections.append('<h2 id="receipt">Receipt</h2>')
+    if progress.received_quantity:
+        sections.append(
+            "<p>Simulated receipt of {0} units. Available inventory is now {1}. "
+            "Accelerated simulation: six days of sales were not subtracted.</p>".format(
                 progress.received_quantity, escape(_units(progress.on_hand))
+            )
+        )
+    else:
+        sections.append(
+            "<p>No simulated receipt recorded yet. Available stock is still {0}.</p>".format(
+                escape(_show_units(plan.available_now))
             )
         )
     sections.append("<h2>Tool records</h2>")
@@ -672,20 +990,36 @@ def _show_units(value: Decimal) -> str:
     return format(quantized, "f")
 
 
-_EMPTY_PAGE = shell("Reorder", """<section class="hero"><p class="kicker">Replenishment</p>
-<h1>Your operations, followed through.</h1><p class="lede">See a supplier delay become an informed decision,
-then a verified receipt. One meaningful approval, with the evidence close at hand.</p></section>
-<article><h3>A small signal. A complete resolution.</h3><p class="note">Start interactive demo simulates a permitted supplier message.
-No upload, real inbox access, or real purchase is needed.</p><form method="post" action="/">
-<input type="hidden" name="scenario" value="reorder"><input type="hidden" name="action" value="simulate_email">
-<button class="primary" type="submit">Start interactive demo</button></form></article>""")
+_EMPTY_PAGE = shell(
+    "Reorder",
+    PRACTICE_BANNER
+    + """
+<section class="hero decision-hero">
+<p class="kicker">Reorder · quiet linear switch</p>
+<h1>A supplier delay. One decision. A verified receipt.</h1>
+<p class="lede">Walk the full replenishment loop: review the packet, negotiate the seeded offer, draft a practice message, approve $189, submit, confirm, then simulate receipt so available inventory updates.</p>
+</section>
+<article class="card decision-card">
+<p class="status idle">Ready to start</p>
+<p class="decision">Start with a permitted supplier message</p>
+<p class="consequence">No upload, real inbox, or real purchase. Everything in this path is a practice run.</p>
+<div class="card-actions decision-actions">
+<form method="post" action="{sandbox}">
+<input type="hidden" name="scenario" value="reorder">
+<input type="hidden" name="action" value="simulate_email">
+<button class="primary" type="submit">Start interactive demo</button>
+</form>
+</div>
+</article>
+""".format(sandbox=SANDBOX_PREFIX),
+)
 
 
 def _decision_buttons(total: str) -> str:
     return "".join(
         [
             _form("approve", "Approve simulated ${0} order".format(total), "primary"),
-            _form("decline", "Decline", "secondary"),
+            _form("decline", "Decline this order", "secondary"),
             _form("reset", "Reset demo", "secondary"),
         ]
     )
@@ -693,11 +1027,11 @@ def _decision_buttons(total: str) -> str:
 
 def _form(action: str, label: str, kind: str) -> str:
     return (
-        '<form method="post" action="/">'
-        '<input type="hidden" name="action" value="{0}">'
-        '<button class="{1}" type="submit">{2}</button>'
+        '<form method="post" action="{0}">'
+        '<input type="hidden" name="action" value="{1}">'
+        '<button class="{2}" type="submit">{3}</button>'
         "</form>"
-    ).format(escape(action), escape(kind), escape(label))
+    ).format(SANDBOX_PREFIX, escape(action), escape(kind), escape(label))
 
 
 def _units(value: Optional[Decimal]) -> str:
@@ -744,14 +1078,18 @@ _SESSION_ID = re.compile(r"^[a-f0-9]{32}$")
 def make_handler(app: InboxApp):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
-            if urlparse(self.path).path != "/":
+            path = urlparse(self.path).path
+            if path == "/":
+                self._send(200, product_home_page())
+                return
+            if path != SANDBOX_PREFIX:
                 self._send(404, error_page("This page could not be found."))
                 return
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             self._send(200, app.view(scenario))
 
         def do_POST(self) -> None:
-            if urlparse(self.path).path != "/":
+            if urlparse(self.path).path != SANDBOX_PREFIX:
                 self._send(404, error_page("This page could not be found."))
                 return
             try:
@@ -796,20 +1134,24 @@ def make_session_handler(directory: str):
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
-            if urlparse(self.path).path != "/":
+            path = urlparse(self.path).path
+            if path == "/":
+                self._send(200, product_home_page())
+                return
+            if path != SANDBOX_PREFIX:
                 self._send(404, error_page("This page could not be found."))
                 return
             expire_demo_sessions(str(root))
             scenario = parse_qs(urlparse(self.path).query).get("scenario", ["home"])[0]
             session_id = _read_session(self.headers.get("Cookie", ""))
-            path = None if session_id is None else root / "{0}.sqlite3".format(session_id)
-            if session_id is None or not (path.is_file() or _session_in_database(session_id)):
+            db_path = None if session_id is None else root / "{0}.sqlite3".format(session_id)
+            if session_id is None or not (db_path.is_file() or _session_in_database(session_id)):
                 self._send(200, _blank_scenario(scenario))
                 return
-            self._send(200, InboxApp(str(path), session_id=session_id).view(scenario))
+            self._send(200, InboxApp(str(db_path), session_id=session_id).view(scenario))
 
         def do_POST(self) -> None:
-            if urlparse(self.path).path != "/":
+            if urlparse(self.path).path != SANDBOX_PREFIX:
                 self._send(404, error_page("This page could not be found."))
                 return
             expire_demo_sessions(str(root))
@@ -824,9 +1166,9 @@ def make_session_handler(directory: str):
             except SessionLimited:
                 self._send(429, error_page("Too many new demos. Try again later."))
                 return
-            path = root / "{0}.sqlite3".format(session_id)
+            db_path = root / "{0}.sqlite3".format(session_id)
             try:
-                scenario = InboxApp(str(path), session_id=session_id).route(action, fields)
+                scenario = InboxApp(str(db_path), session_id=session_id).route(action, fields)
             except (ValueError, InvalidOperation):
                 self._send(400, error_page())
                 return
@@ -953,8 +1295,8 @@ _KNOWN_SCENARIOS = {"reorder", "inventory", "workshop", "detective", "rescue", "
 
 def _scenario_location(scenario: str) -> str:
     if scenario not in _KNOWN_SCENARIOS:
-        return "/"
-    return "/?scenario={0}".format(scenario)
+        return SANDBOX_PREFIX
+    return sandbox_href(scenario)
 
 
 def _read_session(cookie_header: str) -> Optional[str]:

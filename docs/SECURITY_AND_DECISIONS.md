@@ -42,6 +42,17 @@ Revocation stops new reads, model disclosures and unauthorized pending actions i
 
 Production audit records link source/evidence, disclosed fields, action snapshot, policy version, authenticated actor, execution attempt/external ID, verification, receipt/movement and resolution. Protect writes and exports; decide retention and tamper protection explicitly. Concise evidence/rationale suffices; hidden model reasoning is not an audit requirement.
 
+## Access model (owner-confirmed 2026-10-05)
+
+Two surfaces. Do not merge them into one anonymous experience.
+
+| Surface | Access | Data | Sponsor / connectors | Purpose |
+| --- | --- | --- | --- | --- |
+| **Demo tour / sandbox** (`/try`) | Try without signup; optional light demo login later | Synthetic demo fixtures; **small demo catalog** (focal reorder + workshop/detective lines + a few sample rows); session TTL; reset allowed | **No sponsor calls.** Simulated adapters only | Public guided tour — demo workflows, demo wording, demo products |
+| **Practice owner app** (authenticated) | Practice owner login (not end-customer signup); demo login or any account once shipped | Seeded tenant data that behaves like a working shop — including the **dense specialty-shop inventory** (~492 fictional SKUs) | **Real sponsor calls** under D3 caps; connectors only to **disposable demo accounts** (never a production mailbox/POS) | Real working features with seeded data; not anonymous tour density |
+
+`/` is a product-home stub that states both surfaces. The try-without-signup demo tour is `/try` (anonymous cookie, synthetic actions, `SMOL_SPONSOR_CALLS` off, `SANDBOX_CATALOG`). The full `SEEDED_CATALOG` is structured for practice-owner login but that login is not shipped yet. Practice-owner is not customer multi-tenancy and does not authorize real-business commitments (D1/D2/D5 still gate that). Do not invent Tiny or any real-shop identity.
+
 ## Decision register
 
 These are missing consequential choices, not permissions the coding assistant may infer. Implement a disabled/configurable boundary while progressing with synthetic tests.
@@ -50,9 +61,9 @@ These are missing consequential choices, not permissions the coding assistant ma
 | --- | --- | --- | --- |
 | D1 | Real mailbox onboarding | First provider, operations mailbox/routing vs mixed inbox, exact scopes, permitted categories and consent wording | Synthetic event source only. **Interim (2026-10-05):** no real connectors unless a disposable/dummy account with fictional data is used for controlled testing; no production mailbox or real-business commitments |
 | D2 | Real inventory/POS integration | Authoritative system, SKU/location mapping, conflict priority, observation cadence, read/write scopes | Fixture ledger; never overwrite remote quantities. Same dummy-account test gate as D1 |
-| D3 | Public sponsor/model execution | Runtime/provider, specific model, approved total and session cost budget, quota window | **Interim (2026-10-05):** anonymous/public visitors must not trigger paid calls. Keep `SMOL_SPONSOR_CALLS` off for the public site. Later demo-login may allow owner/demo paid calls only. Recorded hackathon inventory: ZooWork **$200**; Tavily **8,000 credits**; other providers = signup free-plan only (no separate grant). Exact env caps still required before enabling; see recommended starting caps below |
+| D3 | Public sponsor/model execution | Runtime/provider, specific model, approved total and session cost budget, quota window | **Owner-confirmed (2026-10-05):** sandbox / try-without-signup = **no** paid calls. Practice-owner login may enable sponsor calls only after exact env caps and a server-side budget gate. Anonymous public stays off. Recorded grants: ZooWork **$200**; Tavily **8,000 credits**; others = signup free-plan only. See caps below |
 | D4 | Hosted durability | Vercel and Neon Postgres are recorded as connected in [ARCHITECTURE.md](ARCHITECTURE.md); commit `0847325` records one approval surviving redeploy. Backup/restore and database retention/cleanup policy still need decisions | **Interim (2026-10-05):** keep anonymous demo TTL at one day (`SMOL_DEMO_TTL_SECONDS=86400`), matching the cookie. Local files and Postgres demo session rows expire on that TTL. App-level backup/restore is deferred; Neon’s restore/branching is enough while data stays synthetic |
-| D5 | Real approvals or purchases | Auth/roles, allowed action classes, approval TTL, hard cash limits vs overrideable rules, budget window and reservation semantics | **Interim (2026-10-05):** owner login deferred. Synthetic approval only; block real executor |
+| D5 | Real approvals or purchases | Auth/roles, allowed action classes, approval TTL, hard cash limits vs overrideable rules, budget window and reservation semantics | **Owner-confirmed direction (2026-10-05):** practice-owner login for the real app surface; sandbox stays try-without-signup / tour. Until auth ships: synthetic approval only; block real executor. Real-business purchases still blocked |
 | D6 | Real data ingestion | Raw-content/fact/audit/vector retention, storage location, third-party handling, erasure and backup exceptions | No private records; public fixtures only. Retention follows the D4 interim until private data exists |
 | D7 | Live merchant outreach | Participating counterparties, discovery/geo scope, nonbinding message authority, offer expiry/reservation protocol, transfer/dispute responsibility | Two fictional participants; simulated negotiation only. Same dummy-account test gate as D1 |
 | D8 | General forecasting | Complete-history minimum, target coverage horizon, safety-stock rule, seasonality and stockout bias | Ten-day demo average; no optimized quantity claim |
@@ -60,9 +71,9 @@ These are missing consequential choices, not permissions the coding assistant ma
 
 Preview input ranges, retry caps and synthetic negotiation rounds in the implementation contract are proposed engineering defaults. Record accepted changes here; do not call them owner-confirmed decisions. None of these proposals expands access, spending or disclosure authority.
 
-### Recommended starting caps (demo-login only; not enabled)
+### Recommended starting caps (practice-owner login only; not enabled)
 
-One reorder start can claim up to three sponsor slots today (Novita + Tavily + ZooWork). Counts are task attempts, not dollars. Do not set these on the public Vercel project until demo-login exists and the owner confirms.
+One reorder start can claim up to three sponsor slots today (Novita + Tavily + ZooWork). Counts are task attempts, not dollars. Do not set these until practice-owner login exists and the owner confirms. Never enable on the anonymous sandbox.
 
 | Limit | Suggested start | Why |
 | --- | --- | --- |

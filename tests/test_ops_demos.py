@@ -32,7 +32,7 @@ def test_default_workshop_is_feasible_with_a_minimum_order():
     assert result["verdict"] == "feasible_with_conditions"
     assert len(result["bom"]) == 3
     pack = next(item for item in result["bom"] if item["bottleneck"])
-    assert pack["sku"] == "DEMO-SKU-WS-PACK"
+    assert pack["sku"] == "DEMO-ITM-WS-PACK"
     assert pack["purchase"] == 10
     assert pack["after_units"] == 8
 

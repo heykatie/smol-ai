@@ -39,8 +39,12 @@ main{min-width:0;padding:30px 42px 56px}
 .hero .lede{max-width:580px;margin-bottom:0}
 .hero-spark{position:absolute;right:26px;top:26px;color:var(--accent);font-size:30px}
 .counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0 30px}
-.counts span{display:flex;flex-direction:column-reverse;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);font-size:11px;color:var(--muted)}
+.counts span,.counts a.count-link{display:flex;flex-direction:column-reverse;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);font-size:11px;color:var(--muted);text-decoration:none}
+.counts a.count-link{border-color:#6a5a88;background:linear-gradient(180deg,#262235 0%,var(--surface) 70%);cursor:pointer}
+.counts a.count-link:hover,.counts a.count-link:focus-visible{border-color:var(--accent);color:var(--ink);outline:none}
 .counts strong{font-size:28px;color:var(--ink);font-weight:600;line-height:1.25;margin-top:5px;font-variant-numeric:tabular-nums}
+.attention-card{border-color:#6a5a88;margin:0 0 22px}
+#attention-filter-note{margin:0 0 12px}
 
 h1{font-size:30px;line-height:1.25;letter-spacing:-1px;font-weight:650;margin:0 0 12px}
 h2{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:28px 0 14px;font-weight:650}
@@ -78,7 +82,19 @@ pre{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;background:#14151
 dl{display:grid;grid-template-columns:minmax(120px,1fr) 2fr;gap:8px}
 dt{color:var(--muted)}
 dd{margin:0}
-.decision{font-size:20px;font-weight:600;letter-spacing:-.3px}
+.decision{font-size:22px;font-weight:650;letter-spacing:-.4px;margin:10px 0 6px;color:var(--ink)}
+.consequence{font-size:14px;color:var(--muted);margin:0 0 4px;max-width:42rem}
+.sim-banner{margin:0 0 18px;padding:12px 16px;border:1px solid #56486d;border-radius:14px;background:#252033;color:#d7ccec;font-size:13px;line-height:1.45}
+.sim-banner strong{color:var(--ink);font-weight:650}
+.decision-hero{margin-bottom:18px}
+.decision-card{margin-top:0}
+.launch-primary{border-color:#6a5a88;background:linear-gradient(180deg,#262235 0%,var(--surface) 70%)}
+h2.launch-title{font-size:20px;letter-spacing:-.4px;text-transform:none;color:var(--ink);margin:10px 0 8px;font-weight:650}
+.card-next{margin:4px 0 0;font-size:12px}
+.decision-actions{padding-top:14px;gap:8px}
+.decision-actions form{display:inline}
+.decision-actions button{margin:0 8px 8px 0}
+.why-details{margin-top:18px;padding-top:16px}
 .built-with{font-size:12px;color:var(--muted)}
 .empty{font-size:13px;color:var(--muted);padding:14px 18px;border:1px dashed var(--line);border-radius:12px;margin:0}
 .activity{list-style:none;padding:0;display:grid;gap:10px}
@@ -112,9 +128,11 @@ li{margin:8px 0;overflow-wrap:anywhere}
 .catalog-table tbody tr:hover td{background:#22252e}
 .catalog-table tbody tr:hover td.col-product{background:#22252e}
 .catalog-table tbody tr.is-hidden{display:none}
+.catalog-table tbody tr.catalog-focus{outline:2px solid var(--accent);outline-offset:-2px;background:rgba(167,139,250,.08)}
 .catalog-table .product-name{font-weight:600;color:var(--ink);display:block;margin-bottom:2px;line-height:1.3}
 .catalog-table .product-meta{display:block;font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.35;font-weight:450}
 .catalog-table .col-category{font-size:11px;color:var(--muted);white-space:nowrap;max-width:6.5rem;padding-left:8px;padding-right:8px}
+.catalog-table .col-itemid{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);white-space:nowrap;max-width:8.5rem}
 .catalog-table .issue-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:6.5rem}
 .catalog-table .issue-cell .row-status{margin:0}
 .catalog-table .issue-cell .row-open{font-size:11px;line-height:1.3;white-space:normal}

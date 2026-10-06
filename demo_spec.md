@@ -8,7 +8,7 @@ Fictional data only. Purchases and deliveries are simulated. No private inbox is
 
 - Product: Quiet linear switch
 - Catalog line: 5-pin, factory lubricated, sold by the switch. Fictional. Not copied from a real shop.
-- SKU: `DEMO-SKU-001`
+- Item ID: `DEMO-ITM-001`
 - Currency: USD
 - Units sold over the last 10 complete days: `[1, 2, 0, 1, 1, 2, 1, 0, 2, 1]`
 - Total sold: 11
@@ -83,28 +83,32 @@ Landing:
 - Button: “Start interactive demo”
 - Notice: “Fictional business data. Purchases and deliveries are simulated.”
 
-Risk card:
+Surfaces: `/try` is the **demo tour** (no login) — demo workflows, demo wording, and a **small demo catalog** so inventory can show `DEMO-ITM-001` updating after receipt without presenting a full specialty-shop assortment. The dense seeded catalog (~492 fictional SKUs) is for the practice-owner / logged-in surface (login not shipped). Product home `/` states both.
+
+Happy path (demo tour `/try`) after start:
+
+1. **Review packet** — gap, Supplier B terms, MOQ, policy. Button: “Continue to terms”. Decline/Reset available. Approve is not shown yet.
+2. **Negotiate** — Accept $189 terms, or send one counter. Counter replies that Supplier B **holds at $189** (no invented discount). Then Accept to continue.
+3. **Draft message** — editable practice PO email. Button: “Send simulated draft”.
+4. **Approve** — “Approve simulated $189 order” / Decline. Approval authorizes spend only; it does not submit or confirm.
+5. **Submit** — “Submit simulated order”.
+6. **Confirm** — “Confirm supplier match”.
+7. **Awaiting receipt** — “Simulate receiving 100 units”; links to **View confirmation** and **Purchase receipt** in evidence (not inventory). Stock still 21.
+8. **Completed** — “View Quiet linear switch in inventory” (`/try?scenario=inventory&q=DEMO-ITM-001`) plus Reset.
+
+Risk / decision copy (ready to approve):
 
 - “Supplier delay puts inventory at risk”
-- “You have about 19 days of stock. Your supplier now needs 35 days to replenish it.”
-- “There is about a 16-day gap. Warehouse stock and existing orders cannot cover the gap. Supplier B offers an alternative with an estimated 6-day delivery.”
-- “Order 100 units from Supplier B”
+- “You have about 19 days of stock. Your usual supplier now needs 35 days.”
+- “There is about a 16-day gap… Supplier B… Minimum order: 100 units… below-$40…”
+- “Order 100 units from Supplier B for $189”
 - “$182 merchandise + $7 shipping = $189 total”
-- “Minimum order: 100 units. This buys more than the immediate shortage.”
-- “This purchase exceeds your below-$40 automatic spending limit. The other configured checks pass.”
-- Buttons: “Review evidence”, “Approve simulated $189 order”, “Decline”
-
-After approval:
-
-- “Order confirmed — awaiting receipt”
-- “Confirmation matches the approved product, quantity, and total.”
-- “Simulate receiving 100 units”
 
 Completion:
 
 - “Replenishment workflow completed”
 - “100 units received. Available inventory updated from 21 to 121.”
-- “1 owner approval. Receipt verified. Inventory reconciled.”
+- “1 owner approval. Simulated receipt recorded. Inventory reconciled.”
 
 Reset: “Reset demo”
 
@@ -120,15 +124,18 @@ A seeded offer is labeled seeded. It is not live web verification. Sponsor or ad
 
 1. A new visitor can start without credentials or private business data.
 2. Displayed calculations match this specification.
-3. The $189 order cannot execute before approval.
-4. Declining leaves inventory unchanged.
-5. Confirmation alone leaves available inventory at 21.
-6. Simulated receipt changes inventory to 121 and completes the workflow.
-7. Repeated approval or receipt clicks do not duplicate actions.
-8. Refreshing preserves the workflow.
-9. **Reset demo** on the reorder screen clears that reorder workflow and its tool records. It does not delete the visitor’s session file, so the other previews in the same session remain.
-10. Separate visitors do not share approvals or inventory.
-11. No real purchase, external message, or private inbox access occurs.
+3. Approve is unavailable until review → negotiate (accept) → draft are done. Approve alone does not submit or confirm.
+4. The $189 order cannot execute before approval; submit and confirm are separate steps after approval.
+5. A counteroffer on this fixture holds at $189; happy-path money approval still binds to $189.
+6. Declining leaves inventory unchanged.
+7. Confirmation alone leaves available inventory at 21.
+8. Simulated receipt changes inventory to 121 and completes the workflow.
+9. Completed offers an inventory deep-link to `DEMO-ITM-001`; awaiting receipt links to confirmation/receipt evidence instead.
+10. Repeated approval, submit, confirm, or receipt clicks do not duplicate actions.
+11. Refreshing preserves the workflow and prep phase.
+12. **Reset demo** on the reorder screen clears that reorder workflow, prep state, and its tool records. It does not delete the visitor’s session file, so the other previews in the same session remain.
+13. Separate visitors do not share approvals or inventory.
+14. No real purchase, external message, or private inbox access occurs.
 
 ## Presentation contract
 

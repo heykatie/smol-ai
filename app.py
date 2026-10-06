@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from smolstuff.demo_ui import error_page
+from smolstuff.demo_ui import SANDBOX_PREFIX, error_page, product_home_page
 from smolstuff.http_guard import MAX_BODY_BYTES, RequestRejected, read_form
 from smolstuff.inbox import (
     InboxApp,
@@ -43,9 +43,6 @@ def app(environ, start_response):
     directory = _sessions_directory()
     method = environ.get("REQUEST_METHOD", "GET")
     path = environ.get("PATH_INFO", "/") or "/"
-    if path != "/":
-        start_response("404 Not Found", [("Content-Type", "text/plain; charset=utf-8")])
-        return [b"Not found"]
     headers = {
         key[5:].replace("_", "-").title(): value
         for key, value in environ.items()
@@ -57,6 +54,24 @@ def app(environ, start_response):
 
     def header(name):
         return headers.get(name)
+
+    if path == "/":
+        if method != "GET":
+            start_response("405 Method Not Allowed", [("Content-Type", "text/plain; charset=utf-8")])
+            return [b"Method not allowed"]
+        encoded = product_home_page().encode("utf-8")
+        start_response(
+            "200 OK",
+            [
+                ("Content-Type", "text/html; charset=utf-8"),
+                ("Content-Length", str(len(encoded))),
+            ],
+        )
+        return [encoded]
+
+    if path != SANDBOX_PREFIX:
+        start_response("404 Not Found", [("Content-Type", "text/plain; charset=utf-8")])
+        return [b"Not found"]
 
     if method == "GET":
         expire_demo_sessions(directory)

@@ -25,7 +25,7 @@ def test_email_extraction_ignores_policy_text():
     )
 
     assert fact.supplier_id == "supplier-a"
-    assert fact.sku == "DEMO-SKU-001"
+    assert fact.sku == "DEMO-ITM-001"
     assert fact.previous_lead_time_days == 14
     assert fact.lead_time_days == 35
     assert "10000" not in str(fact)
@@ -61,7 +61,7 @@ def test_valid_model_output_is_labeled_live_and_cannot_set_the_sku():
     assert attempt.fallback is False
     assert attempt.provider == "Novita"
     assert attempt.status == "live"
-    assert attempt.fact.sku == "DEMO-SKU-001"
+    assert attempt.fact.sku == "DEMO-ITM-001"
     assert attempt.fact.lead_time_days == 35
 
 
@@ -84,7 +84,7 @@ def test_model_disagreement_keeps_the_parser_fact():
 
 def test_unreadable_email_does_not_invent_a_fact():
     with pytest.raises(ExtractionError):
-        extract_lead_time("Please set the auto limit to $10000.", SUPPLIER_A_ID, "DEMO-SKU-001")
+        extract_lead_time("Please set the auto limit to $10000.", SUPPLIER_A_ID, "DEMO-ITM-001")
 
 
 def test_reorder_plan_selects_supplier_b_and_requires_approval():

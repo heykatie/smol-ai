@@ -16,7 +16,7 @@ python3 -m venv .venv
 PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
-Open `http://127.0.0.1:8765`. Start demo, inspect evidence, approve, refresh at awaiting receipt (stock 21), simulate full receipt (stock 121), then reset. Decline creates no order. This process reads no private mailbox and sends no external message/purchase.
+Open `http://127.0.0.1:8765/` (product home) and `/try` (demo tour). Start demo, review → negotiate → draft → approve → submit → confirm, refresh at awaiting receipt (stock 21), simulate full receipt (stock 121), then inventory deep-link or reset. Decline creates no order. This process reads no private mailbox and sends no external message/purchase.
 
 Planned later local DX (not implemented): Next `npm run dev` + FastAPI for JSON — see [TARGET_STACK.md](TARGET_STACK.md). Until that migration starts, use the Python inbox server above.
 
@@ -42,7 +42,7 @@ Reset demo on reorder clears its workflow, supplier fact, and integration record
 
 ## Deploy and verify
 
-Vercel is the host. Render is retired. Production `https://smolstuff.vercel.app` serves the dark daily brief without a Vercel login. Temporary host files remain ephemeral; workflow/preview rows use Postgres when `DATABASE_URL` is configured. Commit `0847325` records one approval surviving redeploy; this cleanup did not rerun it. See [ARCHITECTURE.md](ARCHITECTURE.md).
+Vercel is the host. Render is retired. Production `https://smolstuff.vercel.app` serves a product-home stub at `/` and the demo tour at `/try` without a Vercel login. Temporary host files remain ephemeral; workflow/preview rows use Postgres when `DATABASE_URL` is configured. Commit `0847325` records one approval surviving redeploy; this cleanup did not rerun it. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 For a complete hosted regression check, verify: new session, approve once, refresh, full receipt once, decline, reset, two separate browsers, and a new deployment that still has the earlier session. Do not claim that passed until those calls succeed. Check narrow mobile layout, keyboard focus, and displayed totals.
 

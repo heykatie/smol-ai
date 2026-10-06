@@ -27,7 +27,7 @@ def test_approval_survives_restart_and_second_submit_replays_one_order(tmp_path)
     saved = resumed.get(started.workflow_id)
     assert saved.state == WorkflowState.APPROVED
     assert saved.supplier_id == "supplier-b"
-    assert saved.sku == "DEMO-SKU-001"
+    assert saved.sku == "DEMO-ITM-001"
     assert saved.quantity == 100
     assert saved.total == Money(Decimal("189.00"))
 

@@ -35,9 +35,11 @@ Integration status: application wiring verified by this inspection; previous acc
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |
 
-The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. With `DATABASE_URL`, those call-count limits are shared in Postgres. Without it, they share one local budget file. They are not a provider-wide spend cap.
+The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app) (`/` product home; **demo tour** at `/try`). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. With `DATABASE_URL`, those call-count limits are shared in Postgres. Without it, they share one local budget file. They are not a provider-wide spend cap.
 
-Confirmation does not complete the workflow. Completion is the reconciled receipt. The **Inventory** nav tab is a market-public keyboard-shop catalog (~492 SKUs) ordered Product → Category (desktop) → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue. Columns are sortable; the filter searches the catalog. Product shows name + differentiators; Issue combines workflow state with the problem link (Lead-time risk / Event shortfall / Count mismatch). Unavailable expands damaged + returns + display. Phone view keeps Product / Status / Available / Issue. Quiet linear switch starts at available 21 (Available + Lead-time risk); an approved order is Incoming / Waiting with inbound 100; a full receive is Available / Done at available 121. Workshop feasibility uses a per-seat **BOM** (not one sealed kit SKU). Detective tracks sample strips.
+Two surfaces: **`/try` demo tour** (no login — demo workflows, demo wording, small demo catalog) vs **practice owner** after login (real working features + dense seeded specialty-shop inventory ~492 fictional SKUs). Practice-owner sign-in is not shipped yet; product home states both.
+
+Confirmation does not complete the workflow. Completion is the reconciled receipt. On `/try`, **Inventory** is a **small demo catalog** (focal reorder SKU, workshop/detective lines, a few sample rows) with the same table shape: Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue. Columns are sortable; the filter searches the catalog. Product shows name + differentiators; Issue combines workflow state with the problem link. Phone view keeps Product / Status / Available / Issue. Quiet linear switch starts at available 21 (Available + Lead-time risk); an approved order is Incoming / Waiting with inbound 100; a full receive is Available / Done at available 121. Workshop feasibility uses a per-seat **BOM** (not one sealed kit SKU). Detective tracks sample strips. The full ~492-SKU assortment stays on the practice-owner surface.
 
 The same session can open four more synthetic workflows from the daily brief. They do not change the reorder product's 21 units.
 
@@ -75,13 +77,13 @@ python3 -m venv .venv
 PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765). If `PORT` is set, the server binds `0.0.0.0` on that port.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765) (product home) and go to `/try` for the demo tour. If `PORT` is set, the server binds `0.0.0.0` on that port.
 
 1. Click **Start interactive demo**.
-2. Read the card. It should show about 19 days of stock, a 35-day supplier lead time, Supplier B at $182 + $7 shipping = $189, and **Approve simulated $189 order**.
-3. Click **Approve simulated $189 order** once. The page should say the order is confirmed and awaiting receipt. Available inventory stays 21.
+2. Review the purchase packet → **Continue to terms** → **Accept $189 terms** (or counter once; fixture holds at $189) → **Send simulated draft**.
+3. Click **Approve simulated $189 order** once (spend only). Then **Submit simulated order** → **Confirm supplier match**. Awaiting receipt; stock stays 21. Use **View confirmation** / **Purchase receipt** links in evidence.
 4. Refresh the browser. The same awaiting-receipt state should still be there.
-5. Click **Simulate receiving 100 units**. Available inventory becomes 121 and the workflow is complete.
+5. Click **Simulate receiving 100 units**. Available inventory becomes 121. Use **View Quiet linear switch in inventory** to open that catalog line.
 6. Click **Reset demo** to run the reorder again. **Decline** submits no order. **Review evidence** opens the calculations, the seeded Supplier B offer, and the tool records.
 
 ```bash

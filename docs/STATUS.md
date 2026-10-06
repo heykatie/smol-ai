@@ -1,12 +1,55 @@
 # smolstuff implementation status and verification evidence
 
+## Demo tour vs practice-owner catalog split — October 5, 2026 (America/Los_Angeles)
+
+Requirement: clear surface split (SECURITY access model; owner-confirmed product decision).
+
+- **`/try` demo tour** (no login): demo workflows, demo wording, `PRACTICE_BANNER` / Demo-tour chrome, and a **small `SANDBOX_CATALOG`** on Inventory (focal reorder `DEMO-ITM-001` + workshop/detective lines + a few browse samples). Not a full specialty-shop assortment.
+- **Practice owner / logged-in** (not shipped): real working features + dense **`SEEDED_CATALOG` (~492 SKUs)**. `empty_inventory_snapshot(mode="owner")` / `inventory_page` already render that catalog; product home `/` states sign-in is unavailable and that dense inventory attaches after login. No Tiny / real-shop identity invented.
+- Reorder fixture economics unchanged on `/try` ($189 / 21→121 / deep-link `q=DEMO-ITM-001`).
+
+Local verification: **77 passed** on `.venv` Python for `test_inventory_tab`, `test_inbox`, `test_wsgi`, `test_http_guard`, `test_input_errors`, `test_workflow`, `test_ops_demos`, `test_terms`, `test_reorder`. Not yet browser-checked on Vercel.
+
+## Reorder richer decision loop — October 5, 2026 (America/Los_Angeles)
+
+Requirement: owner must review before authorizing spend; confirmation ≠ receipt; inventory should reflect completion (PRD FR-04/FR-05; DESIGN approval/trust).
+
+Sandbox reorder path is no longer one-click approve→receipt. Prep phases (review → negotiate with fixture hold at $189 → draft PO email → ready) gate money approval. Approve only binds terms; **Submit simulated order** and **Confirm supplier match** are separate. Awaiting receipt links to confirmation/receipt evidence (not inventory). Completed offers **View Quiet linear switch in inventory** (`q=DEMO-ITM-001`). Fixture economics unchanged ($189 / 21→121).
+
+Local verification: **46 passed** (inbox/inventory/WSGI/http-guard/input-errors) + **27 passed** (workflow/ops/terms/sponsor-budget) on `.venv` Python. Not yet browser-checked on Vercel.
+
+## Access model decision — October 5, 2026 (America/Los_Angeles)
+
+Owner-confirmed in [SECURITY_AND_DECISIONS.md](SECURITY_AND_DECISIONS.md): **sandbox** (try without signup / demo tour, no sponsor calls) vs **practice owner app** (login, seeded data, real sponsor calls, connectors only to disposable demo accounts).
+
+## `/try` sandbox carve — October 5, 2026 (America/Los_Angeles)
+
+Requirement: separate try-without-signup from a future practice-owner surface (SECURITY access model; D3/D5).
+
+`/` is a product-home stub (CTA into demo tour; practice-owner sign-in not available; states dense catalog belongs after login). Demo tour lives at `/try` (daily brief, small demo catalog, reorder, four practice loops). Forms, redirects, catalog issue links, and WSGI/local handlers post and redirect under `/try`. Sponsor calls stay off on this surface. Practice-owner login is not shipped.
+
+Local verification: **45 passed** on `.venv` Python for `tests/test_inbox.py`, `test_inventory_tab.py`, `test_wsgi.py`, `test_http_guard.py`, `test_input_errors.py`. Not yet redeployed or browser-checked on Vercel.
+
+## UX loop review pass (Reorder + Daily brief) — October 5, 2026 (America/Los_Angeles)
+
+Requirement: owner must see a clear decision and consequence (DESIGN approval/trust copy; UX loop review priorities 1–2).
+
+1. **Reorder** empty/active states lead with a practice-run banner, hero story, decision line + primary actions, then collapsed “Why this recommendation” and evidence. Approval still $189; stock still 21 until receipt / 121 after.
+2. **Daily brief** is a guided launcher: “Demo tour” kicker, Reorder featured first with next-step copy, inventory attention card, plain-language cards for the other four, “Tool activity this session” instead of “What ran”.
+3. **Shared demo-tour banner** on Daily brief, Reorder, Workshop, Detective, Rescue, and Staffing (one `PRACTICE_BANNER` string).
+4. **Workshop / Detective / Rescue / Staffing** use the same story → decision → consequence → actions pattern, with numbers under “Why this recommendation”. Fixture economics unchanged ($700 workshop; Saturday staffing 14 hours / 2 blocks).
+
+Verified: `tests/test_inbox.py` + ops/inventory regressions. Not yet browser-checked on Vercel.
+
 ## Inventory tab — October 5, 2026 (America/Los_Angeles)
 
 Requirement: after decisions, owners should see stock actually update (PRD confirmation ≠ receipt; mvp_scope reconciled inventory). Inventory reader should expose SKU/location quantities (IMPLEMENTATION_CONTRACT).
 
-`/?scenario=inventory` is a dense multi-location market-public catalog (**492 SKUs**) sized to a specialty keyboard shop’s public inventory shape: Switches 12 (11 hub + BOM pack), Keycaps 31, Keyboards 9, Desk mats 28, Keyboard configs 405, Tools 7 — audited against a public Notion hub + kit-config workbook scale, with fictionalized names/prices (not imported rows). Column order is industry-style: **Product** (name + merchandising differentiators) → **Category** (desktop short labels: Desk mats / Configs) → **Status** → **Available** → **Reserved** → **Incoming** → **In transit** → **Unavailable** → **Last counted** → **Issue**. Headers are sortable (Category by short label; Status by severity; Last counted by date; Issue by sidebar demo order then workflow); catalog filter uses catalog-row `data-search` only. **Issue** merges workflow state with the open problem link (Lead-time risk / Event shortfall / Count mismatch); Idle browse rows show —. **Unavailable** expands to damaged / returns / display. **Status** pills: Available / Incoming / Unavailable / In transit / Out of stock. SKU, full category, list/unit cost are in row Details. Phone view: Product / Status / Available / Issue. Browse SKUs carry seeded holds; demo SKUs stay at 0 quantity holds. Each row expands to category attrs plus per-location buckets. Quiet linear switch keeps PRD economics ($2.49 list / $1.82 cost, available 21). Workshop feasibility uses a **per-seat BOM** (Akko CS Piano 70-pack bottleneck + IXPE film + puller duo; seat cost still $20 → contribution $700; 8 seats left). Detective tracks **10-switch sample strips**. Layout still passes a 100-SKU render test. Not a live POS ledger (D2 still open).
+`/try?scenario=inventory` uses the **small demo-tour catalog** (`SANDBOX_CATALOG`: reorder + workshop BOM + detective + a few browse samples). Same table columns as before (Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue), sortable/filterable. Quiet linear switch keeps PRD economics ($2.49 list / $1.82 cost, available 21 → 121 after receipt). Workshop BOM and detective lines still update from practice loops.
 
-Local verification: `tests/test_inventory_tab.py` + `tests/test_ops_demos.py` + inbox regressions. No paid provider calls. Not yet redeployed or browser-checked on Vercel.
+The dense specialty-shop assortment (**492 SKUs**: Switches 12, Keycaps 31, Keyboards 9, Desk mats 28, Keyboard configs 405, Tools 7; baseline ~available 3521 / reserved 69 / incoming 504 / in transit 22 / unavailable 57) lives in `SEEDED_CATALOG` for the practice-owner surface (`mode="owner"`). Login is not shipped; product home documents the split. Not a live POS ledger (D2 still open).
+
+Local verification: `tests/test_inventory_tab.py` + inbox/WSGI regressions. No paid provider calls. Not yet redeployed or browser-checked on Vercel.
 
 ## Production smoke and local ZooWork cost sample — October 5, 2026 (America/Los_Angeles)
 

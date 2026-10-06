@@ -56,7 +56,7 @@ Collaboration inquiries and custom orders remain future variants of the feasibil
 ## Remaining plan
 
 1. Core reorder workflow: implemented locally.
-2. Public URL: [https://smolstuff.vercel.app](https://smolstuff.vercel.app) serves the dark daily brief without a Vercel login. A hosted session can disappear on redeploy.
+2. Public URL: [https://smolstuff.vercel.app](https://smolstuff.vercel.app) serves a product-home stub at `/`; the try-without-signup **demo tour** (daily brief, small demo catalog, practice loops) is at `/try`. Dense seeded specialty-shop inventory is reserved for practice-owner login (not shipped). A hosted session can disappear on redeploy.
 3. Execution records: each recorded run stores provider, task, result, effect, timestamp, and simulated, replayed, or live status.
 4. Sponsor calls stay limited to a step the workflow actually uses. Do not add a logo without that step.
 5. A demo video waits until the public demo is reliable.
