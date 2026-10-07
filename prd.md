@@ -450,3 +450,7 @@ For coding assistants: inspect current work, preserve user changes, reuse the ex
 Future and post-MVP work is listed in [docs/ROADMAP.md](docs/ROADMAP.md). That list is not a release gate. Validate demand and permissions before expanding access or execution authority. Document ownership is in [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md).
 
 Current implementation and inspection evidence: [docs/STATUS.md](docs/STATUS.md). The product vision remains larger than the synthetic app; synchronization means honest agreement about intended vs implemented behavior, not certification that production features exist.
+
+## Shop onboarding and staff access — owner-confirmed 2026-10-06
+
+The product includes an anonymous /try tour, two seeded practice shops (keyboard and bakery) with an owner and employee identity each, and separate private real-shop accounts. Owners select shop type at onboarding. Shared inventory, correction requests, recommendations, own schedules and own availability are supplemented by bakery expiration tracking and keyboard compatibility features. Owners manage invitations and may delegate correction and spending approval separately to employees. No separate manager role initially; correction self-approval is blocked. Each shop and practice dataset requires server-enforced isolation. See [shop-account acceptance criteria](docs/PRACTICE_OWNER_LOGIN.md). These are requirements, not a claim of shipped login or production tenancy.
