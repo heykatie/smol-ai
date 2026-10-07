@@ -50,3 +50,37 @@ def test_shop_type_features_are_independent_of_permissions():
     assert 'compatibility_reference' in enabled_features(keyboard)
     assert 'inventory' in enabled_features(bakery) & enabled_features(keyboard)
     with pytest.raises(ValueError): Shop('shop', 'unsupported', True)
+
+
+@pytest.mark.parametrize("action", ["view_schedule", "view_availability"])
+def test_owner_team_reads_require_active_subject_membership_in_same_shop(action):
+    owner = Membership("owner", "shop", "owner")
+    subject = Membership("employee", "shop", "employee")
+    assert authorize(owner, "shop", action, subject_user_id="employee", subject_membership=subject)
+    assert not authorize(owner, "shop", action, subject_user_id="employee")
+    for invalid in (
+        Membership("employee", "other-shop", "employee"),
+        Membership("employee", "shop", "employee", active=False),
+        Membership("someone-else", "shop", "employee"),
+    ):
+        assert not authorize(owner, "shop", action, subject_user_id="employee", subject_membership=invalid)
+    assert not authorize(owner, "other-shop", action, subject_user_id="employee", subject_membership=subject)
+    assert not authorize(Membership("owner", "shop", "owner", active=False),
+                         "shop", action, subject_user_id="employee", subject_membership=subject)
+
+
+def test_employees_read_only_own_availability_and_cannot_use_team_context():
+    employee = Membership("employee", "shop", "employee", frozenset({"approve_spending"}))
+    assert authorize(employee, "shop", "view_availability", subject_user_id="employee")
+    other = Membership("other", "shop", "employee")
+    for action in ("view_schedule", "view_availability"):
+        assert not authorize(employee, "shop", action, subject_user_id="other", subject_membership=other)
+        assert not authorize(employee, "shop", action)
+
+
+def test_owner_team_visibility_does_not_allow_editing_employee_availability():
+    owner = Membership("owner", "shop", "owner")
+    other = Membership("employee", "shop", "employee")
+    assert authorize(owner, "shop", "submit_availability", subject_user_id="owner")
+    assert not authorize(owner, "shop", "submit_availability",
+                         subject_user_id="employee", subject_membership=other)

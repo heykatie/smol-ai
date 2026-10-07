@@ -1154,6 +1154,17 @@ class WorkflowStore:
                 (self.session_id,),
             ).fetchone()
             return int(row["n"])
+        if self._session_scoped and table in ("approvals", "executions", "confirmations"):
+            row = self._conn.execute(
+                """
+                SELECT COUNT(*) AS n FROM {0} AS records
+                JOIN actions ON actions.id = records.action_id
+                JOIN workflows ON workflows.id = actions.workflow_id
+                WHERE workflows.session_id = ?
+                """.format(table),
+                (self.session_id,),
+            ).fetchone()
+            return int(row["n"])
         row = self._conn.execute("SELECT COUNT(*) AS n FROM {0}".format(table)).fetchone()
         return int(row["n"])
 

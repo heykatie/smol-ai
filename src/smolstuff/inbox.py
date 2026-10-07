@@ -1,8 +1,8 @@
 """Local Action Inbox.
 
 A browser page over the saved purchase workflow. The numbers and the approval
-come from the deterministic core. A configured sponsor may add a labeled record.
-It cannot change quantity, price, or approval.
+come from the deterministic core. This public demo never calls external providers;
+provider configuration cannot change its offline boundary.
 """
 
 from __future__ import annotations
@@ -112,6 +112,15 @@ class InboxApp:
         try:
             workflow = store.find_by_dedup(DEMO_SIGNAL_KEY)
             if workflow is None:
+                plan = self._plan()
+                if not plan.needs_reorder:
+                    return shell("Reorder", PRACTICE_BANNER +
+                        '<section class="hero"><h1>No reorder needed</h1>'
+                        '<p>{0}</p></section><article class="card">'
+                        '<p>Available inventory is still {1}. No purchase or approval was created.</p>'
+                        '{2}</article>'.format(escape(plan.explain()),
+                                               _show_units(plan.available_now),
+                                               _form("reset", "Reset demo", "secondary")))
                 return _EMPTY_PAGE
             plan = self._plan()
             baseline = WORKSHOP_SUPPLY_PACK.sellable_on_hand
@@ -145,6 +154,8 @@ class InboxApp:
                 self._reset_scenario(REORDER_PREP_KEY)
                 return
             if action == "simulate_email":
+                if not self._plan().needs_reorder:
+                    return
                 if store.find_by_dedup(DEMO_SIGNAL_KEY) is not None:
                     store.record_integration(
                         "Lead-time parser",
@@ -157,6 +168,11 @@ class InboxApp:
                 attempt = self._extract_supplier_fact(store)
                 plan = plan_reorder(attempt.fact)
                 self._save_supplier_fact(attempt)
+                if not plan.needs_reorder:
+                    store.record_integration(attempt.provider,
+                        "Extract supplier lead time from a synthetic email",
+                        attempt.result, plan.explain(), attempt.status)
+                    return
                 started = store.start_purchase(DEMO_SIGNAL_KEY, plan.proposal, EXAMPLE_POLICY)
                 store.record_integration(
                     attempt.provider,
@@ -176,6 +192,8 @@ class InboxApp:
                             "draft_body": _default_draft_body(plan),
                         }
                     )
+                return
+            if not self._plan().needs_reorder:
                 return
             if action in _PREP_ACTIONS:
                 self._apply_prep(action, fields)
@@ -448,6 +466,8 @@ class InboxApp:
         finally:
             store.close()
         if workflow is None:
+            if not self._plan().needs_reorder:
+                return "No reorder needed", "Completed", ""
             return "Not started", "Not started", start
         if workflow.state == WorkflowState.WAITING_FOR_APPROVAL:
             review = (
@@ -484,13 +504,9 @@ class InboxApp:
         return build_demo_plan()
 
     def _claim_sponsor_call(self) -> bool:
-        from smolstuff.sponsor_budget import SponsorBudget
-
-        budget = SponsorBudget(self.budget_path)
-        try:
-            return budget.claim(self.session_id)
-        finally:
-            budget.close()
+        # InboxApp serves the anonymous demo only. Environment gates and keys
+        # are never authority to spend or disclose data from this surface.
+        return False
 
     def _record_supplier_research(self, store) -> None:
         from smolstuff.research import research_supplier
@@ -526,38 +542,13 @@ class InboxApp:
         )
 
     def _extract_supplier_fact(self, store=None):
-        if os.environ.get("SMOL_EXTRACTION_PROVIDER") in ("groq_gemini_parser", "groq_openrouter_parser"):
-            from smolstuff.extraction_chain import extract_with_fallback
-            from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL, WORKSHOP_SKU
-
-            def record(provider, result, status):
-                if store is not None:
-                    store.record_integration(provider, "Extract supplier lead time from a synthetic email",
-                                             result, "No model fact accepted; fallback continues.", status)
-
-            return extract_with_fallback(SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU,
-                                         self._claim_sponsor_call, record)
-        from smolstuff.extract import call_novita, resolve_lead_time
+        # Always use local interpretation, including when production provider
+        # keys and extraction-chain settings are present in the process.
+        from smolstuff.extract import resolve_lead_time
         from smolstuff.fixtures import SUPPLIER_A_ID, SUPPLIER_EMAIL, WORKSHOP_SKU
 
-        model_result = None
-        model_error = False
-        calls_off = False
-        if os.environ.get("NOVITA_API_KEY", "").strip():
-            if self._claim_sponsor_call():
-                try:
-                    model_result = call_novita(SUPPLIER_EMAIL)
-                except Exception:
-                    model_error = True
-            else:
-                calls_off = True
         return resolve_lead_time(
-            SUPPLIER_EMAIL,
-            SUPPLIER_A_ID,
-            WORKSHOP_SKU,
-            model_result,
-            model_error,
-            calls_off=calls_off,
+            SUPPLIER_EMAIL, SUPPLIER_A_ID, WORKSHOP_SKU, calls_off=True
         )
 
     def _save_supplier_fact(self, attempt) -> None:

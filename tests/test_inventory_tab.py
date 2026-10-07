@@ -18,7 +18,7 @@ from smolstuff.inbox import InboxApp
 def test_shell_includes_inventory_nav():
     page = shell("Inventory", "<h1>Inventory</h1>")
 
-    assert 'href="/try?scenario=inventory"' in page
+    assert 'href="/demo?scenario=inventory"' in page
     assert 'aria-current="page"' in page
     assert "Inventory" in page
     assert "Demo tour" in page
@@ -32,7 +32,7 @@ def test_product_home_distinguishes_demo_tour_from_practice_owner():
     assert "Practice owner" in page
     assert "492" in page
     assert "Sign in is not available" in page
-    assert 'href="/try"' in page
+    assert 'href="/demo"' in page
 
 
 def test_seeded_catalog_mirrors_specialty_shop_shape():
@@ -61,7 +61,7 @@ def test_seeded_catalog_mirrors_specialty_shop_shape():
 
 
 def test_sandbox_inventory_uses_small_demo_catalog(tmp_path):
-    """Anonymous `/try` inventory is a tour subset, not the dense shop catalog."""
+    """Anonymous `/demo` inventory is a tour subset, not the dense shop catalog."""
     page = InboxApp(str(tmp_path / "inbox.sqlite3")).view("inventory")
 
     assert 'class="catalog-table"' in page
@@ -314,7 +314,7 @@ def test_inventory_issue_combines_workflow_and_problem(tmp_path):
     assert ">Work</button>" not in page
     assert "issue-cell" in page
     assert "Lead-time risk" in page
-    assert 'href="/try?scenario=reorder"' in page
+    assert 'href="/demo?scenario=reorder"' in page
     assert "Event shortfall" in page
     assert "Count mismatch" in page
     assert "Replenishment →" not in page
@@ -487,7 +487,7 @@ def test_inventory_layout_stays_one_table_with_many_skus():
             status_label="Seeded",
             status_class="idle",
             note="Synthetic bulk row.",
-            href="/try?scenario=inventory",
+            href="/demo?scenario=inventory",
             link_label="Open →",
             category="Switches",
             list_price="0.40",

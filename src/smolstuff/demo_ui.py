@@ -15,7 +15,7 @@ PRACTICE_BANNER = (
 )
 
 # Demo-tour surface (try without signup). Product home is `/`; practice-owner login is later.
-SANDBOX_PREFIX = "/try"
+SANDBOX_PREFIX = "/demo"
 INVENTORY_MODE_SANDBOX = "sandbox"
 INVENTORY_MODE_OWNER = "owner"
 
@@ -41,7 +41,7 @@ from smolstuff.ui_theme import STYLE
 
 
 def sandbox_href(scenario: str = "", **params: str) -> str:
-    """Build a sandbox URL under `/try`."""
+    """Build a sandbox URL under `/demo`."""
     query = []
     if scenario and scenario != "home":
         query.append("scenario={0}".format(scenario))
@@ -108,7 +108,7 @@ def shell(title: str, body: str) -> str:
 
 
 def product_home_page() -> str:
-    """Public product stub. `/try` is the demo tour; practice-owner login comes later."""
+    """Public product stub. `/demo` is the demo tour; practice-owner login comes later."""
     body = (
         '<section class="hero"><span class="hero-spark" aria-hidden="true">✧</span>'
         '<p class="kicker">smolstuff</p>'
@@ -119,7 +119,7 @@ def product_home_page() -> str:
         '<a class="open" href="{sandbox}">Start demo tour →</a>'
         "</div></section>"
         '<p class="sim-banner" role="note"><strong>Two surfaces.</strong> '
-        "<strong>Demo tour</strong> (`/try`) = no login, simulated workflows, small demo catalog, "
+        "<strong>Demo tour</strong> (`/demo`) = no login, simulated workflows, small demo catalog, "
         "no paid calls. <strong>Practice owner</strong> = login, dense seeded specialty-shop inventory, "
         "real working features, sponsor calls under budget. Practice-owner sign-in is not shipped yet.</p>"
         '<div class="grid">'

@@ -82,3 +82,29 @@ def test_money_is_stored_as_exact_text(tmp_path):
         assert "." in row["total"]
     finally:
         store.close()
+
+
+def test_all_workflow_counts_are_isolated_across_visitors(tmp_path):
+    from decimal import Decimal
+
+    path = str(tmp_path / "counts.sqlite3")
+    first = WorkflowStore(path, session_id="visitor-a")
+    second = WorkflowStore(path, session_id="visitor-b")
+    try:
+        started = first.start_purchase("same-signal", NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
+        first.approve(started.workflow_id, actor="owner")
+        first.execute(started.workflow_id, NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
+        first.confirm(started.workflow_id, NEEDS_APPROVAL_PURCHASE, Decimal("21"))
+        first.receive(started.workflow_id, 100, "receipt", Decimal("21"))
+        count_methods = ("count_workflows", "count_approvals", "count_executions",
+                         "count_confirmations", "count_receipts", "count_movements")
+        for name in count_methods:
+            assert getattr(first, name)() == 1, name
+            assert getattr(second, name)() == 0, name
+        other = second.start_purchase("same-signal", NEEDS_APPROVAL_PURCHASE, EXAMPLE_POLICY)
+        second.decline(other.workflow_id, actor="owner")
+        assert first.count_approvals() == second.count_approvals() == 1
+        assert second.count_executions() == second.count_confirmations() == 0
+    finally:
+        first.close()
+        second.close()

@@ -18,7 +18,7 @@ def test_invalid_numeric_input_returns_recoverable_error_without_saving_scenario
     thread.start()
     connection = HTTPConnection('127.0.0.1', server.server_address[1])
     try:
-        connection.request('POST', '/try', body, {'Content-Type': 'application/x-www-form-urlencoded'})
+        connection.request('POST', '/demo', body, {'Content-Type': 'application/x-www-form-urlencoded'})
         response = connection.getresponse()
         page = response.read().decode()
         assert response.status == 400

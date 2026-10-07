@@ -17,9 +17,9 @@ Owner authorized one Tavily search and one Novita extraction using fictional inp
 
 Requirement: clear surface split (SECURITY access model; owner-confirmed product decision).
 
-- **`/try` demo tour** (no login): demo workflows, demo wording, `PRACTICE_BANNER` / Demo-tour chrome, and a **small `SANDBOX_CATALOG`** on Inventory (focal reorder `DEMO-ITM-001` + workshop/detective lines + a few browse samples). Not a full specialty-shop assortment.
+- **`/demo` demo tour** (no login): demo workflows, demo wording, `PRACTICE_BANNER` / Demo-tour chrome, and a **small `SANDBOX_CATALOG`** on Inventory (focal reorder `DEMO-ITM-001` + workshop/detective lines + a few browse samples). Not a full specialty-shop assortment.
 - **Practice owner / logged-in** (not shipped): real working features + dense **`SEEDED_CATALOG` (~492 SKUs)**. `empty_inventory_snapshot(mode="owner")` / `inventory_page` already render that catalog; product home `/` states sign-in is unavailable and that dense inventory attaches after login. No Tiny / real-shop identity invented.
-- Reorder fixture economics unchanged on `/try` ($189 / 21→121 / deep-link `q=DEMO-ITM-001`).
+- Reorder fixture economics unchanged on `/demo` ($189 / 21→121 / deep-link `q=DEMO-ITM-001`).
 
 Local verification: **77 passed** on `.venv` Python for `test_inventory_tab`, `test_inbox`, `test_wsgi`, `test_http_guard`, `test_input_errors`, `test_workflow`, `test_ops_demos`, `test_terms`, `test_reorder`. Not yet browser-checked on Vercel.
 
@@ -35,11 +35,11 @@ Local verification: **46 passed** (inbox/inventory/WSGI/http-guard/input-errors)
 
 Owner-confirmed in [SECURITY_AND_DECISIONS.md](SECURITY_AND_DECISIONS.md): **sandbox** (try without signup / demo tour, no sponsor calls) vs **practice owner app** (login, seeded data, real sponsor calls, connectors only to disposable demo accounts).
 
-## `/try` sandbox carve — October 5, 2026 (America/Los_Angeles)
+## `/demo` sandbox carve — October 5, 2026 (America/Los_Angeles)
 
 Requirement: separate try-without-signup from a future practice-owner surface (SECURITY access model; D3/D5).
 
-`/` is a product-home stub (CTA into demo tour; practice-owner sign-in not available; states dense catalog belongs after login). Demo tour lives at `/try` (daily brief, small demo catalog, reorder, four practice loops). Forms, redirects, catalog issue links, and WSGI/local handlers post and redirect under `/try`. Sponsor calls stay off on this surface. Practice-owner login is not shipped.
+`/` is a product-home stub (CTA into demo tour; practice-owner sign-in not available; states dense catalog belongs after login). Demo tour lives at `/demo` (daily brief, small demo catalog, reorder, four practice loops). Forms, redirects, catalog issue links, and WSGI/local handlers post and redirect under `/demo`. Sponsor calls stay off on this surface. Practice-owner login is not shipped.
 
 Local verification: **45 passed** on `.venv` Python for `tests/test_inbox.py`, `test_inventory_tab.py`, `test_wsgi.py`, `test_http_guard.py`, `test_input_errors.py`. Not yet redeployed or browser-checked on Vercel.
 
@@ -58,7 +58,7 @@ Verified: `tests/test_inbox.py` + ops/inventory regressions. Not yet browser-che
 
 Requirement: after decisions, owners should see stock actually update (PRD confirmation ≠ receipt; mvp_scope reconciled inventory). Inventory reader should expose SKU/location quantities (IMPLEMENTATION_CONTRACT).
 
-`/try?scenario=inventory` uses the **small demo-tour catalog** (`SANDBOX_CATALOG`: reorder + workshop BOM + detective + a few browse samples). Same table columns as before (Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue), sortable/filterable. Quiet linear switch keeps PRD economics ($2.49 list / $1.82 cost, available 21 → 121 after receipt). Workshop BOM and detective lines still update from practice loops.
+`/demo?scenario=inventory` uses the **small demo-tour catalog** (`SANDBOX_CATALOG`: reorder + workshop BOM + detective + a few browse samples). Same table columns as before (Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue), sortable/filterable. Quiet linear switch keeps PRD economics ($2.49 list / $1.82 cost, available 21 → 121 after receipt). Workshop BOM and detective lines still update from practice loops.
 
 The dense specialty-shop assortment (**492 SKUs**: Switches 12, Keycaps 31, Keyboards 9, Desk mats 28, Keyboard configs 405, Tools 7; baseline ~available 3521 / reserved 69 / incoming 504 / in transit 22 / unavailable 57) lives in `SEEDED_CATALOG` for the practice-owner surface (`mode="owner"`). Login is not shipped; product home documents the split. Not a live POS ledger (D2 still open).
 
@@ -269,3 +269,79 @@ Verification: the focused disclosure test failed before implementation; the suit
 Owner-confirmed requirements now cover separate keyboard/bakery practice shops with four synthetic owner/employee identities, private real shops, shop-type features, employee correction requests and own schedule/availability, and independent delegated correction/spending permissions. shop_access.py implements provider-independent immutable shop/membership values and permission checks: deny cross-shop, inactive or unknown access, limit schedule/availability to the subject, and reject correction self-approval. Four synthetic identities are seed definitions only, not created login accounts. Feature eligibility flags do not implement expiration tracking or scheduling.
 
 Verification: the new test module initially failed because the foundation was absent; after implementation the full suite passed with 139 passed, 3 skipped. Diff checks passed. No UI change, provider request, private account creation, database migration, route enforcement or deployment was performed. Login provider selection remains pending; membership persistence and enforced protected routes are the next slice.
+
+### Persistent shop memberships — 2026-10-06
+
+shop_memberships.py adds application user IDs, provider/subject identity mappings, shop records, owner/employee memberships and delegation audit records. Trusted provisioning has no public route and does not create accounts from unknown identities. Owner delegation checks and updates occur in one transaction, reject cross-shop/inactive authority, and record before/after grants. SQLite is used locally; the existing Postgres connection wrapper is reused when DATABASE_URL is configured. These records are separate from anonymous demo-session tables. No live database migration or provider request was performed.
+
+Verification: the new test module initially failed because the membership store was absent. The final suite passed with 145 passed, 3 skipped; diff checks passed. SQLite tests cover identity/restart persistence, same-subject separation across providers, unknown identities, rejected membership replacement, cross-shop authorization, delegation/revocation, inactive memberships and audit preservation after invalid input. Hosted Postgres/concurrency behavior is not verified. Login provider selection, authenticated routes, live account binding and shop-scoped workflow wiring remain pending.
+
+## Readiness fix A7 — visitor-scoped workflow aggregates, 2026-10-06
+
+Approval, execution and confirmation counts now join through their owning workflow and filter by the store's session ID, matching workflow/receipt/movement counts. A two-visitor regression exercises purchase approval, execution, confirmation, receipt and a separate decline; it failed on the original approval-count leak before implementation.
+
+Verification: 146 passed, 3 skipped in the offline suite. The three Postgres modules remain skipped because psycopg is absent in this virtual environment. No hosted database, deployment, provider call or UI change was made. This is anonymous session isolation, not proof of authenticated shop isolation.
+
+## Readiness fix A6 — healthy-stock result, 2026-10-06
+
+The planner returns no purchase proposal/policy decision when no reorder is needed, including zero recorded demand. The inbox persists and displays “No reorder needed” with stock unchanged; refresh/replay does not re-extract or create a purchase. Purchase preparation/approval/submission/receipt actions cannot create a workflow from this result. The existing risky $189 fixture remains covered by regressions.
+
+Three new behavior cases failed before implementation and passed afterward. Full offline suite: 149 passed, 3 Postgres modules skipped (psycopg absent). Browser verification used a separate localhost server with fictional healthy-stock extraction and sponsor calls disabled; the result and mobile layout were inspected. No production or provider call was made. Owners viewing team schedules/availability is confirmed as a requirement, not yet implemented.
+
+## Readiness permissions refinement — 2026-10-06
+
+shop_access.authorize now supports own availability reads and owner team schedule/availability reads. Team reads require an active trusted target membership matching the requested user and actor's shop. Employees remain own-only, and owners cannot submit another person's availability through this permission. Missing, inactive, mismatched and cross-shop targets fail closed.
+
+Four behavior cases failed before implementation and pass afterward. Full offline suite: 153 passed, 3 Postgres modules skipped. This is permission-helper verification only; no schedule UI, protected route, provider login, hosted DB or deployment was verified or changed.
+
+## Future connector research and offline foundation — 2026-10-06
+
+Official documentation was researched for 26 vendor/product entries across commerce, calendars, records, inquiries, accounting, staffing, marketplaces, shipping and messaging. CONNECTOR_PLAN.md distinguishes candidate read facts, possible later writes, access/partner restrictions and unverified candidates. No provider account permission, credentials, spending setting or production decision was changed.
+
+connector_sync.py implements synthetic source snapshots and completed-scan checkpoints in a separate SQLite store. Tests exercise duplicate/stale/conflicting pages, atomic rollback, deletion/older replay, revoked scopes, shop/connection separation, money/quantity validation and timestamp offsets/fractions. The initial new-test run failed because the module was absent; subsequent regression testing exposed a Python 3.9 fractional-timestamp issue, which was fixed and rechecked. Final full offline result: 177 passed, 3 skipped (Postgres modules; psycopg absent). The in-memory seed runner imported 46 simulated records: 21 keyboard and 25 bakery.
+
+The JSON datasets contain fictional normalized provider-shaped observations and explicitly mapped local/Sheets facts. They preserve stock discrepancies, unknown payment, separate fulfillment/calendar state, recipes/lots and staffing references; they do not create auth accounts, populate /demo, prove actual vendor responses, or enable those business workflows. No UI was changed, so no new browser verification was required. No live connector, provider call, hosted migration, commit or deployment was performed. Existing unrelated changes were preserved.
+
+## Reply/invoice product decision — 2026-10-06
+
+Recorded owner-confirmed automatic draft preparation, explicit owner approval before customer sending, and optional separately approved non-payable owner-email previews. PRD, security decisions and connector plan distinguish this requirement from runtime capability and remaining production gates. Documentation-only update: no sender, provider request, permission change or deployment; no runtime tests claimed.
+
+## Server-session foundation — 2026-10-06
+
+auth_sessions.py adds internal session helpers using the existing MembershipStore connection: invited identity lookup, opaque random tokens stored as hashes, absolute expiry, session revocation, fresh active membership checks, secure cookie construction and exact-origin/session-bound CSRF mutation guards. There is no login callback or public session-creation route. Unknown identities do not provision accounts; anonymous smol_session cookies cannot authenticate.
+
+New tests initially failed because the module was absent. A malformed non-ASCII CSRF test then reproduced a comparison exception; validation was corrected before comparison. Final full offline suite: 190 passed, 3 skipped (Postgres modules; psycopg absent). Tests cover restart persistence, expiry, scoped logout, cross-shop denial, role/membership changes, cookie flags, origin/CSRF rejection and invalid lifetimes.
+
+No UI was changed or browser login verified. Auth0 settings are absent from the local env file by name-only inspection; the tenant domain was requested. [AUTHENTICATION.md](AUTHENTICATION.md) records provider verification, callback/session/route wiring and hosted checks still required. No provider request, hosted DB, runtime permission, deployment or unrelated-work rewrite was performed.
+
+## Versioned shop database integrity — 2026-10-06
+
+Version 1 explicitly migrates membership, identity, shop, permission-event and auth-session tables. Foreign keys and value constraints reject orphan records, invalid roles/shop types/delegations and invalid session values. MembershipStore requires the recorded migration; membership and auth-session constructors no longer create tables. Valid legacy records and supported custom indexes/views/triggers are preserved; unsupported schema or invalid records stop for review, and failures roll back without repair or deletion. See [SHOP_MIGRATIONS.md](SHOP_MIGRATIONS.md).
+
+Meaningful tests first failed with the missing migration module. Final regression result: **258 passed, none skipped**, using SQLite and a disposable local PostgreSQL 14.15 cluster. Cases cover direct invalid writes, preservation, rollback, read-only inspection and concurrent migration stamping. The declared psycopg binary dependency is now installed in the local virtual environment. This supersedes earlier driver-absence notes for this checkout.
+
+Six local data-directory SQLite files were inspected read-only; none contained membership tables. No existing app database or Neon database was migrated. Hosted-version compatibility, production backup/restore, durable shop storage and remaining workflow-table integrity are still unverified. No UI, provider call, commit or deployment was performed.
+
+## Public demo route rename — 2026-10-06
+
+The canonical public route is now /demo. Navigation, form actions, redirects after demo actions, fixture deep links, tests and repository documentation use that route. Existing cookie/session storage is unchanged. Earlier evidence sections use the normalized current URL; their recorded dates and verification limits still apply.
+
+Six WSGI route tests failed with 404 responses before the rename. Final local regression: 223 passed, 35 skipped (Postgres tests; disposable test server stopped). Isolated browser inspection verified the daily brief and navigation to the inventory page on /demo. No layout change was made. No compatibility alias was added for the former route, and no deployment was performed.
+
+## A5 public-demo offline enforcement — 2026-10-06
+
+InboxApp is an anonymous-demo surface: sponsor budget claims always return false without opening a budget store, and supplier extraction always uses the local parser. Novita, Groq, Gemini, OpenRouter, Tavily and ZooWork cannot be activated by public demo requests using configured credentials/switches/limits. Provider clients and budget helpers remain independently testable; no authenticated live-call capability was added. Simulated purchase/message/receipt behavior is unchanged.
+
+Four new mocked-provider/configured-budget tests failed before implementation. Full local regression: 228 passed, 35 skipped (Postgres tests; disposable server stopped). Existing budget sharing is retained in a direct two-instance budget test. No provider calls, UI/layout changes, account-setting changes, commit or deployment were performed. Hosted enforcement is not yet verified.
+
+## Automated checks staged locally — 2026-10-06
+
+Added read-only GitHub Actions checks for main pushes, pull requests and manual runs. SQLite jobs target Python 3.9/3.12; the full database job targets Python 3.12/PostgreSQL 16 with a newly initialized private Unix-socket cluster. It rejects skipped tests and always stops the started test cluster. No provider secrets, production database or deploy step is used.
+
+Local verification exercised the runner with Python 3.9.4/PostgreSQL 14.15: **263 passed, zero skipped**, and confirmed server cleanup. The workflow YAML parsed with both jobs present. Ubuntu, Python 3.12 and PostgreSQL 16 execution still await the first GitHub run; local results do not certify those versions or hosted CI. No commit, push, deployment or branch-protection change was performed.
+
+## CI merge and foundation publication — 2026-10-06
+
+CI-only PR #7 merged into main at 358533c. GitHub run 37578657780 passed both Python 3.9/3.12 SQLite jobs (139 tests each) and Python 3.12/PostgreSQL 16 (156 tests, zero skips). The first run exposed a localhost test startup race; bounded listener readiness fixed it without reducing assertions. This CI-only run excluded the pending app changes below.
+
+The complete pending foundation snapshot was rechecked locally: 263 passed, zero skips using Python 3.9.4/PostgreSQL 14.15, with disposable-server shutdown verified. It includes the /demo rename and offline boundary, no-reorder result, aggregate session isolation, team permission helper, offline connector fixtures/replay, and internal membership/session/versioned-migration helpers. Foundation GitHub checks and merge are pending at publication; no Auth0 login route or live connector was added and no hosted business database migration was applied.

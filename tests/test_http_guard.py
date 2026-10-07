@@ -80,7 +80,7 @@ def test_malformed_post_does_not_change_state(tmp_path):
         connection = HTTPConnection("127.0.0.1", port)
         connection.request(
             "POST",
-            "/try",
+            "/demo",
             "not-a-length",
             {"Content-Length": "nope", "Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -105,14 +105,14 @@ def test_forged_cookie_cannot_skip_the_creation_limit(tmp_path, monkeypatch):
     forged = "c" * 32
     try:
         first = HTTPConnection("127.0.0.1", port)
-        first.request("POST", "/try", "action=simulate_email", {"Content-Type": "application/x-www-form-urlencoded"})
+        first.request("POST", "/demo", "action=simulate_email", {"Content-Type": "application/x-www-form-urlencoded"})
         first_response = first.getresponse()
         assert first_response.status == 303
         first_response.read()
         second = HTTPConnection("127.0.0.1", port)
         second.request(
             "POST",
-            "/try",
+            "/demo",
             "action=simulate_email",
             {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -145,7 +145,7 @@ def test_scenario_value_cannot_inject_a_response_header(tmp_path):
         connection = HTTPConnection("127.0.0.1", port)
         connection.request(
             "POST",
-            "/try",
+            "/demo",
             "action=simulate_email&scenario=x%0d%0aX-Injected:%20yes",
             {"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -153,7 +153,7 @@ def test_scenario_value_cannot_inject_a_response_header(tmp_path):
         response.read()
         assert response.status == 303
         assert response.getheader("X-Injected") is None
-        assert response.getheader("Location") == "/try"
+        assert response.getheader("Location") == "/demo"
     finally:
         server.shutdown()
         thread.join(timeout=2)
@@ -220,7 +220,7 @@ def test_localhost_answers_on_ipv4_and_ipv6(tmp_path):
         assert "Start demo tour" in home
         connection.close()
         connection = HTTPConnection(address, port, timeout=2)
-        connection.request("GET", "/try")
+        connection.request("GET", "/demo")
         response = connection.getresponse()
         page = response.read().decode("utf-8")
         assert response.status == 200

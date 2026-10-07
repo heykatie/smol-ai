@@ -67,7 +67,7 @@ Matching confirmation leaves stock 21. Full receipt adds 100 once, stock 121, co
 
 ## Planning edge cases
 
-Current `plan_reorder` is fixture-specific: open-PO coverage is always false, offer/evidence flags are seeded, warehouse/MOQ are constants. A no-risk message produces quantity zero and reaches positive-quantity validation; it is not a working zero-intervention healthy path. `assess_supply` itself handles zero demand with undefined days/gap, but the planner assumes nonzero demand. Do not generalize the planner without tests.
+Current `plan_reorder` is fixture-specific: open-PO coverage is always false, offer/evidence flags are seeded, warehouse/MOQ are constants. Healthy-stock checks return a persisted “No reorder needed” result with no purchase proposal, approval request or stock movement; zero recorded demand is handled without division by zero. Verification is recorded in STATUS.md. `assess_supply` itself handles zero demand with undefined days/gap, but the planner assumes nonzero demand. Do not generalize the planner without tests.
 
 Required behavior before generalization:
 
@@ -106,3 +106,15 @@ Test meaningful business behavior first and demonstrate intended failures before
 ## UI source of truth
 
 All pages use demo_ui.shell and ui_theme.STYLE; no separate light procurement page remains. docs/DESIGN.md defines the confirmed dark/playful direction and measurable experience checks. docs/STATUS.md records the fresh inspection and distinguishes tests/source wiring from previous provider reports. This contract does not certify those provider reports or a hosted release.
+
+## Offline connector snapshots — 2026-10-06
+
+connector_sync.py adds a dedicated synthetic SQLite snapshot harness, separate from current demo/membership state. It validates minimized typed facts, binds records to a registered practice shop/connection/provider, preserves source revisions and tombstones, rejects revoked/out-of-scope ingestion, handles replay/stale records and rolls back invalid/conflicting pages with their checkpoint. connector_seeds.py replays 46 fictional normalized records from connector_fixtures/connector_practice.json. These are not native API adapters, a synchronized operational ledger, authenticated routes or hosted database changes. [CONNECTOR_PLAN.md](CONNECTOR_PLAN.md) owns the source-linked capability inventory and remaining adapter/mapping/production work.
+
+## Versioned membership schema — 2026-10-06
+
+Shop identity, membership, permission audit and auth-session tables now require explicit version 1 migration before store use. Database foreign keys and role/type/flag/JSON delegation checks supplement application validation. Invalid legacy data or unsupported schema blocks migration; a transaction preserves data and migration history on failure. Membership/session constructors no longer perform DDL. [SHOP_MIGRATIONS.md](SHOP_MIGRATIONS.md) owns operator steps and preservation details; STATUS.md owns actual verification. Anonymous workflow constructors and private-workflow migration remain separate open work.
+
+## Public demo provider boundary
+
+Current local InboxApp is exclusively the anonymous /demo surface. It never claims sponsor budgets or calls external provider adapters; extraction uses the deterministic local parser regardless of process configuration. Future authenticated provider execution requires a separate trusted authorization path and approved budgets. This local implementation has not yet been deployed or verified on the host.
