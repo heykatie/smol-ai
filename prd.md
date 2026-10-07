@@ -453,4 +453,36 @@ Current implementation and inspection evidence: [docs/STATUS.md](docs/STATUS.md)
 
 ## Shop onboarding and staff access — owner-confirmed 2026-10-06
 
-The product includes an anonymous /try tour, two seeded practice shops (keyboard and bakery) with an owner and employee identity each, and separate private real-shop accounts. Owners select shop type at onboarding. Shared inventory, correction requests, recommendations, own schedules and own availability are supplemented by bakery expiration tracking and keyboard compatibility features. Owners manage invitations and may delegate correction and spending approval separately to employees. No separate manager role initially; correction self-approval is blocked. Each shop and practice dataset requires server-enforced isolation. See [shop-account acceptance criteria](docs/PRACTICE_OWNER_LOGIN.md). These are requirements, not a claim of shipped login or production tenancy.
+The product includes an anonymous /demo tour, two seeded practice shops (keyboard and bakery) with an owner and employee identity each, and separate private real-shop accounts. Owners select shop type at onboarding. Shared inventory, correction requests, recommendations, own schedules and own availability are supplemented by bakery expiration tracking and keyboard compatibility features. Owners manage invitations and may delegate correction and spending approval separately to employees. No separate manager role initially; correction self-approval is blocked. Each shop and practice dataset requires server-enforced isolation. See [shop-account acceptance criteria](docs/PRACTICE_OWNER_LOGIN.md). These are requirements, not a claim of shipped login or production tenancy.
+
+### Team visibility refinement — owner-confirmed 2026-10-06
+
+Active owners may view schedules and availability for active members of their own shop. Employees may view only their own schedules and availability. Team visibility does not grant permission to submit another employee's availability. Both actor and target memberships must come from trusted server records. Schedule screens and protected routes remain unimplemented.
+
+## Future connector foundation — 2026-10-06
+
+Owner-requested direction: research future operational connectors and develop fictional connector-shaped practice datasets before enabling live access. [CONNECTOR_PLAN.md](docs/CONNECTOR_PLAN.md) records source-linked capabilities, restrictions and the normalized contract. Implement source identity/provenance, explicit units/currency, independent order/payment/fulfillment facts, replay protection, older-update handling, deletion and conflict preservation. Do not let external facts grant roles or execution authority. POS, calendar and mapped Sheets observations remain separate until shop-specific ownership and source mappings are confirmed. Real ingestion, retention, writeback and production decisions remain gated by D1/D2/D5/D6; this requirement does not authorize live connectors.
+
+Acceptance for the offline slice: two fictional shop datasets load without keys/network; duplicate imports never add inventory; shop/connection identifiers isolate source records; invalid/conflicting pages preserve the prior checkpoint; revocation rejects ingestion; source deletion blocks older replay; payment/fulfillment remain independent and unknown facts stay unknown. Practice datasets are not real provider recordings or evidence of authenticated production tenancy.
+
+## Approved replies and invoices — owner decision, 2026-10-06
+
+smolstuff may automatically prepare email replies and invoice drafts from permitted shop data. Sending a reply or publishing/sending an invoice requires explicit owner approval of the exact draft and destination. Employees may prepare drafts; this decision does not add delegated communication permissions or let spending/correction approval authorize a message.
+
+An optional “Send me a preview” step sends a clearly labeled preview to the authenticated owner's verified address after approval of that preview action. It is not customer delivery, does not publish an invoice or initiate collection, and does not authorize the subsequent customer send. Show invoice previews as non-payable draft summaries without active payment links. The owner can instead review in-app and approve the customer send directly.
+
+Acceptance criteria:
+
+- Review shows sender/shop, all To/Cc/Bcc recipients, subject, body and attachments. Invoice review also shows customer/order, itemization, currency, taxes/discounts/fees, total, due date and intended provider effects.
+- Approval binds to the shop, actor, action, recipient set and exact draft version/hash. Editing content, recipients, invoice terms or attachments invalidates approval.
+- Immediately before sending, recheck authenticated owner authority, connection access, unchanged terms and approval validity. Missing critical facts block sending.
+- Preview approval and customer-send approval are separate actions. A preview never marks the reply/invoice sent to the customer.
+- Use a stable action idempotency key and reconcile provider results before retrying an uncertain send. Record prepared, approved, submitted, sent/failed/unknown with sanitized provider references; sent is not delivered, accepted, fulfilled or paid.
+- Invoice publication may trigger provider-managed communications; the approved action must describe those effects and avoid duplicate delivery through a second sender. Invoice-send approval does not authorize charging a stored payment method.
+- Anonymous /demo remains simulated. Real sending waits for authenticated shop isolation, verified adapters and remaining production/privacy gates.
+
+This records product requirements; it does not implement or enable sending.
+
+## Shop database integrity — 2026-10-06
+
+Before private shop surfaces depend on membership storage, enforce user/shop relationships, valid role/type/flags, bounded known delegation grants and same-shop audit references in the database. Version schema changes explicitly; preserve existing identity, membership, audit and session records. Reject invalid legacy data without automatic repair or authority changes, roll back failed schema/data changes, and verify both SQLite and disposable Postgres behavior. Constructors must not silently create/upgrade these schemas. Hosted migration requires its own backup, staging and rollout verification.

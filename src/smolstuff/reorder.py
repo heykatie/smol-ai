@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Tuple
+from typing import Optional, Tuple
 
 from smolstuff.extract import LeadTimeFact
 from smolstuff.fixtures import (
@@ -36,8 +36,8 @@ class ReorderPlan:
     sample_days: int
     average_daily_demand: Decimal
     available_now: Decimal
-    days_of_supply: Decimal
-    projected_gap_days: Decimal
+    days_of_supply: Optional[Decimal]
+    projected_gap_days: Optional[Decimal]
     reorder_point: Decimal
     warehouse_units: Decimal
     warehouse_covers_gap: bool
@@ -46,12 +46,14 @@ class ReorderPlan:
     immediate_shortage: Decimal
     delivery_days: int
     quantity: int
-    proposal: PurchaseProposal
-    policy_result: PolicyResult
+    proposal: Optional[PurchaseProposal]
+    policy_result: Optional[PolicyResult]
     needs_reorder: bool
     needs_approval: bool
 
     def explain(self) -> str:
+        if not self.needs_reorder:
+            return "No reorder needed. Current stock and recorded demand do not require an additional purchase."
         return (
             "You have about {days} days of stock. Supplier A now needs {lead} days. "
             "The gap is about {gap} days. Warehouse stock is {warehouse} and open purchase "
@@ -81,9 +83,11 @@ class ReorderPlan:
 
     @property
     def merchandise(self) -> Decimal:
-        return self.proposal.unit_price.amount * self.proposal.quantity
+        return self.proposal.unit_price.amount * self.proposal.quantity if self.proposal else Decimal("0")
 
     def proposal_total(self) -> Decimal:
+        if self.proposal is None:
+            return Decimal("0")
         return transaction_total(
             self.proposal.unit_price, self.proposal.quantity, self.proposal.fees
         ).amount
@@ -113,28 +117,31 @@ def plan_reorder(fact: LeadTimeFact) -> ReorderPlan:
     )
     with_warehouse = assessment.available_now + WAREHOUSE_ON_HAND
     warehouse_covers_gap = (
-        WAREHOUSE_ON_HAND > 0 and (with_warehouse / demand) >= Decimal(fact.lead_time_days)
+        demand > 0 and WAREHOUSE_ON_HAND > 0 and (with_warehouse / demand) >= Decimal(fact.lead_time_days)
     )
     open_po_in_time = False
     immediate_shortage = assessment.demand_over_lead_time - assessment.available_now
     if immediate_shortage < 0:
         immediate_shortage = Decimal("0")
-    quantity = SUPPLIER_MOQ if assessment.stockout_risk else 0
-    proposal = PurchaseProposal(
-        supplier_id=SUPPLIER_B_ID,
-        sku=fact.sku,
-        supplier_allowlisted=True,
-        sku_previously_purchased=True,
-        quantity=quantity,
-        unit_price=ALTERNATIVE_UNIT_PRICE,
-        fees=SHIPPING,
-        previous_unit_price=ALTERNATIVE_UNIT_PRICE,
-        evidence_current=True,
-        evidence_complete=True,
-        verification_passed=True,
-    )
-    decision = evaluate_purchase(proposal, EXAMPLE_POLICY)
     needs_reorder = bool(assessment.stockout_risk) and not warehouse_covers_gap and not open_po_in_time
+    quantity = SUPPLIER_MOQ if needs_reorder else 0
+    proposal = None
+    decision = None
+    if needs_reorder:
+        proposal = PurchaseProposal(
+            supplier_id=SUPPLIER_B_ID,
+            sku=fact.sku,
+            supplier_allowlisted=True,
+            sku_previously_purchased=True,
+            quantity=quantity,
+            unit_price=ALTERNATIVE_UNIT_PRICE,
+            fees=SHIPPING,
+            previous_unit_price=ALTERNATIVE_UNIT_PRICE,
+            evidence_current=True,
+            evidence_complete=True,
+            verification_passed=True,
+        )
+        decision = evaluate_purchase(proposal, EXAMPLE_POLICY)
     return ReorderPlan(
         previous_lead_time_days=fact.previous_lead_time_days,
         lead_time_days=fact.lead_time_days,
@@ -154,7 +161,7 @@ def plan_reorder(fact: LeadTimeFact) -> ReorderPlan:
         proposal=proposal,
         policy_result=decision,
         needs_reorder=needs_reorder,
-        needs_approval=decision.decision == PolicyDecision.NEEDS_APPROVAL,
+        needs_approval=decision is not None and decision.decision == PolicyDecision.NEEDS_APPROVAL,
     )
 
 

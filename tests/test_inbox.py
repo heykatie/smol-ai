@@ -182,8 +182,8 @@ def test_daily_brief_is_guided_launcher(tmp_path):
     assert 'id="inventory-attention"' in home
     assert "catalog lines need a look" in home
     assert (
-        "/try?scenario=inventory&view=attention" in home
-        or "/try?scenario=inventory&amp;view=attention" in home
+        "/demo?scenario=inventory&view=attention" in home
+        or "/demo?scenario=inventory&amp;view=attention" in home
     )
     assert "Demo tour." in home
 
@@ -230,7 +230,7 @@ def test_preview_loops_share_banner_and_decision_first_copy(tmp_path):
 def test_inventory_needs_attention_links_to_daily_brief(tmp_path):
     page = InboxApp(str(tmp_path / "inbox.sqlite3")).view("inventory")
 
-    assert 'href="/try#inventory-attention"' in page
+    assert 'href="/demo#inventory-attention"' in page
     assert "needs attention" in page
     assert 'data-attention="1"' in page
     assert 'id="attention-filter-note"' in page
@@ -300,7 +300,7 @@ def _session_post(port: int, action: str, cookie: str = "") -> str:
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     if cookie:
         headers["Cookie"] = cookie
-    connection.request("POST", "/try", "action={0}".format(action), headers)
+    connection.request("POST", "/demo", "action={0}".format(action), headers)
     response = connection.getresponse()
     response.read()
     set_cookie = response.getheader("Set-Cookie") or ""
@@ -313,7 +313,7 @@ def _session_get(port: int, cookie: str) -> str:
     from http.client import HTTPConnection
 
     connection = HTTPConnection("127.0.0.1", port)
-    connection.request("GET", "/try", headers={"Cookie": cookie})
+    connection.request("GET", "/demo", headers={"Cookie": cookie})
     response = connection.getresponse()
     return response.read().decode("utf-8")
 
@@ -383,13 +383,13 @@ def test_configured_model_stays_on_parser_when_sponsor_calls_are_off(tmp_path, m
 
 
 def _get(port: int) -> str:
-    with urlopen("http://127.0.0.1:{0}/try".format(port)) as response:
+    with urlopen("http://127.0.0.1:{0}/demo".format(port)) as response:
         return response.read().decode("utf-8")
 
 
 def _post(port: int, action: str) -> str:
     request = Request(
-        "http://127.0.0.1:{0}/try".format(port),
+        "http://127.0.0.1:{0}/demo".format(port),
         data="action={0}".format(action).encode("utf-8"),
         method="POST",
     )
@@ -409,3 +409,38 @@ def test_supplier_sources_are_accessible_disclosures(tmp_path, monkeypatch):
     assert "Read by the local parser fallback" in page
     assert page.index("View supplier message") < page.index("Why this recommendation")
     assert "$189" in page
+
+
+def test_healthy_result_persists_without_purchase_and_replays_without_extraction(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from smolstuff.extract import LeadTimeFact
+    from smolstuff.fixtures import SUPPLIER_A_ID, WORKSHOP_SKU
+    calls = []
+    def extract(self, store=None):
+        calls.append("extract")
+        return SimpleNamespace(fact=LeadTimeFact(SUPPLIER_A_ID, WORKSHOP_SKU, 14, 1),
+                               provider="Lead-time parser", result="Synthetic healthy stock check.",
+                               status="simulated")
+    monkeypatch.setattr(InboxApp, "_extract_supplier_fact", extract)
+    def unexpected(self, *args):
+        raise AssertionError("Healthy stock must not research or explain a purchase.")
+    monkeypatch.setattr(InboxApp, "_record_supplier_research", unexpected)
+    monkeypatch.setattr(InboxApp, "_record_zoowork", unexpected)
+    app = InboxApp(str(tmp_path / "healthy.sqlite3"), session_id="healthy")
+    app.apply("simulate_email")
+    app.apply("simulate_email")
+    for action in ("review_continue", "approve", "submit_order", "confirm", "receive_full"):
+        app.apply(action)
+    page = InboxApp(app.path, session_id="healthy").page()
+    assert "No reorder needed" in page
+    assert "Available inventory is still 21" in page
+    assert 'value="approve"' not in page
+    assert "No reorder needed" in app.view("home")
+    assert calls == ["extract"]
+    store = WorkflowStore(app.path, session_id="healthy")
+    try:
+        assert store.count_workflows() == store.count_approvals() == store.count_executions() == store.count_movements() == 0
+    finally:
+        store.close()
+    app.apply("reset")
+    assert "Start interactive demo" in app.page()

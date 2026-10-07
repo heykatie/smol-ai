@@ -115,3 +115,20 @@ def test_reorder_plan_selects_supplier_b_and_requires_approval():
     decision = evaluate_purchase(plan.proposal, EXAMPLE_POLICY)
     assert decision.decision == PolicyDecision.NEEDS_APPROVAL
     assert UNTRUSTED_OVERRIDE_ATTEMPT not in plan.explain()
+
+
+@pytest.mark.parametrize("zero_demand", [False, True])
+def test_healthy_stock_has_no_purchase_or_approval(monkeypatch, zero_demand):
+    import smolstuff.reorder as reorder
+    from smolstuff.extract import LeadTimeFact
+    from smolstuff.fixtures import WORKSHOP_SKU
+    if zero_demand:
+        monkeypatch.setattr(reorder, "RECENT_UNIT_SALES", (Decimal("0"),) * 10)
+    plan = reorder.plan_reorder(LeadTimeFact(SUPPLIER_A_ID, WORKSHOP_SKU, 14, 1))
+    assert plan.needs_reorder is False
+    assert plan.needs_approval is False
+    assert plan.quantity == 0
+    assert plan.proposal is None
+    assert plan.policy_result is None
+    assert plan.proposal_total() == plan.merchandise == Decimal("0")
+    assert plan.explain().startswith("No reorder needed")

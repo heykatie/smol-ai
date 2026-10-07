@@ -65,14 +65,14 @@ def test_inbox_persists_fallback_evidence_and_replay_spends_nothing(tmp_path, mo
     app=InboxApp(str(tmp_path/'case.sqlite3'))
     app.apply('simulate_email')
     app.apply('simulate_email')
-    assert calls==['Groq','Gemini']
-    assert 'schema-checked Gemini call' in app.page()
+    assert calls==[]
+    assert 'Sponsor calls are off' in app.page()
     assert '$189' in app.page()
     store=WorkflowStore(app.path)
     try:
         events=store.list_integration_events()
-        assert any(event.provider=='Groq' and 'failed' in event.result for event in events)
-        assert any(event.provider=='Gemini' and event.status=='live' for event in events)
+        assert any(event.provider=='Lead-time parser' for event in events)
+        assert all(event.status!='live' for event in events)
     finally:
         store.close()
 

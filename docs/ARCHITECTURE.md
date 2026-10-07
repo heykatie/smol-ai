@@ -26,7 +26,7 @@ Locally, the app is a long-running `http.server` process and each visitor's stat
 
 ## Hosting decision
 
-Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production serves a product-home stub at `/` and the try-without-signup demo tour at `/try` (`https://smolstuff.vercel.app`). Dense seeded specialty-shop inventory is for practice-owner login (not shipped). Neon Free is connected to the Vercel project in the Washington, D.C. region. The app uses it when `DATABASE_URL` is set. Local development stays on SQLite when that variable is empty. Commit `0847325` records one production check: a reorder was approved, the app redeployed, and the same session was still awaiting receipt with stock at 21. The commit was authored October 4, 2026 in America/Los_Angeles (October 5 UTC). This cleanup did not rerun the check or inspect the dashboard.
+Vercel Hobby is the selected plan. Render is retired, and `render.yaml` is removed. Production serves a product-home stub at `/` and the try-without-signup demo tour at `/demo` (`https://smolstuff.vercel.app`). Dense seeded specialty-shop inventory is for practice-owner login (not shipped). Neon Free is connected to the Vercel project in the Washington, D.C. region. The app uses it when `DATABASE_URL` is set. Local development stays on SQLite when that variable is empty. Commit `0847325` records one production check: a reorder was approved, the app redeployed, and the same session was still awaiting receipt with stock at 21. The commit was authored October 4, 2026 in America/Los_Angeles (October 5 UTC). This cleanup did not rerun the check or inspect the dashboard.
 
 ## Database
 
@@ -35,7 +35,7 @@ Neon Free is repository-recorded as provisioned and connected. It is $0, with 10
 ## Recorded plan and cost decisions
 
 - The owner selected the Vercel Hobby plan. It is $0 and includes 1 million function invocations and 4 active CPU-hours per month. Hobby is personal, non-commercial use only ([Hobby plan](https://vercel.com/docs/plans/hobby), [fair use guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)). If smolstuff is used for financial gain, the project has to move to Pro at $20 per month before that use. The project exists. Neon Free is connected. Launch pricing applies only after an upgrade: $0.106 per compute-hour and $0.35 per GB-month.
-- Tavily, Novita, ZooWork, Moss, and BAND are separate bills. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both a global limit and a per-session limit are set. A key alone does not place a call. Sponsor counters use the same Postgres database when `DATABASE_URL` is set, so instances sharing that database share the call-count caps. Without `DATABASE_URL`, counters stay in a local SQLite file. It is a call-count limit, not a monetary cap.
+- Tavily, Novita, ZooWork, Moss, and BAND are separate bills. The public /demo inbox hard-denies sponsor calls regardless of global switches, limits or credentials. A key alone does not place a call. Sponsor counters use the same Postgres database when `DATABASE_URL` is set, so instances sharing that database share the call-count caps. Without `DATABASE_URL`, counters stay in a local SQLite file. It is a call-count limit, not a monetary cap.
 
 ## Not in this migration
 

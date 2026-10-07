@@ -1,0 +1,915 @@
+{
+  "schema_version": 1,
+  "origin": "simulated",
+  "as_of": "2026-10-06T13:00:00Z",
+  "note": "Fictional normalized adapter outputs, not native API responses or live account data. Stable IDs intentionally repeat across shops; provider records are not automatically merged.",
+  "shops": [
+    {
+      "shop_id": "practice-keyboard",
+      "shop_type": "keyboard",
+      "name": "Practice Keyboard Shop",
+      "currency": "USD",
+      "time_zone": "America/Los_Angeles"
+    },
+    {
+      "shop_id": "practice-bakery",
+      "shop_type": "bakery",
+      "name": "Practice Bakery",
+      "currency": "USD",
+      "time_zone": "America/Los_Angeles"
+    }
+  ],
+  "connections": [
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "pos",
+      "provider": "shopify",
+      "kinds": [
+        "inventory",
+        "order",
+        "payment",
+        "product"
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "operations-calendar",
+      "provider": "google_calendar",
+      "kinds": [
+        "calendar_event"
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "mapped-operations-sheet",
+      "provider": "google_sheets",
+      "kinds": [
+        "inventory",
+        "purchase_order"
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "practice-local",
+      "provider": "smolstuff",
+      "kinds": [
+        "availability",
+        "inquiry",
+        "shift"
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "pos",
+      "provider": "square",
+      "kinds": [
+        "inventory",
+        "invoice",
+        "order",
+        "payment",
+        "product"
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "operations-calendar",
+      "provider": "google_calendar",
+      "kinds": [
+        "calendar_event"
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "mapped-operations-sheet",
+      "provider": "google_sheets",
+      "kinds": [
+        "inventory",
+        "lot",
+        "purchase_order",
+        "recipe"
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "practice-local",
+      "provider": "smolstuff",
+      "kinds": [
+        "availability",
+        "inquiry",
+        "shift"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "pos",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "product",
+          "external_id": "p1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "KEY-001",
+            "name": "Quiet linear switch",
+            "unit": "each",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "KEY-002",
+            "name": "Compact keyboard kit",
+            "unit": "each",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p3",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "KEY-003",
+            "name": "PBT keycap set",
+            "unit": "set",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p4",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "KEY-004",
+            "name": "Stabilizer kit",
+            "unit": "set",
+            "active": true
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "21",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p2",
+            "location_id": "main",
+            "quantity": "7",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-3",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p3",
+            "location_id": "main",
+            "quantity": "18",
+            "unit": "set",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-4",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p4",
+            "location_id": "main",
+            "quantity": "11",
+            "unit": "set",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "reserved-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "6",
+            "unit": "each",
+            "state": "reserved"
+          }
+        },
+        {
+          "kind": "order",
+          "external_id": "order-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p1",
+                "quantity": "6",
+                "unit": "each",
+                "unit_price_minor": 25
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 150,
+            "source_state": "OPEN",
+            "payment_status": "unknown",
+            "fulfillment_status": "unfulfilled",
+            "location_id": "main",
+            "due_at": "2026-10-10T18:00:00Z"
+          }
+        },
+        {
+          "kind": "order",
+          "external_id": "order-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p2",
+                "quantity": "1",
+                "unit": "each",
+                "unit_price_minor": 8500
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 8500,
+            "source_state": "COMPLETED",
+            "payment_status": "paid",
+            "fulfillment_status": "fulfilled",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "payment",
+          "external_id": "payment-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "order_id": "order-2",
+            "currency": "USD",
+            "amount_minor": 8500,
+            "status": "completed"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "operations-calendar",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "calendar_event",
+          "external_id": "event-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Assembly hold",
+            "start": "2026-10-10T09:00:00-07:00",
+            "end": "2026-10-10T10:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "tentative",
+            "order_ref": "order-1"
+          }
+        },
+        {
+          "kind": "calendar_event",
+          "external_id": "event-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Staff training",
+            "start": "2026-10-12T09:00:00-07:00",
+            "end": "2026-10-12T10:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "confirmed"
+          }
+        },
+        {
+          "kind": "calendar_event",
+          "external_id": "event-all-day",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Stock count",
+            "start": "2026-10-11T00:00:00-07:00",
+            "end": "2026-10-12T00:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "mapped-operations-sheet",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "inventory",
+          "external_id": "manual-stock-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "19",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "purchase_order",
+          "external_id": "po-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p1",
+                "quantity": "100",
+                "unit": "each",
+                "unit_price_minor": 25
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 2500,
+            "status": "confirmed",
+            "due_at": "2026-10-09T18:00:00Z"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-keyboard",
+      "connection_id": "practice-local",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "shift",
+          "external_id": "shift-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-keyboard-employee",
+            "start": "2026-10-10T08:00:00-07:00",
+            "end": "2026-10-10T14:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "published",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "shift",
+          "external_id": "shift-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-keyboard-owner",
+            "start": "2026-10-10T10:00:00-07:00",
+            "end": "2026-10-10T16:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "draft",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "availability",
+          "external_id": "availability-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-keyboard-employee",
+            "start": "2026-10-10T08:00:00-07:00",
+            "end": "2026-10-10T12:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "available"
+          }
+        },
+        {
+          "kind": "inquiry",
+          "external_id": "inquiry-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "channel": "manual_practice",
+            "status": "details_pending",
+            "requirements": [
+              "Requested kit layout is unconfirmed"
+            ],
+            "order_ref": "order-1"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "pos",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "product",
+          "external_id": "p1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "BAK-001",
+            "name": "Oat biscuit",
+            "unit": "each",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "BAK-002",
+            "name": "Cocoa loaf",
+            "unit": "each",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p3",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "BAK-003",
+            "name": "Flour",
+            "unit": "kg",
+            "active": true
+          }
+        },
+        {
+          "kind": "product",
+          "external_id": "p4",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "sku": "BAK-004",
+            "name": "Butter",
+            "unit": "kg",
+            "active": true
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "36",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p2",
+            "location_id": "main",
+            "quantity": "8",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-3",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p3",
+            "location_id": "main",
+            "quantity": "12.5",
+            "unit": "kg",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "stock-4",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p4",
+            "location_id": "main",
+            "quantity": "2.25",
+            "unit": "kg",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "inventory",
+          "external_id": "reserved-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "6",
+            "unit": "each",
+            "state": "reserved"
+          }
+        },
+        {
+          "kind": "order",
+          "external_id": "order-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p1",
+                "quantity": "6",
+                "unit": "each",
+                "unit_price_minor": 250
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 1500,
+            "source_state": "OPEN",
+            "payment_status": "unknown",
+            "fulfillment_status": "unfulfilled",
+            "location_id": "main",
+            "due_at": "2026-10-10T18:00:00Z"
+          }
+        },
+        {
+          "kind": "order",
+          "external_id": "order-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p2",
+                "quantity": "1",
+                "unit": "each",
+                "unit_price_minor": 1200
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 1200,
+            "source_state": "COMPLETED",
+            "payment_status": "paid",
+            "fulfillment_status": "fulfilled",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "payment",
+          "external_id": "payment-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "order_id": "order-2",
+            "currency": "USD",
+            "amount_minor": 1200,
+            "status": "completed"
+          }
+        },
+        {
+          "kind": "invoice",
+          "external_id": "invoice-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "order_id": "order-1",
+            "currency": "USD",
+            "total_minor": 1500,
+            "balance_minor": 1500,
+            "status": "draft",
+            "due_at": "2026-10-09T18:00:00Z"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "operations-calendar",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "calendar_event",
+          "external_id": "event-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Production hold",
+            "start": "2026-10-10T09:00:00-07:00",
+            "end": "2026-10-10T10:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "tentative",
+            "order_ref": "order-1"
+          }
+        },
+        {
+          "kind": "calendar_event",
+          "external_id": "event-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Staff training",
+            "start": "2026-10-12T09:00:00-07:00",
+            "end": "2026-10-12T10:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "confirmed"
+          }
+        },
+        {
+          "kind": "calendar_event",
+          "external_id": "event-all-day",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "title": "Stock count",
+            "start": "2026-10-11T00:00:00-07:00",
+            "end": "2026-10-12T00:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "mapped-operations-sheet",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "inventory",
+          "external_id": "manual-stock-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "location_id": "main",
+            "quantity": "34",
+            "unit": "each",
+            "state": "sellable"
+          }
+        },
+        {
+          "kind": "purchase_order",
+          "external_id": "po-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "line_items": [
+              {
+                "product_id": "p3",
+                "quantity": "10",
+                "unit": "kg",
+                "unit_price_minor": 400
+              }
+            ],
+            "currency": "USD",
+            "total_minor": 4000,
+            "status": "confirmed",
+            "due_at": "2026-10-09T18:00:00Z"
+          }
+        },
+        {
+          "kind": "lot",
+          "external_id": "lot-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p4",
+            "location_id": "main",
+            "quantity": "1.25",
+            "unit": "kg",
+            "expires_on": "2026-10-07",
+            "batch_id": "batch-1"
+          }
+        },
+        {
+          "kind": "lot",
+          "external_id": "lot-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p4",
+            "location_id": "main",
+            "quantity": "1",
+            "unit": "kg",
+            "expires_on": "2026-10-20",
+            "batch_id": "batch-2"
+          }
+        },
+        {
+          "kind": "recipe",
+          "external_id": "recipe-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "product_id": "p1",
+            "yield_quantity": "12",
+            "yield_unit": "each",
+            "ingredients": [
+              {
+                "product_id": "p3",
+                "quantity": "0.6",
+                "unit": "kg"
+              },
+              {
+                "product_id": "p4",
+                "quantity": "0.2",
+                "unit": "kg"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "shop_id": "practice-bakery",
+      "connection_id": "practice-local",
+      "cursor": "synthetic-complete-2026-10-06",
+      "records": [
+        {
+          "kind": "shift",
+          "external_id": "shift-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-bakery-employee",
+            "start": "2026-10-10T08:00:00-07:00",
+            "end": "2026-10-10T14:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "published",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "shift",
+          "external_id": "shift-2",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-bakery-owner",
+            "start": "2026-10-10T10:00:00-07:00",
+            "end": "2026-10-10T16:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "draft",
+            "location_id": "main"
+          }
+        },
+        {
+          "kind": "availability",
+          "external_id": "availability-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "employee_ref": "practice-bakery-employee",
+            "start": "2026-10-10T08:00:00-07:00",
+            "end": "2026-10-10T12:00:00-07:00",
+            "time_zone": "America/Los_Angeles",
+            "status": "available"
+          }
+        },
+        {
+          "kind": "inquiry",
+          "external_id": "inquiry-1",
+          "source_updated_at": "2026-10-06T12:00:00Z",
+          "observed_at": "2026-10-06T13:00:00Z",
+          "origin": "simulated",
+          "deleted": false,
+          "data": {
+            "channel": "manual_practice",
+            "status": "details_pending",
+            "requirements": [
+              "Requested item quantity is unconfirmed",
+              "Pickup window needs confirmation"
+            ],
+            "order_ref": "order-1"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,7 @@ from typing import FrozenSet, Optional
 
 COMMON = frozenset({'inventory', 'correction_requests', 'schedules', 'availability', 'recommendations'})
 EMPLOYEE = frozenset({'view_inventory', 'submit_correction', 'prepare_recommendation',
-                      'view_schedule', 'submit_availability'})
+                      'view_schedule', 'view_availability', 'submit_availability'})
 DELEGATABLE = frozenset({'approve_correction', 'approve_spending'})
 OWNER = EMPLOYEE | DELEGATABLE | frozenset({'manage_members'})
 
@@ -42,7 +42,9 @@ class Membership:
 
 
 def authorize(membership: Optional[Membership], shop_id: str, action: str,
-              *, requester_id: Optional[str] = None, subject_user_id: Optional[str] = None) -> bool:
+              *, requester_id: Optional[str] = None, subject_user_id: Optional[str] = None,
+              subject_membership: Optional[Membership] = None) -> bool:
+    """Both memberships must be loaded from trusted records by the calling service."""
     if membership is None or not membership.active or membership.shop_id != shop_id:
         return False
     permissions = OWNER if membership.role == 'owner' else EMPLOYEE | membership.delegated
@@ -50,8 +52,16 @@ def authorize(membership: Optional[Membership], shop_id: str, action: str,
         return False
     if action == 'approve_correction' and (not requester_id or requester_id == membership.user_id):
         return False
-    if action in {'view_schedule', 'submit_availability'}:
-        return subject_user_id == membership.user_id
+    if action in {'view_schedule', 'view_availability', 'submit_availability'}:
+        if not subject_user_id:
+            return False
+        if subject_user_id == membership.user_id:
+            return True
+        if action == 'submit_availability' or membership.role != 'owner':
+            return False
+        return (subject_membership is not None and subject_membership.active
+                and subject_membership.shop_id == shop_id
+                and subject_membership.user_id == subject_user_id)
     return True
 
 

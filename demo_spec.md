@@ -83,9 +83,9 @@ Landing:
 - Button: “Start interactive demo”
 - Notice: “Fictional business data. Purchases and deliveries are simulated.”
 
-Surfaces: `/try` is the **demo tour** (no login) — demo workflows, demo wording, and a **small demo catalog** so inventory can show `DEMO-ITM-001` updating after receipt without presenting a full specialty-shop assortment. The dense seeded catalog (~492 fictional SKUs) is for the practice-owner / logged-in surface (login not shipped). Product home `/` states both.
+Surfaces: `/demo` is the **demo tour** (no login) — demo workflows, demo wording, and a **small demo catalog** so inventory can show `DEMO-ITM-001` updating after receipt without presenting a full specialty-shop assortment. The dense seeded catalog (~492 fictional SKUs) is for the practice-owner / logged-in surface (login not shipped). Product home `/` states both.
 
-Happy path (demo tour `/try`) after start:
+Happy path (demo tour `/demo`) after start:
 
 1. **Review packet** — gap, Supplier B terms, MOQ, policy. Button: “Continue to terms”. Decline/Reset available. Approve is not shown yet.
 2. **Negotiate** — Accept $189 terms, or send one counter. Counter replies that Supplier B **holds at $189** (no invented discount). Then Accept to continue.
@@ -94,7 +94,7 @@ Happy path (demo tour `/try`) after start:
 5. **Submit** — “Submit simulated order”.
 6. **Confirm** — “Confirm supplier match”.
 7. **Awaiting receipt** — “Simulate receiving 100 units”; links to **View confirmation** and **Purchase receipt** in evidence (not inventory). Stock still 21.
-8. **Completed** — “View Quiet linear switch in inventory” (`/try?scenario=inventory&q=DEMO-ITM-001`) plus Reset.
+8. **Completed** — “View Quiet linear switch in inventory” (`/demo?scenario=inventory&q=DEMO-ITM-001`) plus Reset.
 
 Risk / decision copy (ready to approve):
 

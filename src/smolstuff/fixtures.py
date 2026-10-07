@@ -106,7 +106,7 @@ DEMO_LOCATIONS = (
 #   Switches 11 · Keycaps 31 · Keyboards 9 · Desk mats 28 · Keyboard configs 405
 # plus workshop/detective Tools. Role: reorder | workshop_bom | detective | browse
 #
-# The anonymous `/try` demo tour uses SANDBOX_CATALOG — a small subset of the
+# The anonymous `/demo` demo tour uses SANDBOX_CATALOG — a small subset of the
 # same rows (focal reorder + workshop/detective lines + a few browse samples).
 #
 # Public-source audit (fictionalized target, not imported rows):
@@ -628,7 +628,7 @@ def _build_demo_catalog() -> tuple:
             int(STORE_ON_HAND),
             int(WAREHOUSE_ON_HAND),
             "↗",
-            "/try?scenario=reorder",
+            "/demo?scenario=reorder",
             "Lead-time risk",
         ),
         (
@@ -808,7 +808,7 @@ def _build_demo_catalog() -> tuple:
             "store": KIT_STORE_ON_HAND,
             "warehouse": KIT_WAREHOUSE_ON_HAND,
             "icon": "◇",
-            "href": "/try?scenario=workshop",
+            "href": "/demo?scenario=workshop",
             "link_label": "Event shortfall",
         }
     )
@@ -1154,7 +1154,7 @@ def _build_demo_catalog() -> tuple:
                 "store": 22,
                 "warehouse": 18,
                 "icon": "◇",
-                "href": "/try?scenario=workshop",
+                "href": "/demo?scenario=workshop",
                 "link_label": "Event shortfall",
             },
             {
@@ -1169,7 +1169,7 @@ def _build_demo_catalog() -> tuple:
                 "store": 20,
                 "warehouse": 15,
                 "icon": "◇",
-                "href": "/try?scenario=workshop",
+                "href": "/demo?scenario=workshop",
                 "link_label": "Event shortfall",
             },
             _browse(
@@ -1231,7 +1231,7 @@ def _build_demo_catalog() -> tuple:
                 "store": 20,
                 "warehouse": 0,
                 "icon": "⌕",
-                "href": "/try?scenario=detective",
+                "href": "/demo?scenario=detective",
                 "link_label": "Count mismatch",
             },
         ]
@@ -1286,7 +1286,7 @@ SEEDED_CATALOG = _build_demo_catalog()
 # Back-compat alias — prefer SEEDED_CATALOG or SANDBOX_CATALOG by surface.
 DEMO_CATALOG = SEEDED_CATALOG
 
-# Demo-tour inventory on `/try`: workflow-linked SKUs + a few browse samples.
+# Demo-tour inventory on `/demo`: workflow-linked SKUs + a few browse samples.
 # Dense configs/keycap fill stay on the seeded catalog only.
 SANDBOX_CATALOG_SKUS = (
     WORKSHOP_SKU,

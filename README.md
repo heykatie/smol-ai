@@ -15,7 +15,7 @@ A dark, responsive Daily brief with one simulated procurement workflow, four sep
 | Step | Behavior |
 | --- | --- |
 | Supplier email | **Start interactive demo** simulates a permitted Supplier A message: lead time increased from 14 days to about 35 days. Each visitor gets a separate session. This is a demonstration trigger, not a live mailbox subscription. |
-| Extraction | Optional Groq → OpenRouter → local parser chain is selected by `SMOL_EXTRACTION_PROVIDER=groq_openrouter_parser`; legacy Novita remains available when unset. Anonymous calls stay off unless `SMOL_SPONSOR_CALLS=1` and both sponsor limits are set. Otherwise a local parser reads the synthetic email and is labeled a fallback. It cannot change prices or the spending limit. |
+| Extraction | Optional Groq → OpenRouter → local parser chain is selected by `SMOL_EXTRACTION_PROVIDER=groq_openrouter_parser`; legacy Novita remains available when unset. The public /demo inbox always uses the local parser, regardless of provider keys, switches or extraction-chain settings. Provider adapters remain available for separately authorized local checks. It cannot change prices or the spending limit. |
 | Planning | The last 10 days sold 11 units. Velocity is 1.1/day. Supply is about 19 days (21 / 1.1 ≈ 19.1). The gap is about 16 days (≈ 15.9). |
 | Internal check | Warehouse stock is 0 and open purchase orders are 0, so neither covers the gap. |
 | Recommendation | Order 100 quiet linear switches from Supplier B because that is the minimum. $182 merchandise + $7 shipping = $189. That is more than the 17.5-unit immediate shortage. It is not a forecast. |
@@ -28,18 +28,18 @@ Integration status: application wiring verified by this inspection; previous acc
 
 | Tool | Observed status |
 | --- | --- |
-| Tavily | Wired. A previous local run recorded a live search. This checkout does not call Tavily unless sponsor calls are enabled, both limits are set, and a key is present. Links do not change the seeded $189 offer. |
+| Tavily | Wired. A previous local run recorded a live search. The public /demo inbox never calls Tavily, even when its key and sponsor settings are present. Links do not change the seeded $189 offer. |
 | Novita | Wired for supplier-email extraction. Without `NOVITA_API_KEY`, the labeled parser fallback runs. |
 | ZooWork | One stopped agent, `smolstuff-clerk`, is configured. It explains a case and cannot change the order. Calls stay off until launch. |
 | BAND | The user key can list owned agents. The account owns none, so no handoff has run. |
 | Moss | A local Python 3.12 query of the fictional `smol-policy` index returned the $40 approval rule. The Action Inbox does not call Moss, and the evidence panel does not show that query. |
 | Entire | Development provenance only. This repository is not capturing sessions. |
 
-The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app) (`/` product home; **demo tour** at `/try`). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are set. With `DATABASE_URL`, those call-count limits are shared in Postgres. Without it, they share one local budget file. They are not a provider-wide spend cap.
+The public site is [https://smolstuff.vercel.app](https://smolstuff.vercel.app) (`/` product home; **demo tour** at `/demo`). A normal browser does not need a Vercel login. Temporary files on Vercel are not durable. Workflow and preview rows use Postgres when `DATABASE_URL` is configured; one surviving approval is repository-recorded, not a general durability certification. The local public-demo implementation hard-denies sponsor calls regardless of configuration; deployment of this safeguard is not yet verified. With `DATABASE_URL`, those call-count limits are shared in Postgres. Without it, they share one local budget file. They are not a provider-wide spend cap.
 
-Two surfaces: **`/try` demo tour** (no login — demo workflows, demo wording, small demo catalog) vs **practice owner** after login (real working features + dense seeded specialty-shop inventory ~492 fictional SKUs). Practice-owner sign-in is not shipped yet; product home states both.
+Two surfaces: **`/demo` demo tour** (no login — demo workflows, demo wording, small demo catalog) vs **practice owner** after login (real working features + dense seeded specialty-shop inventory ~492 fictional SKUs). Practice-owner sign-in is not shipped yet; product home states both.
 
-Confirmation does not complete the workflow. Completion is the reconciled receipt. On `/try`, **Inventory** is a **small demo catalog** (focal reorder SKU, workshop/detective lines, a few sample rows) with the same table shape: Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue. Columns are sortable; the filter searches the catalog. Product shows name + differentiators; Issue combines workflow state with the problem link. Phone view keeps Product / Status / Available / Issue. Quiet linear switch starts at available 21 (Available + Lead-time risk); an approved order is Incoming / Waiting with inbound 100; a full receive is Available / Done at available 121. Workshop feasibility uses a per-seat **BOM** (not one sealed kit SKU). Detective tracks sample strips. The full ~492-SKU assortment stays on the practice-owner surface.
+Confirmation does not complete the workflow. Completion is the reconciled receipt. On `/demo`, **Inventory** is a **small demo catalog** (focal reorder SKU, workshop/detective lines, a few sample rows) with the same table shape: Product → Category → Status → Available → Reserved → Incoming → In transit → Unavailable → Last counted → Issue. Columns are sortable; the filter searches the catalog. Product shows name + differentiators; Issue combines workflow state with the problem link. Phone view keeps Product / Status / Available / Issue. Quiet linear switch starts at available 21 (Available + Lead-time risk); an approved order is Incoming / Waiting with inbound 100; a full receive is Available / Done at available 121. Workshop feasibility uses a per-seat **BOM** (not one sealed kit SKU). Detective tracks sample strips. The full ~492-SKU assortment stays on the practice-owner surface.
 
 The same session can open four more synthetic workflows from the daily brief. They do not change the reorder product's 21 units.
 
@@ -77,7 +77,7 @@ python3 -m venv .venv
 PYTHONPATH=src .venv/bin/python -m smolstuff.inbox
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765) (product home) and go to `/try` for the demo tour. If `PORT` is set, the server binds `0.0.0.0` on that port.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765) (product home) and go to `/demo` for the demo tour. If `PORT` is set, the server binds `0.0.0.0` on that port.
 
 1. Click **Start interactive demo**.
 2. Review the purchase packet → **Continue to terms** → **Accept $189 terms** (or counter once; fixture holds at $189) → **Send simulated draft**.
@@ -115,6 +115,8 @@ Copy `.env.example` to `.env`. The server reads that file on startup and does no
 | [project_context.md](project_context.md) | Product philosophy, architecture intent, examples, and long-form reference |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Hosting/storage direction and the recorded single-session redeploy check |
 | [docs/TARGET_STACK.md](docs/TARGET_STACK.md) | Planned Next + FastAPI + TypeScript migration (not implemented) |
+| [docs/CONNECTOR_PLAN.md](docs/CONNECTOR_PLAN.md) | Future connector research and verified offline practice-data foundation; no live adapters |
+| [docs/SHOP_MIGRATIONS.md](docs/SHOP_MIGRATIONS.md) | Explicit membership migrations, integrity constraints and preservation checks |
 | [docs/DOCUMENT_AUTHORITY.md](docs/DOCUMENT_AUTHORITY.md) | Which document owns each topic |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Future and post-MVP work, not current evidence |
 | [docs/archive/HACKATHON_CONTEXT.md](docs/archive/HACKATHON_CONTEXT.md) | Historical hackathon, sponsor, and demo-script context |

@@ -5,7 +5,7 @@ import pytest
 from app import app
 
 
-def test_wsgi_root_serves_product_home_and_try_serves_sandbox(tmp_path, monkeypatch):
+def test_wsgi_root_serves_product_home_and_demo_serves_sandbox(tmp_path, monkeypatch):
     monkeypatch.setenv("SMOL_SESSIONS", str(tmp_path / "sessions"))
     monkeypatch.delenv("SMOL_SPONSOR_CALLS", raising=False)
 
@@ -37,7 +37,7 @@ def test_wsgi_root_serves_product_home_and_try_serves_sandbox(tmp_path, monkeypa
         app(
             {
                 "REQUEST_METHOD": "GET",
-                "PATH_INFO": "/try",
+                "PATH_INFO": "/demo",
                 "QUERY_STRING": "",
                 "HTTP_HOST": "127.0.0.1",
                 "wsgi.input": io.BytesIO(b""),
@@ -47,7 +47,7 @@ def test_wsgi_root_serves_product_home_and_try_serves_sandbox(tmp_path, monkeypa
     ).decode()
     assert captured["status"].startswith("200")
     assert "Demo tour" in sandbox
-    assert 'action="/try"' in sandbox
+    assert 'action="/demo"' in sandbox
     assert "specialty-shop assortment (~492" not in sandbox
 
 
@@ -62,7 +62,7 @@ def test_wsgi_post_sets_a_session_cookie(tmp_path, monkeypatch):
 
     environ = {
         "REQUEST_METHOD": "POST",
-        "PATH_INFO": "/try",
+        "PATH_INFO": "/demo",
         "QUERY_STRING": "",
         "CONTENT_TYPE": "application/x-www-form-urlencoded",
         "CONTENT_LENGTH": "26",
@@ -93,7 +93,7 @@ def test_wsgi_rejects_an_oversized_length_before_reading_the_body():
 
     environ = {
         "REQUEST_METHOD": "POST",
-        "PATH_INFO": "/try",
+        "PATH_INFO": "/demo",
         "QUERY_STRING": "",
         "CONTENT_TYPE": "application/x-www-form-urlencoded",
         "CONTENT_LENGTH": str(MAX_BODY_BYTES + 1),
@@ -134,7 +134,7 @@ def test_wsgi_invalid_input_returns_recoverable_error_and_preserves_saved_result
         captured.update(status=status, headers=dict(headers))
 
     body = b"".join(app({
-        "REQUEST_METHOD": "POST", "PATH_INFO": "/try", "HTTP_HOST": "localhost",
+        "REQUEST_METHOD": "POST", "PATH_INFO": "/demo", "HTTP_HOST": "localhost",
         "HTTP_COOKIE": "smol_session=" + session,
         "CONTENT_TYPE": "application/x-www-form-urlencoded", "CONTENT_LENGTH": str(len(raw)),
         "wsgi.input": io.BytesIO(raw),

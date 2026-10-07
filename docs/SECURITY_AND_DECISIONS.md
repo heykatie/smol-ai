@@ -23,7 +23,7 @@ Sender allowlisting is permission to process, not proof of identity or factual c
 
 ## Public demo launch gates
 
-The cookie is a server-issued 32-hex identifier with HttpOnly, SameSite=Lax, and a one-day Max-Age. A client-invented value is ignored unless that session file already exists. Secure is set when `DEMO_COOKIE_SECURE=1` or `VERCEL=1`. This is not login. A request removes demo files older than `SMOL_DEMO_TTL_SECONDS`. Posts are size-limited before the body is read, content-type checked, and refused when the Origin host does not match Host. New sessions are counted in a window, 100 per hour by default. Sponsor calls stay off unless `SMOL_SPONSOR_CALLS=1` and both limits are positive integers. With `DATABASE_URL`, counters share the Postgres database across instances; without it, they share one local SQLite file. `.gitignore` excludes `data/` and private `.env` files; `.env.example` is the public placeholder. Styled 400 pages handle invalid numeric input.
+The cookie is a server-issued 32-hex identifier with HttpOnly, SameSite=Lax, and a one-day Max-Age. A client-invented value is ignored unless that session file already exists. Secure is set when `DEMO_COOKIE_SECURE=1` or `VERCEL=1`. This is not login. A request removes demo files older than `SMOL_DEMO_TTL_SECONDS`. Posts are size-limited before the body is read, content-type checked, and refused when the Origin host does not match Host. New sessions are counted in a window, 100 per hour by default. The public /demo inbox hard-denies sponsor calls regardless of switches, limits or credentials. Separate authorized adapter checks still require budgets; a future authenticated execution surface has not been implemented. With `DATABASE_URL`, counters share the Postgres database across instances; without it, they share one local SQLite file. `.gitignore` excludes `data/` and private `.env` files; `.env.example` is the public placeholder. Styled 400 pages handle invalid numeric input.
 
 Before public paid calls or broader exposure, require:
 
@@ -48,10 +48,10 @@ Two surfaces. Do not merge them into one anonymous experience.
 
 | Surface | Access | Data | Sponsor / connectors | Purpose |
 | --- | --- | --- | --- | --- |
-| **Demo tour / sandbox** (`/try`) | Try without signup; optional light demo login later | Synthetic demo fixtures; **small demo catalog** (focal reorder + workshop/detective lines + a few sample rows); session TTL; reset allowed | **No sponsor calls.** Simulated adapters only | Public guided tour — demo workflows, demo wording, demo products |
+| **Demo tour / sandbox** (`/demo`) | Try without signup; optional light demo login later | Synthetic demo fixtures; **small demo catalog** (focal reorder + workshop/detective lines + a few sample rows); session TTL; reset allowed | **No sponsor calls.** Simulated adapters only | Public guided tour — demo workflows, demo wording, demo products |
 | **Practice owner app** (authenticated) | Practice owner login (not end-customer signup); demo login or any account once shipped | Seeded tenant data that behaves like a working shop — including the **dense specialty-shop inventory** (~492 fictional SKUs) | **Real sponsor calls** under D3 caps; connectors only to **disposable demo accounts** (never a production mailbox/POS) | Real working features with seeded data; not anonymous tour density |
 
-`/` is a product-home stub that states both surfaces. The try-without-signup demo tour is `/try` (anonymous cookie, synthetic actions, `SMOL_SPONSOR_CALLS` off, `SANDBOX_CATALOG`). The full `SEEDED_CATALOG` is structured for practice-owner login but that login is not shipped yet. Practice-owner is not customer multi-tenancy and does not authorize real-business commitments (D1/D2/D5 still gate that). Do not invent Tiny or any real-shop identity.
+`/` is a product-home stub that states both surfaces. The try-without-signup demo tour is `/demo` (anonymous cookie, synthetic actions, `SMOL_SPONSOR_CALLS` off, `SANDBOX_CATALOG`). The full `SEEDED_CATALOG` is structured for practice-owner login but that login is not shipped yet. Practice-owner is not customer multi-tenancy and does not authorize real-business commitments (D1/D2/D5 still gate that). Do not invent Tiny or any real-shop identity.
 
 ## Decision register
 
@@ -92,3 +92,9 @@ The dark UI changes presentation only; it does not complete production gates. So
 ## Shop/staff access refinement — owner-confirmed 2026-10-06
 
 The earlier owner-only login proposal is expanded to separate private shops and two seeded practice shops, each with owner/employee identities. Owner and employee are initial roles; correction/spending approvals are independently delegatable. No correction self-approval. Practice and real data require separate trusted memberships/storage scopes; anonymous demo sessions never authenticate users. Shop type enables features without granting permissions. Provider selection and live account setup remain pending; no change to real execution, connector or sponsor-budget gates. [PRACTICE_OWNER_LOGIN.md](PRACTICE_OWNER_LOGIN.md) owns the scoped acceptance criteria.
+
+## Communication decision — 2026-10-06
+
+Owner-confirmed: email replies and invoice drafts may be prepared automatically, then sent only after explicit owner approval of exact content, terms and recipients. Optional owner-email previews have a separate approval and cannot publish an invoice, initiate collection or authorize customer delivery. Existing correction/spending delegations do not grant communication authority. [PRD acceptance criteria](../prd.md#approved-replies-and-invoices--owner-decision-2026-10-06) govern this workflow.
+
+This resolves the draft-versus-approved-send product direction, not the remaining D1/D5/D6 implementation gates. No live send, payment collection, provider scope or runtime permission is enabled by this decision.

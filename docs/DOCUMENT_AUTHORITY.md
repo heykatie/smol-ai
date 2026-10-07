@@ -17,6 +17,8 @@ This index says which file owns a topic. It does not change account settings, co
 | Target UI/API stack (Next + FastAPI + TypeScript) and migration phases | [TARGET_STACK.md](TARGET_STACK.md) |
 | Visual design | [DESIGN.md](DESIGN.md) |
 | Integration contracts and recorded status | [INTEGRATIONS.md](INTEGRATIONS.md) |
+| Future connector capability research, normalized contract and fictional seed usage | [CONNECTOR_PLAN.md](CONNECTOR_PLAN.md); PRD requirements and security gates still govern |
+| Shop schema migration versions and preservation/runbook | [SHOP_MIGRATIONS.md](SHOP_MIGRATIONS.md) |
 | Local setup and deploy checks | [DEVELOPMENT.md](DEVELOPMENT.md) |
 | Product philosophy, architecture intent, examples, and long-form reference | [project_context.md](../project_context.md) |
 | Future and post-MVP work | [ROADMAP.md](ROADMAP.md) |
