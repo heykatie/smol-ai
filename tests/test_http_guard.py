@@ -198,6 +198,19 @@ def test_localhost_answers_on_ipv4_and_ipv6(tmp_path):
         daemon=True,
     )
     thread.start()
+    # Server startup happens in another thread; wait for each listener rather
+    # than depending on machine scheduling speed.
+    import time
+    for address in ("127.0.0.1", "::1"):
+        deadline = time.monotonic() + 3
+        while True:
+            try:
+                with socket.create_connection((address, port), timeout=0.2):
+                    break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.01)
     for address in ("127.0.0.1", "::1"):
         connection = HTTPConnection(address, port, timeout=2)
         connection.request("GET", "/")
